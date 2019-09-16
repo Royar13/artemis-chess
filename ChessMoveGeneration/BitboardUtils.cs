@@ -4,17 +4,17 @@ using System.Text;
 
 namespace ChessMoveGeneration
 {
-    static class BitboardUtils
+    public static class BitboardUtils
     {
         /// <summary>
         /// Get the bitboard representation of a square
         /// </summary>
-        /// <param name="square">Square between 0 (a1) and 63 (h8)</param>
+        /// <param name="sqInd">Square between 0 (a1) and 63 (h8)</param>
         /// <returns></returns>
-        public static UInt64 GetBitboard(int square)
+        public static ulong GetBitboard(int sqInd)
         {
-            UInt64 bitboard = 1;
-            bitboard = bitboard << square;
+            ulong bitboard = 1;
+            bitboard = bitboard << sqInd;
             return bitboard;
         }
 
@@ -23,10 +23,10 @@ namespace ChessMoveGeneration
         /// </summary>
         /// <param name="bitboard"></param>
         /// <returns></returns>
-        public static int GetSquareIndex(UInt64 bitboard)
+        public static int GetSquareIndex(ulong bitboard)
         {
             int index = 0;
-            UInt64 pos = 1;
+            ulong pos = 1;
             while ((bitboard & pos) == 0)
             {
                 pos = pos << 1;
@@ -35,7 +35,7 @@ namespace ChessMoveGeneration
             return index;
         }
 
-        public static string PositionToString(UInt64 bitboard)
+        public static string PositionToString(ulong bitboard)
         {
             int index = GetSquareIndex(bitboard);
             int rank = index / 8;

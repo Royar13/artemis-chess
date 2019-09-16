@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29215.179
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChessMoveGeneration", "ChessMoveGeneration\ChessMoveGeneration.csproj", "{E013D201-61F9-4C09-BD81-EF4AEA81C5A0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChessMoveGeneration", "ChessMoveGeneration\ChessMoveGeneration.csproj", "{E013D201-61F9-4C09-BD81-EF4AEA81C5A0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GUI", "GUI\GUI.csproj", "{4EC5436D-A8EC-49DF-AEB7-0067A215BED1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{55B4158A-FFA9-4AE4-B810-25D9DA04129C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{4EC5436D-A8EC-49DF-AEB7-0067A215BED1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4EC5436D-A8EC-49DF-AEB7-0067A215BED1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4EC5436D-A8EC-49DF-AEB7-0067A215BED1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55B4158A-FFA9-4AE4-B810-25D9DA04129C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55B4158A-FFA9-4AE4-B810-25D9DA04129C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55B4158A-FFA9-4AE4-B810-25D9DA04129C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55B4158A-FFA9-4AE4-B810-25D9DA04129C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

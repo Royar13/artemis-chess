@@ -9,37 +9,37 @@ namespace ChessMoveGeneration
         /// A bitboard containing the Rooks.
         /// 0=White, 1=Black.
         /// </summary>
-        public UInt64[] Rooks = new UInt64[2];
+        public ulong[] Rooks = new ulong[2];
         /// <summary>
         /// A bitboard containing the Knights.
         /// 0=White, 1=Black.
         /// </summary>
-        public UInt64[] Knights = new UInt64[2];
+        public ulong[] Knights = new ulong[2];
         /// <summary>
         /// A bitboard containing the Bishops.
         /// 0=White, 1=Black.
         /// </summary>
-        public UInt64[] Bishops = new UInt64[2];
+        public ulong[] Bishops = new ulong[2];
         /// <summary>
         /// A bitboard containing the Queen.
         /// 0=White, 1=Black.
         /// </summary>
-        public UInt64[] Queen = new UInt64[2];
+        public ulong[] Queen = new ulong[2];
         /// <summary>
         /// A bitboard containing the King.
         /// 0=White, 1=Black.
         /// </summary>
-        public UInt64[] King = new UInt64[2];
+        public ulong[] King = new ulong[2];
         /// <summary>
         /// A bitboard containing the Pawns.
         /// 0=White, 1=Black.
         /// </summary>
-        public UInt64[] Pawns = new UInt64[2];
+        public ulong[] Pawns = new ulong[2];
         /// <summary>
         /// A bitboard containing all the pieces.
         /// 0=White, 1=Black.
         /// </summary>
-        public UInt64[] Pieces = new UInt64[2];
+        public ulong[] Pieces = new ulong[2];
 
         public int Turn;
         /// <summary>
@@ -50,7 +50,8 @@ namespace ChessMoveGeneration
         /// <summary>
         /// The position behind a pawn that moved 2 squares last move
         /// </summary>
-        public UInt64? EnPassantCapture;
+        public ulong? EnPassantCapture;
+        MoveGenerator moveGenerator;
 
         public GameState() : this(DEFAULT_FEN)
         {
@@ -58,12 +59,13 @@ namespace ChessMoveGeneration
 
         public GameState(string fen)
         {
+            moveGenerator = new MoveGenerator(this);
             LoadFEN(fen);
         }
 
         private void LoadFEN(string fen)
         {
-            UInt64 currPos = 1;
+            ulong currPos = 1;
             string[] parts = fen.Split(' ');
             string[] ranks = parts[0].Split('/');
             for (int i = ranks.Length - 1; i >= 0; i--)
@@ -80,7 +82,7 @@ namespace ChessMoveGeneration
                     else
                     {
                         int pl = char.IsLower(c) ? 1 : 0;
-                        UInt64[] pieces = GetPiecesByType(char.ToUpper(c));
+                        ulong[] pieces = GetPiecesByType(char.ToUpper(c));
                         pieces[pl] = pieces[pl] ^ currPos;
                         currPos = currPos << 1;
                     }
@@ -88,7 +90,7 @@ namespace ChessMoveGeneration
             }
         }
 
-        public UInt64[] GetPiecesByType(char notation)
+        public ulong[] GetPiecesByType(char notation)
         {
             switch (notation)
             {
