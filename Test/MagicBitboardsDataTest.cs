@@ -34,5 +34,33 @@ namespace Test
             Assert.AreEqual(expectedMask1, mask1);
             Assert.AreEqual(expectedMask2, mask2);
         }
+
+        [TestMethod]
+        public void GetRookAttTest()
+        {
+            MagicBitboardsData magic = new MagicBitboardsData();
+            ulong att1 = magic.GetRookAtt(36, 0x0000004010001000);
+            ulong expectedAtt1 = 0x1010106F10000000;
+
+            ulong att2 = magic.GetRookAtt(58, 0x0200000000000004);
+            ulong expectedAtt2 = 0xFA04040404040404;
+
+            Assert.AreEqual(expectedAtt1, att1);
+            Assert.AreEqual(expectedAtt2, att2);
+        }
+
+        [TestMethod]
+        public void GetBishopAttTest()
+        {
+            MagicBitboardsData magic = new MagicBitboardsData();
+            ulong att1 = magic.GetBishopAtt(36, 0x8040000000440000);
+            ulong expectedAtt1 = 0x0244280028440000;
+
+            ulong att2 = magic.GetBishopAtt(22, 0x0004001000000010);
+            ulong expectedAtt2 = 0x00000010A000A010;
+
+            Assert.AreEqual(expectedAtt1, att1);
+            Assert.AreEqual(expectedAtt2, att2);
+        }
     }
 }

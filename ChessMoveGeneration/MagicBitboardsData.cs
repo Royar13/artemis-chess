@@ -69,5 +69,69 @@ namespace ChessMoveGeneration
             }
             return mask;
         }
+
+        public ulong GetRookAtt(int sqInd, ulong blockers)
+        {
+            ulong att = 0;
+            int file = sqInd % 8;
+            int rank = sqInd / 8;
+            for (int r = rank + 1; r <= 7; r++)
+            {
+                ulong pos = (ulong)1 << (r * 8 + file);
+                att |= pos;
+                if ((blockers & pos) > 0) break;
+            }
+            for (int r = rank - 1; r >= 0; r--)
+            {
+                ulong pos = (ulong)1 << (r * 8 + file);
+                att |= pos;
+                if ((blockers & pos) > 0) break;
+            }
+            for (int f = file + 1; f <= 7; f++)
+            {
+                ulong pos = (ulong)1 << (rank * 8 + f);
+                att |= pos;
+                if ((blockers & pos) > 0) break;
+            }
+            for (int f = file - 1; f >= 0; f--)
+            {
+                ulong pos = (ulong)1 << (rank * 8 + f);
+                att |= pos;
+                if ((blockers & pos) > 0) break;
+            }
+            return att;
+        }
+
+        public ulong GetBishopAtt(int sqInd, ulong blockers)
+        {
+            ulong att = 0;
+            int file = sqInd % 8;
+            int rank = sqInd / 8;
+            for (int f = file + 1, r = rank + 1; f <= 7 && r <= 7; f++, r++)
+            {
+                ulong pos = (ulong)1 << (r * 8 + f);
+                att |= pos;
+                if ((blockers & pos) > 0) break;
+            }
+            for (int f = file + 1, r = rank - 1; f <= 7 && r >= 0; f++, r--)
+            {
+                ulong pos = (ulong)1 << (r * 8 + f);
+                att |= pos;
+                if ((blockers & pos) > 0) break;
+            }
+            for (int f = file - 1, r = rank + 1; f >= 0 && r <= 7; f--, r++)
+            {
+                ulong pos = (ulong)1 << (r * 8 + f);
+                att |= pos;
+                if ((blockers & pos) > 0) break;
+            }
+            for (int f = file - 1, r = rank - 1; f >= 0 && r >= 0; f--, r--)
+            {
+                ulong pos = (ulong)1 << (r * 8 + f);
+                att |= pos;
+                if ((blockers & pos) > 0) break;
+            }
+            return att;
+        }
     }
 }
