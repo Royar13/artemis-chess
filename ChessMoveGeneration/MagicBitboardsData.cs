@@ -84,7 +84,7 @@ namespace ChessMoveGeneration
                     return magic;
                 }
             }
-            return 0;
+            throw new Exception("Failed to find magic");
         }
 
         public ulong GetRookMask(int sqInd)

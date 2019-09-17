@@ -76,5 +76,22 @@ namespace Test
             Assert.AreEqual(expectedBlockers1, blockers1);
             Assert.AreEqual(expectedBlockers2, blockers2);
         }
+
+        [TestMethod]
+        public void FindMagicsTest()
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                MagicBitboardsData magic = new MagicBitboardsData();
+                try
+                {
+                    magic.Initialize();
+                }
+                catch (Exception)
+                {
+                    Assert.Fail("Failed to find magics");
+                }
+            }
+        }
     }
 }
