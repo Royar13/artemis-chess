@@ -24,7 +24,9 @@ namespace GUI
         public MainWindow()
         {
             InitializeComponent();
-            GameState gameState = new GameState();
+            //GameState gameState = new GameState();
+            MagicBitboardsData magic = new MagicBitboardsData();
+            magic.Initialize();
         }
     }
 }

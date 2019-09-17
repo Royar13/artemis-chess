@@ -6,20 +6,85 @@ namespace ChessMoveGeneration
 {
     public class MagicBitboardsData
     {
-        public ulong[] Magics = new ulong[64];
+        public ulong[] RookMagics = new ulong[64];
+        public ulong[] BishopMagics = new ulong[64];
+        public ulong[][] RookAttacksTable = new ulong[64][];
+        public ulong[][] BishopAttacksTable = new ulong[64][];
+
+        int[] RBits = new int[64] {
+          12, 11, 11, 11, 11, 11, 11, 12,
+          11, 10, 10, 10, 10, 10, 10, 11,
+          11, 10, 10, 10, 10, 10, 10, 11,
+          11, 10, 10, 10, 10, 10, 10, 11,
+          11, 10, 10, 10, 10, 10, 10, 11,
+          11, 10, 10, 10, 10, 10, 10, 11,
+          11, 10, 10, 10, 10, 10, 10, 11,
+          12, 11, 11, 11, 11, 11, 11, 12
+        };
+
+        int[] BBits = new int[64] {
+          6, 5, 5, 5, 5, 5, 5, 6,
+          5, 5, 5, 5, 5, 5, 5, 5,
+          5, 5, 7, 7, 7, 7, 5, 5,
+          5, 5, 7, 9, 9, 7, 5, 5,
+          5, 5, 7, 9, 9, 7, 5, 5,
+          5, 5, 7, 7, 7, 7, 5, 5,
+          5, 5, 5, 5, 5, 5, 5, 5,
+          6, 5, 5, 5, 5, 5, 5, 6
+        };
 
         public void Initialize()
         {
             for (int i = 0; i < 64; i++)
             {
-                FindMagic(i);
+                ulong[] rookHashTable, bishopHashTable;
+                RookMagics[i] = FindMagic(i, true, out rookHashTable);
+                BishopMagics[i] = FindMagic(i, false, out bishopHashTable);
+                RookAttacksTable[i] = rookHashTable;
+                BishopAttacksTable[i] = bishopHashTable;
             }
         }
 
-        public void FindMagic(int sqInd)
+        public ulong FindMagic(int sqInd, bool rook, out ulong[] hashTable)
         {
-            ulong rmask = GetRookMask(sqInd);
-            ulong bmask = GetBishopMask(sqInd);
+            ulong mask = rook ? GetRookMask(sqInd) : GetBishopMask(sqInd);
+            int[] bitsArr = rook ? RBits : BBits;
+            int bits = bitsArr[sqInd];
+            int combinations = 1 << bits;
+            ulong[] blockers = new ulong[combinations];
+            ulong[] attacks = new ulong[combinations];
+            hashTable = new ulong[combinations];
+
+            for (int i = 0; i < combinations; i++)
+            {
+                blockers[i] = GetBlockersByIndex(i, mask);
+                attacks[i] = rook ? GetRookAtt(sqInd, blockers[i]) : GetBishopAtt(sqInd, blockers[i]);
+            }
+
+            for (int k = 0; k < 100000000; k++)
+            {
+                ulong magic = RandomUInt64FewBits();
+                ulong[] attacksTable = new ulong[combinations];
+                bool fail = false;
+                for (int i = 0; i < combinations && !fail; i++)
+                {
+                    ulong hashed = ApplyMagic(blockers[i], magic, bits);
+                    if (attacksTable[hashed] == 0)
+                    {
+                        attacksTable[hashed] = attacks[i];
+                    }
+                    else if (attacksTable[hashed] != attacks[i])
+                    {
+                        fail = true;
+                    }
+                }
+                if (!fail)
+                {
+                    hashTable = attacksTable;
+                    return magic;
+                }
+            }
+            return 0;
         }
 
         public ulong GetRookMask(int sqInd)
@@ -134,19 +199,29 @@ namespace ChessMoveGeneration
             return att;
         }
 
-        public ulong GetBlockersByIndex(ulong index, ulong mask)
+        public ulong GetBlockersByIndex(int index, ulong mask)
         {
             ulong blockers = 0;
             for (ulong i = 1; mask > 0; i <<= 1)
             {
                 ulong lsb = BitboardUtils.GetLSB(mask);
-                if ((index & i) > 0)
+                if (((ulong)index & i) > 0)
                 {
                     blockers |= lsb;
                 }
                 mask ^= lsb;
             }
             return blockers;
+        }
+
+        public ulong ApplyMagic(ulong blockers, ulong magic, int bits)
+        {
+            return (blockers * magic) >> (64 - bits);
+        }
+
+        public ulong RandomUInt64FewBits()
+        {
+            return BitboardUtils.RandomUInt64() & BitboardUtils.RandomUInt64() & BitboardUtils.RandomUInt64();
         }
     }
 }

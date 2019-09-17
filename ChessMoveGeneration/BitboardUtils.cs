@@ -6,6 +6,8 @@ namespace ChessMoveGeneration
 {
     public static class BitboardUtils
     {
+        private static Random rnd = new Random();
+
         /// <summary>
         /// Get the bitboard representation of a square
         /// </summary>
@@ -47,6 +49,13 @@ namespace ChessMoveGeneration
         public static ulong GetLSB(ulong bb)
         {
             return bb & (~bb + 1);
+        }
+
+        public static ulong RandomUInt64()
+        {
+            var buffer = new byte[sizeof(ulong)];
+            rnd.NextBytes(buffer);
+            return BitConverter.ToUInt64(buffer, 0);
         }
     }
 }
