@@ -62,5 +62,19 @@ namespace Test
             Assert.AreEqual(expectedAtt1, att1);
             Assert.AreEqual(expectedAtt2, att2);
         }
+
+        [TestMethod]
+        public void GetBlockersByIndexTest()
+        {
+            MagicBitboardsData magic = new MagicBitboardsData();
+            ulong blockers1 = magic.GetBlockersByIndex(3, 0x0044280028440200);
+            ulong expectedBlockers1 = 0x0000000000040200;
+
+            ulong blockers2 = magic.GetBlockersByIndex(57, 0x0044280028440200);
+            ulong expectedBlockers2 = 0x0000080028000200;
+
+            Assert.AreEqual(expectedBlockers1, blockers1);
+            Assert.AreEqual(expectedBlockers2, blockers2);
+        }
     }
 }

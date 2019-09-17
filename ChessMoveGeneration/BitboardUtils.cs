@@ -43,5 +43,10 @@ namespace ChessMoveGeneration
             char c = (char)(97 + file);
             return c.ToString() + (rank + 1);
         }
+
+        public static ulong GetLSB(ulong bb)
+        {
+            return bb & (~bb + 1);
+        }
     }
 }

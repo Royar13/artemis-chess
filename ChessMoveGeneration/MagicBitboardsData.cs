@@ -133,5 +133,20 @@ namespace ChessMoveGeneration
             }
             return att;
         }
+
+        public ulong GetBlockersByIndex(ulong index, ulong mask)
+        {
+            ulong blockers = 0;
+            for (ulong i = 1; mask > 0; i <<= 1)
+            {
+                ulong lsb = BitboardUtils.GetLSB(mask);
+                if ((index & i) > 0)
+                {
+                    blockers |= lsb;
+                }
+                mask ^= lsb;
+            }
+            return blockers;
+        }
     }
 }
