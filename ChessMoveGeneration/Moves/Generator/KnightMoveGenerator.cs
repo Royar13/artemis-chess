@@ -27,32 +27,40 @@ namespace ChessMoveGeneration.Moves.Generator
             return attacks;
         }
 
-        protected override IEnumerable<ulong> GetSequentialAttacksFromSquare(int pl, ulong sq)
+        protected override IEnumerable<Move> GetMovesFromSquare(ulong sq)
         {
-            ulong reversedOccupancy = ~gameState.Occupancy[pl];
-            ulong attack = sq << 17 & BitboardUtils.NOT_A_FILE & reversedOccupancy;
-            yield return attack;
+            ulong reversedOccupancy = ~gameState.Occupancy[gameState.Turn];
+            ulong to = sq << 17 & BitboardUtils.NOT_A_FILE & reversedOccupancy;
+            if (to != 0)
+                yield return new Move(gameState, sq, to, pieceType);
 
-            attack = sq << 10 & BitboardUtils.NOT_AB_FILES & reversedOccupancy;
-            yield return attack;
+            to = sq << 10 & BitboardUtils.NOT_AB_FILES & reversedOccupancy;
+            if (to != 0)
+                yield return new Move(gameState, sq, to, pieceType);
 
-            attack = sq >> 6 & BitboardUtils.NOT_AB_FILES & reversedOccupancy;
-            yield return attack;
+            to = sq >> 6 & BitboardUtils.NOT_AB_FILES & reversedOccupancy;
+            if (to != 0)
+                yield return new Move(gameState, sq, to, pieceType);
 
-            attack = sq >> 15 & BitboardUtils.NOT_A_FILE & reversedOccupancy;
-            yield return attack;
+            to = sq >> 15 & BitboardUtils.NOT_A_FILE & reversedOccupancy;
+            if (to != 0)
+                yield return new Move(gameState, sq, to, pieceType);
 
-            attack = sq << 15 & BitboardUtils.NOT_H_FILE & reversedOccupancy;
-            yield return attack;
+            to = sq << 15 & BitboardUtils.NOT_H_FILE & reversedOccupancy;
+            if (to != 0)
+                yield return new Move(gameState, sq, to, pieceType);
 
-            attack = sq << 6 & BitboardUtils.NOT_GH_FILES & reversedOccupancy;
-            yield return attack;
+            to = sq << 6 & BitboardUtils.NOT_GH_FILES & reversedOccupancy;
+            if (to != 0)
+                yield return new Move(gameState, sq, to, pieceType);
 
-            attack = sq >> 10 & BitboardUtils.NOT_GH_FILES & reversedOccupancy;
-            yield return attack;
+            to = sq >> 10 & BitboardUtils.NOT_GH_FILES & reversedOccupancy;
+            if (to != 0)
+                yield return new Move(gameState, sq, to, pieceType);
 
-            attack = sq >> 17 & BitboardUtils.NOT_H_FILE & reversedOccupancy;
-            yield return attack;
+            to = sq >> 17 & BitboardUtils.NOT_H_FILE & reversedOccupancy;
+            if (to != 0)
+                yield return new Move(gameState, sq, to, pieceType);
         }
 
     }

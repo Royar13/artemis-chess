@@ -26,12 +26,12 @@ namespace ChessMoveGeneration.Moves.Generator
         public abstract ulong GenerateAttacks(int pl);
 
         /// <summary>
-        /// Gets an enumerable of the attacks, not including friendly attacks (defenders).
+        /// Gets an enumerable of the moves from a square.
         /// </summary>
         /// <param name="pl"></param>
         /// <param name="sq"></param>
         /// <returns></returns>
-        protected abstract IEnumerable<ulong> GetSequentialAttacksFromSquare(int pl, ulong sq);
+        protected abstract IEnumerable<Move> GetMovesFromSquare(ulong sq);
 
         public IEnumerable<Move> GenerateMoves()
         {
@@ -39,7 +39,7 @@ namespace ChessMoveGeneration.Moves.Generator
             while (piece > 0)
             {
                 ulong from = BitboardUtils.GetLSB(piece);
-                IEnumerable<ulong> attacks = GetSequentialAttacksFromSquare(gameState.Turn, from);
+                IEnumerable<ulong> attacks = GetMovesFromSquare(gameState.Turn, from);
                 foreach (ulong to in attacks)
                 {
                     Move move = new Move(gameState, from, to, pieceType);

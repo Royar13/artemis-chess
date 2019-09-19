@@ -31,14 +31,15 @@ namespace ChessMoveGeneration.Moves.Generator
             return attacks;
         }
 
-        protected override IEnumerable<ulong> GetSequentialAttacksFromSquare(int pl, ulong sq)
+        protected override IEnumerable<Move> GetMovesFromSquare(ulong sq)
         {
-            ulong reversedOccupancy = ~gameState.Occupancy[pl];
-            ulong attacks = GetAttacksFromSquare(pl, sq) & reversedOccupancy;
+            ulong reversedOccupancy = ~gameState.Occupancy[gameState.Turn];
+            ulong attacks = GetAttacksFromSquare(gameState.Turn, sq) & reversedOccupancy;
             while (attacks > 0)
             {
                 ulong to = BitboardUtils.GetLSB(attacks);
-                yield return to;
+                Move move = new Move(gameState, sq, to, pieceType);
+                yield return move;
                 attacks ^= to;
             }
         }
