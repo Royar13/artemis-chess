@@ -7,6 +7,21 @@ namespace ChessMoveGeneration
     public static class BitboardUtils
     {
         private static Random rnd = new Random();
+        private readonly static int[] index64 = {
+            0,  1, 48,  2, 57, 49, 28,  3,
+           61, 58, 50, 42, 38, 29, 17,  4,
+           62, 55, 59, 36, 53, 51, 43, 22,
+           45, 39, 33, 30, 24, 18, 12,  5,
+           63, 47, 56, 27, 60, 41, 37, 16,
+           54, 35, 52, 21, 44, 32, 23, 11,
+           46, 26, 40, 15, 34, 20, 31, 10,
+           25, 14, 19,  9, 13,  8,  7,  6
+        };
+
+        public const ulong NOT_A_FILE = 0xFEFEFEFEFEFEFEFE;
+        public const ulong NOT_H_FILE = 0x7F7F7F7F7F7F7F7F;
+        public const ulong NOT_AB_FILES = 0xFCFCFCFCFCFCFCFC;
+        public const ulong NOT_GH_FILES = 0x3F3F3F3F3F3F3F3F;
 
         /// <summary>
         /// Get the bitboard representation of a square
@@ -46,6 +61,11 @@ namespace ChessMoveGeneration
             return c.ToString() + (rank + 1);
         }
 
+        /// <summary>
+        /// Gets the least significant bit
+        /// </summary>
+        /// <param name="bb"></param>
+        /// <returns></returns>
         public static ulong GetLSB(ulong bb)
         {
             return bb & (~bb + 1);
@@ -56,6 +76,28 @@ namespace ChessMoveGeneration
             var buffer = new byte[sizeof(ulong)];
             rnd.NextBytes(buffer);
             return BitConverter.ToUInt64(buffer, 0);
+        }
+
+        /// <summary>
+        /// Gets the index of the least significant bit
+        /// </summary>
+        /// <param name="bb"></param>
+        /// <returns></returns>
+        public static int BitScanForward(ulong bb)
+        {
+            ulong debruijn64 = 0x03f79d71b4cb0a89;
+            ulong lsb = GetLSB(bb);
+            return index64[(lsb * debruijn64) >> 58];
+        }
+
+        public static ulong OneEast(ulong bb)
+        {
+            return (bb << 1) & NOT_A_FILE;
+        }
+
+        public static ulong OneWest(ulong bb)
+        {
+            return (bb >> 1) & NOT_H_FILE;
         }
     }
 }

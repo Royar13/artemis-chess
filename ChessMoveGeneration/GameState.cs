@@ -1,4 +1,8 @@
-﻿using System;
+﻿using ChessMoveGeneration.Moves;
+using ChessMoveGeneration.Moves.Generator;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ChessMoveGeneration
 {
@@ -6,52 +10,39 @@ namespace ChessMoveGeneration
     {
         const string DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         /// <summary>
-        /// A bitboard containing the Rooks.
-        /// 0=White, 1=Black.
+        /// A bitboard containing each piece type.
+        /// First index: 0=White, 1=Black.
+        /// Second index: PieceType.
         /// </summary>
-        public ulong[] Rooks = new ulong[2];
-        /// <summary>
-        /// A bitboard containing the Knights.
-        /// 0=White, 1=Black.
-        /// </summary>
-        public ulong[] Knights = new ulong[2];
-        /// <summary>
-        /// A bitboard containing the Bishops.
-        /// 0=White, 1=Black.
-        /// </summary>
-        public ulong[] Bishops = new ulong[2];
-        /// <summary>
-        /// A bitboard containing the Queen.
-        /// 0=White, 1=Black.
-        /// </summary>
-        public ulong[] Queen = new ulong[2];
-        /// <summary>
-        /// A bitboard containing the King.
-        /// 0=White, 1=Black.
-        /// </summary>
-        public ulong[] King = new ulong[2];
-        /// <summary>
-        /// A bitboard containing the Pawns.
-        /// 0=White, 1=Black.
-        /// </summary>
-        public ulong[] Pawns = new ulong[2];
+        public ulong[,] Pieces = new ulong[2, 6];
+
         /// <summary>
         /// A bitboard containing all the pieces.
         /// 0=White, 1=Black.
         /// </summary>
-        public ulong[] Pieces = new ulong[2];
+        public ulong[] Occupancy = new ulong[2];
 
-        public int Turn;
         /// <summary>
-        /// Do the players still have castling rights. 
-        /// The first index is 0=White, 1=Black, the second is 0=Queenside,1=Kingside.
+        /// A bitboard containing the pieces of both sides.
         /// </summary>
-        public bool[,] CastlingAllowed = new bool[2, 2];
+        public ulong FullOccupancy
+        {
+            get
+            {
+                return Occupancy[0] | Occupancy[1];
+            }
+        }
+
+        public int Turn { get; private set; }
+        List<IrrevState> IrrevStates = new List<IrrevState>();
+        List<Move> MovesHistory = new List<Move>();
+
+        MagicBitboardsData magic = new MagicBitboardsData();
+        MoveGeneratorBuilder moveGeneratorBuilder;
         /// <summary>
-        /// The position behind a pawn that moved 2 squares last move
+        /// Move generators for different piece types, indexed by the piece type
         /// </summary>
-        public ulong? EnPassantCapture;
-        MoveGenerator moveGenerator;
+        IMoveGenerator[] moveGenerators;
 
         public GameState() : this(DEFAULT_FEN)
         {
@@ -59,8 +50,17 @@ namespace ChessMoveGeneration
 
         public GameState(string fen)
         {
-            moveGenerator = new MoveGenerator(this);
+            moveGeneratorBuilder = new MoveGeneratorBuilder(this, magic);
+            for (int i = 0; i < 6; i++)
+            {
+                moveGenerators[i] = moveGeneratorBuilder.Build((PieceType)i);
+            }
             LoadFEN(fen);
+        }
+
+        public void Initialize()
+        {
+            magic.Initialize();
         }
 
         private void LoadFEN(string fen)
@@ -82,33 +82,60 @@ namespace ChessMoveGeneration
                     else
                     {
                         int pl = char.IsLower(c) ? 1 : 0;
-                        ulong[] pieces = GetPiecesByType(char.ToUpper(c));
-                        pieces[pl] = pieces[pl] ^ currPos;
+                        int pieceType = (int)NotationToPieceType(char.ToUpper(c));
+                        Pieces[pl, pieceType] |= currPos;
                         currPos = currPos << 1;
                     }
                 }
             }
         }
 
-        public ulong[] GetPiecesByType(char notation)
+        public static PieceType NotationToPieceType(char notation)
         {
             switch (notation)
             {
                 case 'R':
-                    return Rooks;
+                    return PieceType.Rook;
                 case 'N':
-                    return Knights;
+                    return PieceType.Knight;
                 case 'B':
-                    return Bishops;
+                    return PieceType.Bishop;
                 case 'Q':
-                    return Queen;
+                    return PieceType.Queen;
                 case 'K':
-                    return King;
+                    return PieceType.King;
                 case 'P':
-                    return Pawns;
+                    return PieceType.Pawn;
                 default:
                     throw new ArgumentException("No such piece notation");
             }
+        }
+
+        public IrrevState GetIrrevState()
+        {
+            return IrrevStates.Last();
+        }
+
+        private void ChangeTurn()
+        {
+            Turn = 1 - Turn;
+        }
+
+        public void MakeMove(Move move)
+        {
+            IrrevState irrevState = GetIrrevState().Copy();
+            IrrevStates.Add(irrevState);
+            move.Make();
+            MovesHistory.Add(move);
+            ChangeTurn();
+        }
+
+        public void UnmakeMove(Move move)
+        {
+            move.Unmake();
+            MovesHistory.RemoveAt(MovesHistory.Count - 1);
+            IrrevStates.RemoveAt(IrrevStates.Count - 1);
+            ChangeTurn();
         }
     }
 }

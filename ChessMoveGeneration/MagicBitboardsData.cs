@@ -6,6 +6,8 @@ namespace ChessMoveGeneration
 {
     public class MagicBitboardsData
     {
+        public ulong[] RookMasks = new ulong[64];
+        public ulong[] BishopMasks = new ulong[64];
         public ulong[] RookMagics = new ulong[64];
         public ulong[] BishopMagics = new ulong[64];
         public ulong[][] RookAttacksTable = new ulong[64][];
@@ -43,6 +45,22 @@ namespace ChessMoveGeneration
                 RookAttacksTable[i] = rookHashTable;
                 BishopAttacksTable[i] = bishopHashTable;
             }
+        }
+
+        public ulong GetAttacks(int sqInd, ulong occupancy, bool rook)
+        {
+            ulong attacks;
+            if (rook)
+            {
+                ulong hashed = ApplyMagic(occupancy & RookMasks[sqInd], RookMagics[sqInd], RBits[sqInd]);
+                attacks = RookAttacksTable[sqInd][hashed];
+            }
+            else
+            {
+                ulong hashed = ApplyMagic(occupancy & BishopMasks[sqInd], BishopMagics[sqInd], BBits[sqInd]);
+                attacks = BishopAttacksTable[sqInd][hashed];
+            }
+            return attacks;
         }
 
         public ulong FindMagic(int sqInd, bool rook, out ulong[] hashTable)
@@ -108,6 +126,7 @@ namespace ChessMoveGeneration
             {
                 mask |= (ulong)1 << (rank * 8 + f);
             }
+            RookMasks[sqInd] = mask;
             return mask;
         }
 
@@ -132,6 +151,7 @@ namespace ChessMoveGeneration
             {
                 mask |= (ulong)1 << (r * 8 + f);
             }
+            BishopMasks[sqInd] = mask;
             return mask;
         }
 
