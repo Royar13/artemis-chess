@@ -111,6 +111,55 @@ namespace ChessMoveGeneration
             }
         }
 
+        public List<Move> GetMoves()
+        {
+            List<Move> moves = new List<Move>();
+            foreach (IMoveGenerator generator in moveGenerators)
+            {
+                moves.AddRange(generator.GenerateMoves());
+            }
+            return moves;
+        }
+
+        /// <summary>
+        /// For use by the GUI only.
+        /// </summary>
+        /// <returns></returns>
+        public List<Move> GetLegalMoves()
+        {
+            List<Move> moves = GetMoves();
+            List<Move> legalMoves = new List<Move>();
+            foreach (Move move in moves)
+            {
+                MakeMove(move);
+                if (!IsAttacked(1 - Turn, Pieces[1 - Turn, (int)PieceType.King]))
+                {
+                    legalMoves.Add(move);
+                }
+                UnmakeMove(move);
+            }
+            return legalMoves;
+        }
+
+        public bool IsCheck()
+        {
+            ulong king = Pieces[Turn, (int)PieceType.King];
+            return IsAttacked(Turn, king);
+        }
+
+        public bool IsAttacked(int pl, ulong sq)
+        {
+            for (int i = 0; i < 6; i++)
+            {
+                ulong attacks = moveGenerators[i].GenerateAttacks(1 - pl);
+                if ((sq & attacks) > 0)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public IrrevState GetIrrevState()
         {
             return IrrevStates.Last();
