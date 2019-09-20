@@ -86,9 +86,21 @@ namespace ChessMoveGeneration
         /// <returns></returns>
         public static int BitScanForward(ulong bb)
         {
-            ulong debruijn64 = 0x03f79d71b4cb0a89;
             ulong lsb = GetLSB(bb);
-            return index64[(lsb * debruijn64) >> 58];
+            return BitScanForwardSingleBit(lsb);
+        }
+
+        private static int BitScanForwardSingleBit(ulong bit)
+        {
+            ulong debruijn64 = 0x03f79d71b4cb0a89;
+            return index64[(bit * debruijn64) >> 58];
+        }
+
+        public static int PopLSB(ref ulong bb)
+        {
+            ulong lsb = GetLSB(bb);
+            bb ^= lsb;
+            return BitScanForwardSingleBit(lsb);
         }
 
         public static ulong OneEast(ulong bb)
@@ -99,6 +111,16 @@ namespace ChessMoveGeneration
         public static ulong OneWest(ulong bb)
         {
             return (bb >> 1) & NOT_H_FILE;
+        }
+
+        public static int GetFile(int sqInd)
+        {
+            return sqInd % 8;
+        }
+
+        public static int GetRank(int sqInd)
+        {
+            return sqInd / 8;
         }
     }
 }

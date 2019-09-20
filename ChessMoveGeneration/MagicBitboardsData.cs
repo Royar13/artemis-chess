@@ -108,8 +108,8 @@ namespace ChessMoveGeneration
         public ulong GetRookMask(int sqInd)
         {
             ulong mask = 0;
-            int file = sqInd % 8;
-            int rank = sqInd / 8;
+            int file = BitboardUtils.GetFile(sqInd);
+            int rank = BitboardUtils.GetRank(sqInd);
             for (int r = rank + 1; r <= 6; r++)
             {
                 mask |= (ulong)1 << (r * 8 + file);
@@ -133,8 +133,8 @@ namespace ChessMoveGeneration
         public ulong GetBishopMask(int sqInd)
         {
             ulong mask = 0;
-            int file = sqInd % 8;
-            int rank = sqInd / 8;
+            int file = BitboardUtils.GetFile(sqInd);
+            int rank = BitboardUtils.GetRank(sqInd);
             for (int f = file + 1, r = rank + 1; f <= 6 && r <= 6; f++, r++)
             {
                 mask |= (ulong)1 << (r * 8 + f);
@@ -158,8 +158,8 @@ namespace ChessMoveGeneration
         public ulong GetRookAtt(int sqInd, ulong blockers)
         {
             ulong att = 0;
-            int file = sqInd % 8;
-            int rank = sqInd / 8;
+            int file = BitboardUtils.GetFile(sqInd);
+            int rank = BitboardUtils.GetRank(sqInd);
             for (int r = rank + 1; r <= 7; r++)
             {
                 ulong pos = (ulong)1 << (r * 8 + file);
@@ -190,8 +190,8 @@ namespace ChessMoveGeneration
         public ulong GetBishopAtt(int sqInd, ulong blockers)
         {
             ulong att = 0;
-            int file = sqInd % 8;
-            int rank = sqInd / 8;
+            int file = BitboardUtils.GetFile(sqInd);
+            int rank = BitboardUtils.GetRank(sqInd);
             for (int f = file + 1, r = rank + 1; f <= 7 && r <= 7; f++, r++)
             {
                 ulong pos = (ulong)1 << (r * 8 + f);

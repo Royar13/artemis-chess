@@ -55,6 +55,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="UIPiece.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -63,6 +64,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="GameManager.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -99,6 +101,21 @@
       <Project>{E013D201-61F9-4C09-BD81-EF4AEA81C5A0}</Project>
       <Name>ChessMoveGeneration</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="img\board.png" />
+    <Resource Include="img\pieces\bb.png" />
+    <Resource Include="img\pieces\bk.png" />
+    <Resource Include="img\pieces\bn.png" />
+    <Resource Include="img\pieces\bp.png" />
+    <Resource Include="img\pieces\bq.png" />
+    <Resource Include="img\pieces\br.png" />
+    <Resource Include="img\pieces\wb.png" />
+    <Resource Include="img\pieces\wk.png" />
+    <Resource Include="img\pieces\wn.png" />
+    <Resource Include="img\pieces\wp.png" />
+    <Resource Include="img\pieces\wq.png" />
+    <Resource Include="img\pieces\wr.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

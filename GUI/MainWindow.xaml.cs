@@ -21,12 +21,14 @@ namespace GUI
     /// </summary>
     public partial class MainWindow : Window
     {
+        GameManager gm;
+
         public MainWindow()
         {
             InitializeComponent();
-            //GameState gameState = new GameState();
-            MagicBitboardsData magic = new MagicBitboardsData();
-            magic.Initialize();
+            gm = new GameManager(Board);
+            gm.NewGame();
+            MainContainer.DataContext = gm;
         }
     }
 }

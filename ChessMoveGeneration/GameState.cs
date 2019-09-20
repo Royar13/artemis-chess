@@ -9,6 +9,7 @@ namespace ChessMoveGeneration
     public class GameState
     {
         const string DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        public const int BOARD_SIZE = 8;
         /// <summary>
         /// A bitboard containing each piece type.
         /// First index: 0=White, 1=Black.
@@ -82,32 +83,11 @@ namespace ChessMoveGeneration
                     else
                     {
                         int pl = char.IsLower(c) ? 1 : 0;
-                        int pieceType = (int)NotationToPieceType(char.ToUpper(c));
+                        int pieceType = (int)c.ToPieceType();
                         Pieces[pl, pieceType] |= currPos;
                         currPos = currPos << 1;
                     }
                 }
-            }
-        }
-
-        public static PieceType NotationToPieceType(char notation)
-        {
-            switch (notation)
-            {
-                case 'R':
-                    return PieceType.Rook;
-                case 'N':
-                    return PieceType.Knight;
-                case 'B':
-                    return PieceType.Bishop;
-                case 'Q':
-                    return PieceType.Queen;
-                case 'K':
-                    return PieceType.King;
-                case 'P':
-                    return PieceType.Pawn;
-                default:
-                    throw new ArgumentException("No such piece notation");
             }
         }
 
@@ -197,6 +177,31 @@ namespace ChessMoveGeneration
             MovesHistory.RemoveAt(MovesHistory.Count - 1);
             IrrevStates.RemoveAt(IrrevStates.Count - 1);
             ChangeTurn();
+        }
+
+        /// <summary>
+        /// Gets a list of tuples with piece information: square index, player, piece type.
+        /// For use by the GUI.
+        /// </summary>
+        /// <returns></returns>
+        public List<Tuple<int, int, PieceType>> GetPiecesList()
+        {
+            List<Tuple<int, int, PieceType>> pieces = new List<Tuple<int, int, PieceType>>();
+            for (int pl = 0; pl < 2; pl++)
+            {
+                for (int i = 0; i < 6; i++)
+                {
+                    ulong piecesBB = Pieces[pl, i];
+                    while (piecesBB > 0)
+                    {
+                        int sqInd = BitboardUtils.PopLSB(ref piecesBB);
+                        Tuple<int, int, PieceType> piece = new Tuple<int, int, PieceType>(sqInd, pl, (PieceType)i);
+                        pieces.Add(piece);
+
+                    }
+                }
+            }
+            return pieces;
         }
     }
 }
