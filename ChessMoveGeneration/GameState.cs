@@ -42,7 +42,7 @@ namespace ChessMoveGeneration
         /// <summary>
         /// Move generators for different piece types, indexed by the piece type
         /// </summary>
-        IMoveGenerator[] moveGenerators;
+        IMoveGenerator[] moveGenerators = new IMoveGenerator[6];
 
         public GameState() : this(DEFAULT_FEN)
         {
@@ -111,6 +111,18 @@ namespace ChessMoveGeneration
             }
         }
 
+        public PieceType GetPieceBySquare(int pl, ulong sq)
+        {
+            for (int i = 0; i < 6; i++)
+            {
+                if ((Pieces[pl, i] & sq) > 0)
+                {
+                    return (PieceType)i;
+                }
+            }
+            throw new Exception("No piece was found on the square");
+        }
+
         public List<Move> GetMoves()
         {
             List<Move> moves = new List<Move>();
@@ -132,7 +144,7 @@ namespace ChessMoveGeneration
             foreach (Move move in moves)
             {
                 MakeMove(move);
-                if (!IsAttacked(1 - Turn, Pieces[1 - Turn, (int)PieceType.King]))
+                if (move.IsLegal())
                 {
                     legalMoves.Add(move);
                 }
@@ -147,12 +159,12 @@ namespace ChessMoveGeneration
             return IsAttacked(Turn, king);
         }
 
-        public bool IsAttacked(int pl, ulong sq)
+        public bool IsAttacked(int pl, ulong bb)
         {
             for (int i = 0; i < 6; i++)
             {
                 ulong attacks = moveGenerators[i].GenerateAttacks(1 - pl);
-                if ((sq & attacks) > 0)
+                if ((bb & attacks) > 0)
                 {
                     return true;
                 }

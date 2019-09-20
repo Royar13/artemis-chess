@@ -43,19 +43,41 @@ namespace ChessMoveGeneration.Moves
             }
         }
 
+        /// <summary>
+        /// Checks that the move didn't put the king in check.
+        /// Should be called after the move is made.
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool IsLegal()
+        {
+            ulong king = gameState.Pieces[1 - gameState.Turn, (int)PieceType.King];
+            return !gameState.IsAttacked(1 - gameState.Turn, king);
+        }
+
         private void CapturePiece(ulong sq, IrrevState state)
         {
             int pl = 1 - gameState.Turn;
             gameState.Occupancy[pl] ^= sq;
-            for (int i = 0; i < 5; i++)
+            capturedPieceType = gameState.GetPieceBySquare(pl, sq);
+            gameState.Pieces[pl, (int)capturedPieceType] ^= sq;
+        }
+
+        /// <summary>
+        /// Returns a GameAction object which describes the move, for use by the GUI.
+        /// It should be called before the move is made.
+        /// </summary>
+        /// <returns></returns>
+        public GameAction GetAction()
+        {
+            int? capture = null;
+            PieceType? captureType = null;
+            if ((gameState.Occupancy[1 - gameState.Turn] & To) > 0)
             {
-                if ((gameState.Pieces[pl, i] & sq) > 0)
-                {
-                    capturedPieceType = (PieceType)i;
-                    gameState.Pieces[pl, i] ^= sq;
-                    break;
-                }
+                capture = BitboardUtils.BitScanForward(To);
+                captureType = gameState.GetPieceBySquare(1 - gameState.Turn, To);
             }
+            GameAction action = new GameAction(BitboardUtils.BitScanForward(From), BitboardUtils.BitScanForward(To), capture, captureType);
+            return action;
         }
     }
 }

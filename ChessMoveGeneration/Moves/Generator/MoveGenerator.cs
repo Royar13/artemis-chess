@@ -39,10 +39,9 @@ namespace ChessMoveGeneration.Moves.Generator
             while (piece > 0)
             {
                 ulong from = BitboardUtils.GetLSB(piece);
-                IEnumerable<ulong> attacks = GetMovesFromSquare(gameState.Turn, from);
-                foreach (ulong to in attacks)
+                IEnumerable<Move> moves = GetMovesFromSquare(from);
+                foreach (Move move in moves)
                 {
-                    Move move = new Move(gameState, from, to, pieceType);
                     yield return move;
                 }
                 piece ^= from;

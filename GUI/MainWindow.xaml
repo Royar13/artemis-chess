@@ -5,8 +5,20 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GUI"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
-    </Grid>
+        Title="MainWindow" SizeToContent="WidthAndHeight" Padding="10" WindowStartupLocation="CenterScreen">
+    <StackPanel x:Name="MainContainer">
+        <WrapPanel>
+            <Canvas x:Name="Board" Width="500" Height="500">
+
+            </Canvas>
+            <ScrollViewer Height="500">
+                <TextBlock Text="{Binding Path=MovesList}" Width="100" VerticalAlignment="Stretch" Margin="10,0,0,0" Padding="5" TextWrapping="WrapWithOverflow" Background="#FFF3F3F3"></TextBlock>
+            </ScrollViewer>
+        </WrapPanel>
+
+        <WrapPanel Margin="0,40,0,0">
+            <Button Click="UndoMoveBtn_Click">Undo Move</Button>
+            <Button Margin="10,00,0,0" Width="100" HorizontalAlignment="Left" Click="NewGameBtn_Click">New Game</Button>
+        </WrapPanel>
+    </StackPanel>
 </Window>
