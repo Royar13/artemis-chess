@@ -1,5 +1,5 @@
-﻿using ChessMoveGeneration;
-using ChessMoveGeneration.Moves;
+﻿using Artemis.Core;
+using Artemis.Core.Moves;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,7 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace GUI
+namespace Artemis.GUI
 {
     class GameManager
     {

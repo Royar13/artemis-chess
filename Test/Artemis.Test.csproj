@@ -57,9 +57,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ChessMoveGeneration\ChessMoveGeneration.csproj">
+    <ProjectReference Include="..\ChessMoveGeneration\Artemis.Core.csproj">
       <Project>{e013d201-61f9-4c09-bd81-ef4aea81c5a0}</Project>
-      <Name>ChessMoveGeneration</Name>
+      <Name>Artemis.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />

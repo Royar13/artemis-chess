@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ChessMoveGeneration.Moves.Generator
+namespace Artemis.Core.Moves.Generator
 {
     public class KingMoveGenerator : MoveGenerator
     {

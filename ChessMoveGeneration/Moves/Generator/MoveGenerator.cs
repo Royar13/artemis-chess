@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 
-namespace ChessMoveGeneration.Moves.Generator
+namespace Artemis.Core.Moves.Generator
 {
     public abstract class MoveGenerator : IMoveGenerator
     {

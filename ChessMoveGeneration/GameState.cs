@@ -1,10 +1,10 @@
-﻿using ChessMoveGeneration.Moves;
-using ChessMoveGeneration.Moves.Generator;
+﻿using Artemis.Core.Moves;
+using Artemis.Core.Moves.Generator;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ChessMoveGeneration
+namespace Artemis.Core
 {
     public class GameState
     {

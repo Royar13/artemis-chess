@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 
-namespace ChessMoveGeneration
+namespace Artemis.Core
 {
     public enum PieceType
     {

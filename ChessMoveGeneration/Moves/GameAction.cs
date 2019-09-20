@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ChessMoveGeneration.Moves
+namespace Artemis.Core.Moves
 {
     /// <summary>
     /// A description of a Move, for use by the GUI.

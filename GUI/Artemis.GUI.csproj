@@ -97,9 +97,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ChessMoveGeneration\ChessMoveGeneration.csproj">
+    <ProjectReference Include="..\ChessMoveGeneration\Artemis.Core.csproj">
       <Project>{E013D201-61F9-4C09-BD81-EF4AEA81C5A0}</Project>
-      <Name>ChessMoveGeneration</Name>
+      <Name>Artemis.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

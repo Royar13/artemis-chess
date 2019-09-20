@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ChessMoveGeneration
+namespace Artemis.Core
 {
     public static class BitboardUtils
     {

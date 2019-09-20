@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ChessMoveGeneration
+namespace Artemis.Core
 {
     /// <summary>
     /// Irreversible state - all the state data which can't be reversed back by a simple bit operation

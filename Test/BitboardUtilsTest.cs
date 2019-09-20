@@ -1,8 +1,8 @@
 ﻿using System;
-using ChessMoveGeneration;
+using Artemis.Core;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Test
+namespace Artemis.Test
 {
     [TestClass]
     public class BitboardUtilsTest
