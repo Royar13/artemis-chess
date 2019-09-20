@@ -30,11 +30,10 @@ namespace ChessMoveGeneration.Moves.Generator
         protected override IEnumerable<Move> GetMovesFromSquare(ulong sq)
         {
             ulong reversedFullOccupancy = ~gameState.FullOccupancy;
-            ulong pawns = gameState.Pieces[gameState.Turn, (int)pieceType];
             ulong to;
             if (gameState.Turn == 0)
             {
-                to = pawns << 8 & reversedFullOccupancy;
+                to = sq << 8 & reversedFullOccupancy;
                 if (to != 0)
                 {
                     yield return new Move(gameState, sq, to, pieceType);
@@ -44,16 +43,16 @@ namespace ChessMoveGeneration.Moves.Generator
                         yield return new Move(gameState, sq, to, pieceType);
                     }
                 }
-                to = pawns << 7 & BitboardUtils.NOT_H_FILE & gameState.Occupancy[1 - gameState.Turn];
+                to = sq << 7 & BitboardUtils.NOT_H_FILE & gameState.Occupancy[1 - gameState.Turn];
                 if (to != 0)
                     yield return new Move(gameState, sq, to, pieceType);
-                to = pawns << 9 & BitboardUtils.NOT_A_FILE & gameState.Occupancy[1 - gameState.Turn];
+                to = sq << 9 & BitboardUtils.NOT_A_FILE & gameState.Occupancy[1 - gameState.Turn];
                 if (to != 0)
                     yield return new Move(gameState, sq, to, pieceType);
             }
             else
             {
-                to = pawns >> 8 & reversedFullOccupancy;
+                to = sq >> 8 & reversedFullOccupancy;
                 if (to != 0)
                 {
                     yield return new Move(gameState, sq, to, pieceType);
@@ -63,10 +62,10 @@ namespace ChessMoveGeneration.Moves.Generator
                         yield return new Move(gameState, sq, to, pieceType);
                     }
                 }
-                to = pawns >> 9 & BitboardUtils.NOT_H_FILE & gameState.Occupancy[1 - gameState.Turn];
+                to = sq >> 9 & BitboardUtils.NOT_H_FILE & gameState.Occupancy[1 - gameState.Turn];
                 if (to != 0)
                     yield return new Move(gameState, sq, to, pieceType);
-                to = pawns >> 7 & BitboardUtils.NOT_A_FILE & gameState.Occupancy[1 - gameState.Turn];
+                to = sq >> 7 & BitboardUtils.NOT_A_FILE & gameState.Occupancy[1 - gameState.Turn];
                 if (to != 0)
                     yield return new Move(gameState, sq, to, pieceType);
             }

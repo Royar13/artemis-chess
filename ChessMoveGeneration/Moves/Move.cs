@@ -34,12 +34,12 @@ namespace ChessMoveGeneration.Moves
         public virtual void Unmake()
         {
             ulong move = From | To;
-            gameState.Pieces[gameState.Turn, (int)MovedPieceType] ^= move;
-            gameState.Occupancy[gameState.Turn] ^= move;
+            gameState.Pieces[1 - gameState.Turn, (int)MovedPieceType] ^= move;
+            gameState.Occupancy[1 - gameState.Turn] ^= move;
             if (capturedPieceType != null)
             {
-                gameState.Pieces[1 - gameState.Turn, (int)capturedPieceType] |= To;
-                gameState.Occupancy[1 - gameState.Turn] |= To;
+                gameState.Pieces[gameState.Turn, (int)capturedPieceType] |= To;
+                gameState.Occupancy[gameState.Turn] |= To;
             }
         }
 
@@ -70,14 +70,36 @@ namespace ChessMoveGeneration.Moves
         public GameAction GetAction()
         {
             int? capture = null;
-            PieceType? captureType = null;
             if ((gameState.Occupancy[1 - gameState.Turn] & To) > 0)
             {
                 capture = BitboardUtils.BitScanForward(To);
-                captureType = gameState.GetPieceBySquare(1 - gameState.Turn, To);
             }
-            GameAction action = new GameAction(BitboardUtils.BitScanForward(From), BitboardUtils.BitScanForward(To), capture, captureType);
+            GameAction action = new GameAction(gameState, this, capture);
             return action;
+        }
+
+        /// <summary>
+        /// Should be called after the move is made.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            char pieceNotation = MovedPieceType.ToNotation();
+            string str = pieceNotation == 'P' ? "" : pieceNotation.ToString();
+            if (capturedPieceType != null)
+            {
+                if (pieceNotation == 'P')
+                {
+                    str += From.PosToString()[0];
+                }
+                str += "x";
+            }
+            str += To.PosToString();
+            /*if (gameState.IsCheck())
+            {
+                str += "+";
+            }*/
+            return str;
         }
     }
 }

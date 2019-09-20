@@ -36,7 +36,6 @@ namespace ChessMoveGeneration
 
         public int Turn { get; private set; }
         List<IrrevState> IrrevStates = new List<IrrevState>();
-        List<Move> MovesHistory = new List<Move>();
 
         MagicBitboardsData magic = new MagicBitboardsData();
         MoveGeneratorBuilder moveGeneratorBuilder;
@@ -66,6 +65,7 @@ namespace ChessMoveGeneration
 
         private void LoadFEN(string fen)
         {
+            IrrevState irrevState = new IrrevState();
             ulong currPos = 1;
             string[] parts = fen.Split(' ');
             string[] ranks = parts[0].Split('/');
@@ -85,10 +85,12 @@ namespace ChessMoveGeneration
                         int pl = char.IsLower(c) ? 1 : 0;
                         int pieceType = (int)c.ToPieceType();
                         Pieces[pl, pieceType] |= currPos;
+                        Occupancy[pl] |= currPos;
                         currPos = currPos << 1;
                     }
                 }
             }
+            IrrevStates.Add(irrevState);
         }
 
         public PieceType GetPieceBySquare(int pl, ulong sq)
@@ -167,14 +169,12 @@ namespace ChessMoveGeneration
             IrrevState irrevState = GetIrrevState().Copy();
             IrrevStates.Add(irrevState);
             move.Make();
-            MovesHistory.Add(move);
             ChangeTurn();
         }
 
         public void UnmakeMove(Move move)
         {
             move.Unmake();
-            MovesHistory.RemoveAt(MovesHistory.Count - 1);
             IrrevStates.RemoveAt(IrrevStates.Count - 1);
             ChangeTurn();
         }

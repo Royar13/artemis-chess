@@ -26,6 +26,18 @@ namespace ChessMoveGeneration.Moves.Generator
                 case PieceType.Rook:
                     generator = new RookMoveGenerator(gameState, magic);
                     break;
+                case PieceType.Knight:
+                    generator = new KnightMoveGenerator(gameState, magic);
+                    break;
+                case PieceType.Pawn:
+                    generator = new PawnMoveGenerator(gameState, magic);
+                    break;
+                case PieceType.Queen:
+                    generator = new QueenMoveGenerator(gameState, magic);
+                    break;
+                case PieceType.King:
+                    generator = new KingMoveGenerator(gameState, magic);
+                    break;
             }
             return generator;
         }
