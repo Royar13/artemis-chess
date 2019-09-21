@@ -168,6 +168,11 @@ namespace Artemis.GUI
         {
             legalActions = null;
             HideSuggestedActions();
+            if (promotionPanel != null)
+            {
+                boardCanvas.Children.Remove(promotionPanel);
+                promotionPanel = null;
+            }
         }
 
         private void HideSuggestedActions()

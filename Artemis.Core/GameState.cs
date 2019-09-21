@@ -135,6 +135,28 @@ namespace Artemis.Core
             return legalMoves;
         }
 
+        /// <summary>
+        /// Does the current player have a legal move.
+        /// </summary>
+        /// <returns></returns>
+        public bool HasLegalMove()
+        {
+            foreach (IMoveGenerator generator in moveGenerators)
+            {
+                foreach (Move move in generator.GenerateMoves())
+                {
+                    MakeMove(move);
+                    if (move.IsLegal())
+                    {
+                        UnmakeMove(move);
+                        return true;
+                    }
+                    UnmakeMove(move);
+                }
+            }
+            return false;
+        }
+
         public bool IsCheck()
         {
             ulong king = Pieces[Turn, (int)PieceType.King];
@@ -177,6 +199,27 @@ namespace Artemis.Core
             move.Unmake();
             IrrevStates.RemoveAt(IrrevStates.Count - 1);
             ChangeTurn();
+        }
+
+        /// <summary>
+        /// Gets the result of the game.
+        /// For use by the GUI.
+        /// </summary>
+        /// <returns></returns>
+        public GameResult GetResult()
+        {
+            if (HasLegalMove())
+            {
+                return GameResult.Ongoing;
+            }
+            else if (IsCheck())
+            {
+                return GameResult.Checkmate;
+            }
+            else
+            {
+                return GameResult.Stalemate;
+            }
         }
 
         /// <summary>

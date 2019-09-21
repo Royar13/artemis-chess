@@ -79,7 +79,24 @@ namespace Artemis.GUI
 
         public void EndTurn()
         {
-            StartTurn();
+            GameResult result = gameState.GetResult();
+            if (result == GameResult.Ongoing)
+            {
+                StartTurn();
+            }
+            else
+            {
+                if (result == GameResult.Checkmate)
+                {
+                    string color = (1 - gameState.Turn) == 0 ? "White" : "Black";
+                    MessageBox.Show($"{color} won by checkmate!");
+                }
+                else
+                {
+                    MessageBox.Show($"Draw by stalemate");
+                }
+                GameEnded = true;
+            }
         }
 
         public static BitmapImage GetImage(string relativePath)
