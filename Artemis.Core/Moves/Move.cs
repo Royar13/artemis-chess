@@ -29,11 +29,8 @@ namespace Artemis.Core.Moves
             gameState.Occupancy[gameState.Turn] ^= move;
 
             UpdateCastlingRights();
-
-            if ((gameState.Occupancy[1 - gameState.Turn] & To) > 0)
-            {
-                CapturePiece(To, gameState.GetIrrevState());
-            }
+            UpdateEnPassant();
+            CalculateCapture();
         }
 
         public virtual void Unmake()
@@ -41,11 +38,7 @@ namespace Artemis.Core.Moves
             ulong move = From | To;
             gameState.Pieces[1 - gameState.Turn, (int)MovedPieceType] ^= move;
             gameState.Occupancy[1 - gameState.Turn] ^= move;
-            if (capturedPieceType != null)
-            {
-                gameState.Pieces[gameState.Turn, (int)capturedPieceType] |= To;
-                gameState.Occupancy[gameState.Turn] |= To;
-            }
+            CalculateUncapture();
         }
 
         protected virtual void UpdateCastlingRights()
@@ -70,6 +63,22 @@ namespace Artemis.Core.Moves
             }
         }
 
+        protected void UpdateEnPassant()
+        {
+            if (MovedPieceType == PieceType.Pawn)
+            {
+                IrrevState irrevState = gameState.GetIrrevState();
+                if (gameState.Turn == 0 && (To >> 16) == From)
+                {
+                    irrevState.EnPassantCapture = To >> 8;
+                }
+                else if (gameState.Turn == 1 && (To << 16) == From)
+                {
+                    irrevState.EnPassantCapture = To << 8;
+                }
+            }
+        }
+
         /// <summary>
         /// Checks that the move didn't put the king in check.
         /// Should be called after the move is made.
@@ -81,24 +90,37 @@ namespace Artemis.Core.Moves
             return !gameState.IsAttacked(1 - gameState.Turn, king);
         }
 
-        private void CapturePiece(ulong sq, IrrevState irrevState)
+        protected virtual void CalculateCapture()
         {
-            int pl = 1 - gameState.Turn;
-            gameState.Occupancy[pl] ^= sq;
-            capturedPieceType = gameState.GetPieceBySquare(pl, sq);
-            gameState.Pieces[pl, (int)capturedPieceType] ^= sq;
-
-            //disable castling if necessary
-            if (capturedPieceType == PieceType.Rook)
+            if ((gameState.Occupancy[1 - gameState.Turn] & To) > 0)
             {
-                for (int i = 0; i <= 1; i++)
+                int pl = 1 - gameState.Turn;
+                gameState.Occupancy[pl] ^= To;
+                capturedPieceType = gameState.GetPieceBySquare(pl, To);
+                gameState.Pieces[pl, (int)capturedPieceType] ^= To;
+
+                //disable castling if necessary
+                if (capturedPieceType == PieceType.Rook)
                 {
-                    if ((sq & startingRookSquare[i] & BitboardUtils.FIRST_RANK[pl]) > 0)
+                    IrrevState irrevState = gameState.GetIrrevState();
+                    for (int i = 0; i <= 1; i++)
                     {
-                        irrevState.CastlingAllowed[pl, i] = false;
-                        break;
+                        if ((To & startingRookSquare[i] & BitboardUtils.FIRST_RANK[pl]) > 0)
+                        {
+                            irrevState.CastlingAllowed[pl, i] = false;
+                            break;
+                        }
                     }
                 }
+            }
+        }
+
+        protected virtual void CalculateUncapture()
+        {
+            if (capturedPieceType != null)
+            {
+                gameState.Pieces[gameState.Turn, (int)capturedPieceType] |= To;
+                gameState.Occupancy[gameState.Turn] |= To;
             }
         }
 

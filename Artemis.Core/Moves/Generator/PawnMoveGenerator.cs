@@ -31,6 +31,7 @@ namespace Artemis.Core.Moves.Generator
         {
             ulong reversedFullOccupancy = ~gameState.FullOccupancy;
             ulong to;
+            ulong attacks;
             if (gameState.Turn == 0)
             {
                 to = sq << 8 & reversedFullOccupancy;
@@ -43,11 +44,13 @@ namespace Artemis.Core.Moves.Generator
                         yield return new Move(gameState, sq, to, pieceType);
                     }
                 }
-                to = sq << 7 & BitboardUtils.NOT_H_FILE & gameState.Occupancy[1 - gameState.Turn];
-                if (to != 0)
+                to = sq << 7 & BitboardUtils.NOT_H_FILE;
+                attacks = to;
+                if ((to & gameState.Occupancy[1 - gameState.Turn]) != 0)
                     yield return new Move(gameState, sq, to, pieceType);
-                to = sq << 9 & BitboardUtils.NOT_A_FILE & gameState.Occupancy[1 - gameState.Turn];
-                if (to != 0)
+                to = sq << 9 & BitboardUtils.NOT_A_FILE;
+                attacks |= to;
+                if ((to & gameState.Occupancy[1 - gameState.Turn]) != 0)
                     yield return new Move(gameState, sq, to, pieceType);
             }
             else
@@ -62,12 +65,20 @@ namespace Artemis.Core.Moves.Generator
                         yield return new Move(gameState, sq, to, pieceType);
                     }
                 }
-                to = sq >> 9 & BitboardUtils.NOT_H_FILE & gameState.Occupancy[1 - gameState.Turn];
-                if (to != 0)
+                to = sq >> 9 & BitboardUtils.NOT_H_FILE;
+                attacks = to;
+                if ((to & gameState.Occupancy[1 - gameState.Turn]) != 0)
                     yield return new Move(gameState, sq, to, pieceType);
-                to = sq >> 7 & BitboardUtils.NOT_A_FILE & gameState.Occupancy[1 - gameState.Turn];
-                if (to != 0)
+                to = sq >> 7 & BitboardUtils.NOT_A_FILE;
+                attacks |= to;
+                if ((to & gameState.Occupancy[1 - gameState.Turn]) != 0)
                     yield return new Move(gameState, sq, to, pieceType);
+            }
+            //En Passant
+            IrrevState irrevState = gameState.GetIrrevState();
+            if ((irrevState.EnPassantCapture & attacks) > 0)
+            {
+                yield return new EnPassantMove(gameState, sq, irrevState.EnPassantCapture);
             }
         }
     }
