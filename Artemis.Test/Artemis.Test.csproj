@@ -57,7 +57,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ChessMoveGeneration\Artemis.Core.csproj">
+    <ProjectReference Include="..\Artemis.Core\Artemis.Core.csproj">
       <Project>{e013d201-61f9-4c09-bd81-ef4aea81c5a0}</Project>
       <Name>Artemis.Core</Name>
     </ProjectReference>
