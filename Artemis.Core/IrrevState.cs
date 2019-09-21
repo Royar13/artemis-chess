@@ -13,7 +13,7 @@ namespace Artemis.Core
         /// Do the players still have castling rights. 
         /// The first index is 0=White, 1=Black, the second is 0=Queenside,1=Kingside.
         /// </summary>
-        public bool[,] CastlingAllowed = new bool[2, 2];
+        public bool[,] CastlingAllowed = new bool[2, 2] { { true, true }, { true, true } };
         /// <summary>
         /// The position behind a pawn that moved 2 squares last move
         /// </summary>

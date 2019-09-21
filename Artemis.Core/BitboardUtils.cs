@@ -22,6 +22,7 @@ namespace Artemis.Core
         public const ulong NOT_H_FILE = 0x7F7F7F7F7F7F7F7F;
         public const ulong NOT_AB_FILES = 0xFCFCFCFCFCFCFCFC;
         public const ulong NOT_GH_FILES = 0x3F3F3F3F3F3F3F3F;
+        public static readonly ulong[] FIRST_RANK = { 0xFF, 0xFF00000000000000 };
         public static readonly ulong[] SECOND_RANK = { 0xFF00, 0x00FF000000000000 };
 
         /// <summary>

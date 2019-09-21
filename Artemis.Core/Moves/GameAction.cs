@@ -17,12 +17,12 @@ namespace Artemis.Core.Moves
         public PieceType? ChangeType { get; }
         public GameAction ExtraAction { get; }
 
-        public GameAction(GameState gameState, Move move, int? capture = null, PieceType? changeType = null, GameAction extraAction = null)
+        public GameAction(GameState gameState, Move move, int from, int to, int? capture = null, PieceType? changeType = null, GameAction extraAction = null)
         {
             this.gameState = gameState;
             this.move = move;
-            From = BitboardUtils.BitScanForward(move.From);
-            To = BitboardUtils.BitScanForward(move.To);
+            From = from;
+            To = to;
             Capture = capture;
             ChangeType = changeType;
             ExtraAction = extraAction;
