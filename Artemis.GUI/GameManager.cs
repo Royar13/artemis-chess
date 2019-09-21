@@ -136,6 +136,10 @@ namespace Artemis.GUI
 
             UIPiece piece = GetPieceByPos(action.From);
             piece.UpdatePosition(action.To);
+            if (action.ChangeType != null)
+            {
+                piece.ChangeType(action.ChangeType.Value);
+            }
 
             if (action.ExtraAction != null)
             {

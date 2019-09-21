@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Artemis.Core.Moves.Generator
 {
     public class PawnMoveGenerator : MoveGenerator
     {
+        readonly PieceType[] promotionTypes = { PieceType.Queen, PieceType.Rook, PieceType.Knight, PieceType.Bishop };
         public PawnMoveGenerator(GameState gameState, MagicBitboardsData magic) : base(gameState, magic, PieceType.Pawn)
         {
         }
@@ -28,6 +30,18 @@ namespace Artemis.Core.Moves.Generator
         }
 
         protected override IEnumerable<Move> GetMovesFromSquare(ulong sq)
+        {
+            if ((sq & BitboardUtils.SECOND_RANK[1 - gameState.Turn]) == 0)
+            {
+                return GetRegularMovesFromSquare(sq);
+            }
+            else
+            {
+                return GetPromotionMovesFromSquare(sq);
+            }
+        }
+
+        private IEnumerable<Move> GetRegularMovesFromSquare(ulong sq)
         {
             ulong reversedFullOccupancy = ~gameState.FullOccupancy;
             ulong to;
@@ -80,6 +94,14 @@ namespace Artemis.Core.Moves.Generator
             {
                 yield return new EnPassantMove(gameState, sq, irrevState.EnPassantCapture);
             }
+        }
+
+        private IEnumerable<Move> GetPromotionMovesFromSquare(ulong sq)
+        {
+            return GetRegularMovesFromSquare(sq).SelectMany(m =>
+            {
+                return promotionTypes.Select(p => new PromotionMove(gameState, m.From, m.To, p));
+            });
         }
     }
 }

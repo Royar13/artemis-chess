@@ -16,13 +16,16 @@ namespace Artemis.GUI
 {
     class UIPiece
     {
+        public PieceType PieceType { get; private set; }
+        public int Pl { get; private set; }
+        public int Position { get; private set; }
+
         GameState gameState;
         GameManager gm;
         Canvas boardCanvas;
         Rectangle pieceRect;
-        public PieceType PieceType { get; private set; }
-        public int Pl { get; private set; }
-        public int Position { get; private set; }
+        Dictionary<Rectangle, GameAction> suggestedPromotionActions;
+        Border promotionPanel;
         Dictionary<Rectangle, GameAction> suggestedActions;
         List<GameAction> legalActions;
 
@@ -96,6 +99,68 @@ namespace Artemis.GUI
         private void SuggestedAction_MouseUp(object sender, MouseButtonEventArgs e)
         {
             GameAction action = suggestedActions[(Rectangle)sender];
+            if (action.ChangeType == null)
+            {
+                gm.PerformAction(action);
+            }
+            else
+            {
+                ShowPromotionMenu(action);
+            }
+        }
+
+        private void ShowPromotionMenu(GameAction pAction)
+        {
+            List<GameAction> promotionActions = legalActions.Where(m => m.To.Equals(pAction.To)).ToList();
+            double btnSize = gm.SquareSize / 2;
+            double panelSize = btnSize * 4;
+            Point loc = gm.GetLocationOfPos(pAction.To);
+            loc.X += gm.SquareSize / 2 - panelSize / 2;
+            loc.X = Math.Max(loc.X, 0);
+            loc.X = Math.Min(loc.X, boardCanvas.Width - panelSize);
+            promotionPanel = new Border();
+            promotionPanel.BorderThickness = new Thickness(1);
+            promotionPanel.BorderBrush = new SolidColorBrush(Colors.Black);
+            Canvas.SetLeft(promotionPanel, loc.X);
+            Canvas.SetTop(promotionPanel, loc.Y);
+            Canvas.SetZIndex(promotionPanel, 7);
+
+            WrapPanel promotionPanelWrap = new WrapPanel();
+            promotionPanelWrap.Width = panelSize;
+            SolidColorBrush brush = new SolidColorBrush(Color.FromRgb(255, 255, 255));
+            brush.Opacity = 0.7;
+            promotionPanelWrap.Background = brush;
+            promotionPanel.Child = promotionPanelWrap;
+            suggestedPromotionActions = new Dictionary<Rectangle, GameAction>();
+            foreach (GameAction action in promotionActions)
+            {
+                Rectangle rect = new Rectangle();
+                rect.Width = btnSize;
+                rect.Height = btnSize;
+                rect.Fill = new ImageBrush
+                {
+                    ImageSource = GetImageOfPiece(action.ChangeType.Value)
+                };
+                rect.Cursor = Cursors.Hand;
+                rect.MouseUp += PromotionAction_MouseUp;
+                rect.Margin = new Thickness(0, 3, 0, 3);
+                promotionPanelWrap.Children.Add(rect);
+                suggestedPromotionActions[rect] = action;
+            }
+            boardCanvas.Children.Add(promotionPanel);
+            HideSuggestedActions();
+        }
+
+        private void PromotionAction_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            GameAction action = suggestedPromotionActions[(Rectangle)sender];
+            PerformPromotionAction(action);
+        }
+
+        private void PerformPromotionAction(GameAction action)
+        {
+            boardCanvas.Children.Remove(promotionPanel);
+            promotionPanel = null;
             gm.PerformAction(action);
         }
 
@@ -146,6 +211,15 @@ namespace Artemis.GUI
         public void Remove()
         {
             boardCanvas.Children.Remove(pieceRect);
+        }
+
+        public void ChangeType(PieceType type)
+        {
+            PieceType = type;
+            pieceRect.Fill = new ImageBrush
+            {
+                ImageSource = GetImage()
+            };
         }
     }
 }
