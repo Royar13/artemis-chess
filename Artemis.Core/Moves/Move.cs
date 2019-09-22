@@ -7,6 +7,7 @@ namespace Artemis.Core.Moves
     public class Move
     {
         protected GameState gameState;
+        protected IrrevState irrevState;
         public readonly ulong From;
         public readonly ulong To;
         public readonly PieceType MovedPieceType;
@@ -24,10 +25,8 @@ namespace Artemis.Core.Moves
 
         public virtual void Make()
         {
-            ulong move = From | To;
-            gameState.Pieces[gameState.Turn, (int)MovedPieceType] ^= move;
-            gameState.Occupancy[gameState.Turn] ^= move;
-
+            SetIrrevState();
+            MakePieceMovement();
             UpdateCastlingRights();
             UpdateEnPassant();
             CalculateCapture();
@@ -41,22 +40,33 @@ namespace Artemis.Core.Moves
             CalculateUncapture();
         }
 
+        protected void SetIrrevState()
+        {
+            irrevState = gameState.GetIrrevState();
+        }
+
+        protected virtual void MakePieceMovement()
+        {
+            ulong move = From | To;
+            gameState.Pieces[gameState.Turn, (int)MovedPieceType] ^= move;
+            gameState.Occupancy[gameState.Turn] ^= move;
+            gameState.ZobristHashUtils.UpdatePiecePos(ref irrevState.ZobristHash, gameState.Turn, MovedPieceType, From, To);
+        }
+
         protected virtual void UpdateCastlingRights()
         {
             if (MovedPieceType == PieceType.King)
             {
-                IrrevState irrevState = gameState.GetIrrevState();
-                irrevState.CastlingAllowed[gameState.Turn, 0] = false;
-                irrevState.CastlingAllowed[gameState.Turn, 1] = false;
+                DisableCastling(gameState.Turn, 0);
+                DisableCastling(gameState.Turn, 1);
             }
             else if (MovedPieceType == PieceType.Rook)
             {
-                IrrevState irrevState = gameState.GetIrrevState();
                 for (int i = 0; i <= 1; i++)
                 {
                     if ((From & startingRookSquare[i] & BitboardUtils.FIRST_RANK[gameState.Turn]) > 0)
                     {
-                        irrevState.CastlingAllowed[gameState.Turn, i] = false;
+                        DisableCastling(gameState.Turn, i);
                         break;
                     }
                 }
@@ -67,14 +77,15 @@ namespace Artemis.Core.Moves
         {
             if (MovedPieceType == PieceType.Pawn)
             {
-                IrrevState irrevState = gameState.GetIrrevState();
                 if (gameState.Turn == 0 && (To >> 16) == From)
                 {
                     irrevState.EnPassantCapture = To >> 8;
+                    gameState.ZobristHashUtils.UpdateEnPassant(ref irrevState.ZobristHash, irrevState.EnPassantCapture);
                 }
                 else if (gameState.Turn == 1 && (To << 16) == From)
                 {
                     irrevState.EnPassantCapture = To << 8;
+                    gameState.ZobristHashUtils.UpdateEnPassant(ref irrevState.ZobristHash, irrevState.EnPassantCapture);
                 }
             }
         }
@@ -98,16 +109,16 @@ namespace Artemis.Core.Moves
                 gameState.Occupancy[pl] ^= To;
                 capturedPieceType = gameState.GetPieceBySquare(pl, To);
                 gameState.Pieces[pl, (int)capturedPieceType] ^= To;
+                gameState.ZobristHashUtils.UpdatePiece(ref irrevState.ZobristHash, pl, capturedPieceType.Value, To);
 
                 //disable castling if necessary
                 if (capturedPieceType == PieceType.Rook)
                 {
-                    IrrevState irrevState = gameState.GetIrrevState();
                     for (int i = 0; i <= 1; i++)
                     {
                         if ((To & startingRookSquare[i] & BitboardUtils.FIRST_RANK[pl]) > 0)
                         {
-                            irrevState.CastlingAllowed[pl, i] = false;
+                            DisableCastling(pl, i);
                             break;
                         }
                     }
@@ -122,6 +133,12 @@ namespace Artemis.Core.Moves
                 gameState.Pieces[gameState.Turn, (int)capturedPieceType] |= To;
                 gameState.Occupancy[gameState.Turn] |= To;
             }
+        }
+
+        protected void DisableCastling(int pl, int side)
+        {
+            irrevState.CastlingAllowed[pl, side] = false;
+            gameState.ZobristHashUtils.DisableCastling(ref irrevState.ZobristHash, pl, side);
         }
 
         /// <summary>

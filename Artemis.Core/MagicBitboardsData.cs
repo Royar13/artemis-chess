@@ -284,7 +284,7 @@ namespace Artemis.Core
 
         public ulong RandomUInt64FewBits()
         {
-            return BitboardUtils.RandomUInt64() & BitboardUtils.RandomUInt64() & BitboardUtils.RandomUInt64();
+            return BitboardUtils.RandomBitstring() & BitboardUtils.RandomBitstring() & BitboardUtils.RandomBitstring();
         }
     }
 }

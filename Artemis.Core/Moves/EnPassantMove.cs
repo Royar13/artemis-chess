@@ -17,6 +17,7 @@ namespace Artemis.Core.Moves
             gameState.Occupancy[1 - gameState.Turn] ^= enPassantCapture;
             capturedPieceType = PieceType.Pawn;
             gameState.Pieces[1 - gameState.Turn, (int)capturedPieceType] ^= enPassantCapture;
+            gameState.ZobristHashUtils.UpdatePiece(ref irrevState.ZobristHash, 1 - gameState.Turn, capturedPieceType.Value, enPassantCapture);
         }
 
         protected override void CalculateUncapture()

@@ -9,6 +9,7 @@ namespace Artemis.Core
     /// </summary>
     public class IrrevState
     {
+        private GameState gameState;
         /// <summary>
         /// Do the players still have castling rights. 
         /// The first index is 0=White, 1=Black, the second is 0=Queenside,1=Kingside.
@@ -19,19 +20,28 @@ namespace Artemis.Core
         /// </summary>
         public ulong EnPassantCapture;
         public bool IsCheck = false;
+        public ulong ZobristHash;
 
-        public IrrevState()
+        public IrrevState(GameState gameState)
         {
+            this.gameState = gameState;
         }
 
-        public IrrevState(bool[,] castlingAllowed)
+        public IrrevState(GameState gameState, bool[,] castlingAllowed, ulong zobristHash)
         {
+            this.gameState = gameState;
             CastlingAllowed = castlingAllowed;
+            ZobristHash = zobristHash;
         }
 
+        /// <summary>
+        /// Copy the state before a new move is applied
+        /// </summary>
+        /// <returns></returns>
         public IrrevState Copy()
         {
-            return new IrrevState((bool[,])CastlingAllowed.Clone());
+            gameState.ZobristHashUtils.ResetHashBeforeMove(ref ZobristHash, this);
+            return new IrrevState(gameState, (bool[,])CastlingAllowed.Clone(), ZobristHash);
         }
     }
 }

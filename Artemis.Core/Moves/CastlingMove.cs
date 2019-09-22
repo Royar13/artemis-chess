@@ -11,13 +11,18 @@ namespace Artemis.Core.Moves
         /// </summary>
         readonly int dir;
         /// <summary>
-        /// Bitboard array containing the rook movement (for both colors):
-        /// 0=Queenside castling, 1=Kingside castling.
+        /// Bitboard array containing the rook's initial square.
+        /// 0=Queenside, 1=Kingside.
         /// </summary>
-        readonly ulong[] rookMoves = { 0x0900000000000009, 0xA0000000000000A0 };
+        readonly ulong[] rookFrom = { 0x1, 0x80 };
+        /// <summary>
+        /// Bitboard array containing the rook's target square.
+        /// 0=Queenside, 1=Kingside.
+        /// </summary>
+        readonly ulong[] rookTo = { 0x8, 0x20 };
         ulong rookMove;
         readonly string[] notation = { "O-O-O", "O-O" };
-        readonly ulong[] castlingPath = { 0x1C0000000000001C, 0x7000000000000070 };
+        readonly ulong[] castlingPath = { 0x1C, 0x70 };
 
         public CastlingMove(GameState gameState, ulong from, ulong to) : base(gameState, from, to, PieceType.King)
         {
@@ -31,11 +36,21 @@ namespace Artemis.Core.Moves
 
         public override void Make()
         {
-            base.Make();
+            SetIrrevState();
+            MakePieceMovement();
+            UpdateCastlingRights();
+        }
 
-            rookMove = rookMoves[dir] & BitboardUtils.FIRST_RANK[gameState.Turn];
+        protected override void MakePieceMovement()
+        {
+            base.MakePieceMovement();
+
+            ulong actualRookFrom = AdjustForPl(rookFrom[dir], gameState.Turn);
+            ulong actualRookTo = AdjustForPl(rookTo[dir], gameState.Turn);
+            rookMove = actualRookFrom | actualRookTo;
             gameState.Pieces[gameState.Turn, (int)PieceType.Rook] ^= rookMove;
             gameState.Occupancy[gameState.Turn] ^= rookMove;
+            gameState.ZobristHashUtils.UpdatePiecePos(ref irrevState.ZobristHash, gameState.Turn, PieceType.Rook, actualRookFrom, actualRookTo);
         }
 
         public override void Unmake()
@@ -48,17 +63,15 @@ namespace Artemis.Core.Moves
 
         protected override void UpdateCastlingRights()
         {
-            IrrevState irrevState = gameState.GetIrrevState();
-            irrevState.CastlingAllowed[gameState.Turn, 0] = false;
-            irrevState.CastlingAllowed[gameState.Turn, 1] = false;
+            DisableCastling(gameState.Turn, 0);
+            DisableCastling(gameState.Turn, 1);
         }
 
         public override GameAction GetAction()
         {
-            ulong rook = rookMoves[dir] & BitboardUtils.FIRST_RANK[gameState.Turn];
-            int rookFrom = BitboardUtils.BitScanForward(rook & gameState.Occupancy[gameState.Turn]);
-            int rookTo = BitboardUtils.BitScanForward(rook & ~gameState.Occupancy[gameState.Turn]);
-            GameAction rookAction = new GameAction(gameState, this, rookFrom, rookTo);
+            int rookFromInd = BitboardUtils.BitScanForward(AdjustForPl(rookFrom[dir], gameState.Turn));
+            int rookToInd = BitboardUtils.BitScanForward(AdjustForPl(rookTo[dir], gameState.Turn));
+            GameAction rookAction = new GameAction(gameState, this, rookFromInd, rookToInd);
             GameAction action = new GameAction(gameState, this, BitboardUtils.BitScanForward(From), BitboardUtils.BitScanForward(To),
                 null, null, rookAction);
             return action;
@@ -67,6 +80,15 @@ namespace Artemis.Core.Moves
         public override string ToString()
         {
             return notation[dir];
+        }
+
+        private ulong AdjustForPl(ulong bb, int pl)
+        {
+            if (pl == 1)
+            {
+                bb <<= 56;
+            }
+            return bb;
         }
     }
 }

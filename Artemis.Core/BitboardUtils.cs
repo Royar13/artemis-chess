@@ -6,7 +6,11 @@ namespace Artemis.Core
 {
     public static class BitboardUtils
     {
+#if DEBUG
+        private static Random rnd = new Random(42);
+#else
         private static Random rnd = new Random();
+#endif
         private readonly static int[] index64 = {
             0,  1, 48,  2, 57, 49, 28,  3,
            61, 58, 50, 42, 38, 29, 17,  4,
@@ -37,26 +41,9 @@ namespace Artemis.Core
             return bitboard;
         }
 
-        /// <summary>
-        /// Get the square index (0-63) relative to a1
-        /// </summary>
-        /// <param name="bitboard"></param>
-        /// <returns></returns>
-        public static int GetSquareIndex(ulong bitboard)
-        {
-            int index = 0;
-            ulong pos = 1;
-            while ((bitboard & pos) == 0)
-            {
-                pos = pos << 1;
-                index++;
-            }
-            return index;
-        }
-
         public static string PositionToString(ulong bitboard)
         {
-            int index = GetSquareIndex(bitboard);
+            int index = BitScanForward(bitboard);
             int rank = index / 8;
             int file = index - rank * 8;
             char c = (char)(97 + file);
@@ -73,7 +60,7 @@ namespace Artemis.Core
             return bb & (~bb + 1);
         }
 
-        public static ulong RandomUInt64()
+        public static ulong RandomBitstring()
         {
             var buffer = new byte[sizeof(ulong)];
             rnd.NextBytes(buffer);
@@ -122,6 +109,17 @@ namespace Artemis.Core
         public static int GetRank(int sqInd)
         {
             return sqInd / 8;
+        }
+
+        public static int Popcount(ulong bb)
+        {
+            int count = 0;
+            while (bb > 0)
+            {
+                PopLSB(ref bb);
+                count++;
+            }
+            return count;
         }
     }
 }

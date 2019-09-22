@@ -15,10 +15,8 @@ namespace Artemis.Core.Moves
 
         public override void Make()
         {
-            gameState.Pieces[gameState.Turn, (int)MovedPieceType] ^= From;
-            gameState.Pieces[gameState.Turn, (int)promotionType] ^= To;
-            gameState.Occupancy[gameState.Turn] ^= From | To;
-
+            SetIrrevState();
+            MakePieceMovement();
             CalculateCapture();
         }
 
@@ -29,6 +27,15 @@ namespace Artemis.Core.Moves
             gameState.Occupancy[1 - gameState.Turn] ^= From | To;
 
             CalculateUncapture();
+        }
+
+        protected override void MakePieceMovement()
+        {
+            gameState.Pieces[gameState.Turn, (int)MovedPieceType] ^= From;
+            gameState.Pieces[gameState.Turn, (int)promotionType] ^= To;
+            gameState.Occupancy[gameState.Turn] ^= From | To;
+            gameState.ZobristHashUtils.UpdatePiece(ref irrevState.ZobristHash, gameState.Turn, MovedPieceType, From);
+            gameState.ZobristHashUtils.UpdatePiece(ref irrevState.ZobristHash, gameState.Turn, promotionType, To);
         }
 
         public override GameAction GetAction()

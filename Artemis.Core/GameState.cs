@@ -1,4 +1,5 @@
-﻿using Artemis.Core.Moves;
+﻿using Artemis.Core.AI.TranspositionTable;
+using Artemis.Core.Moves;
 using Artemis.Core.Moves.Generator;
 using System;
 using System.Collections.Generic;
@@ -38,6 +39,7 @@ namespace Artemis.Core
         List<IrrevState> IrrevStates = new List<IrrevState>();
 
         MagicBitboardsData magic = new MagicBitboardsData();
+        public ZobristHashUtils ZobristHashUtils { get; }
         MoveGeneratorBuilder moveGeneratorBuilder;
         /// <summary>
         /// Move generators for different piece types, indexed by the piece type
@@ -51,6 +53,7 @@ namespace Artemis.Core
         public GameState(string fen)
         {
             magic.Initialize();
+            ZobristHashUtils = new ZobristHashUtils(this);
             moveGeneratorBuilder = new MoveGeneratorBuilder(this, magic);
             for (int i = 0; i < 6; i++)
             {
@@ -70,7 +73,7 @@ namespace Artemis.Core
         {
             Reset();
 
-            IrrevState irrevState = new IrrevState();
+            IrrevState irrevState = new IrrevState(this);
             IrrevStates.Add(irrevState);
             ulong currPos = 1;
             string[] parts = fen.Split(' ');
@@ -118,6 +121,7 @@ namespace Artemis.Core
             {
                 irrevState.EnPassantCapture = BitboardUtils.GetBitboard(parts[3].StringToPos());
             }
+            irrevState.ZobristHash = ZobristHashUtils.GenerateHash();
         }
 
         public PieceType GetPieceBySquare(int pl, ulong sq)
@@ -227,6 +231,7 @@ namespace Artemis.Core
             IrrevStates.Add(irrevState);
             move.Make();
             ChangeTurn();
+            ZobristHashUtils.UpdateTurn(ref GetIrrevState().ZobristHash);
         }
 
         public void UnmakeMove(Move move)
