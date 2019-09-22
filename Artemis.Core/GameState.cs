@@ -50,6 +50,7 @@ namespace Artemis.Core
 
         public GameState(string fen)
         {
+            magic.Initialize();
             moveGeneratorBuilder = new MoveGeneratorBuilder(this, magic);
             for (int i = 0; i < 6; i++)
             {
@@ -58,14 +59,19 @@ namespace Artemis.Core
             LoadFEN(fen);
         }
 
-        public void Initialize()
+        private void Reset()
         {
-            magic.Initialize();
+            Pieces = new ulong[2, 6];
+            Occupancy = new ulong[2];
+            IrrevStates = new List<IrrevState>();
         }
 
-        private void LoadFEN(string fen)
+        public void LoadFEN(string fen)
         {
+            Reset();
+
             IrrevState irrevState = new IrrevState();
+            IrrevStates.Add(irrevState);
             ulong currPos = 1;
             string[] parts = fen.Split(' ');
             string[] ranks = parts[0].Split('/');
@@ -90,7 +96,28 @@ namespace Artemis.Core
                     }
                 }
             }
-            IrrevStates.Add(irrevState);
+            Turn = parts[1] == "w" ? 0 : 1;
+            if (parts[2].IndexOf('Q') < 0)
+            {
+                irrevState.CastlingAllowed[0, 0] = false;
+            }
+            if (parts[2].IndexOf('K') < 0)
+            {
+                irrevState.CastlingAllowed[0, 1] = false;
+            }
+            if (parts[2].IndexOf('q') < 0)
+            {
+                irrevState.CastlingAllowed[1, 0] = false;
+            }
+            if (parts[2].IndexOf('k') < 0)
+            {
+                irrevState.CastlingAllowed[1, 1] = false;
+            }
+
+            if (parts[3] != "-")
+            {
+                irrevState.EnPassantCapture = BitboardUtils.GetBitboard(parts[3].StringToPos());
+            }
         }
 
         public PieceType GetPieceBySquare(int pl, ulong sq)

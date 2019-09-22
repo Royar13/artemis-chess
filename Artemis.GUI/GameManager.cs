@@ -59,7 +59,6 @@ namespace Artemis.GUI
         public void NewGame()
         {
             gameState = new GameState();
-            gameState.Initialize();
             boardCanvas.Children.Clear();
             MovesList = "";
             var pieces = gameState.GetPiecesList();

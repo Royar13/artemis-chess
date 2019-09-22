@@ -55,7 +55,8 @@ namespace Artemis.Core.Moves.Generator
                     if ((sq & BitboardUtils.SECOND_RANK[gameState.Turn]) > 0)
                     {
                         to = to << 8 & reversedFullOccupancy;
-                        yield return new Move(gameState, sq, to, pieceType);
+                        if (to != 0)
+                            yield return new Move(gameState, sq, to, pieceType);
                     }
                 }
                 to = sq << 7 & BitboardUtils.NOT_H_FILE;
@@ -76,7 +77,8 @@ namespace Artemis.Core.Moves.Generator
                     if ((sq & BitboardUtils.SECOND_RANK[gameState.Turn]) > 0)
                     {
                         to = to >> 8 & reversedFullOccupancy;
-                        yield return new Move(gameState, sq, to, pieceType);
+                        if (to != 0)
+                            yield return new Move(gameState, sq, to, pieceType);
                     }
                 }
                 to = sq >> 9 & BitboardUtils.NOT_H_FILE;

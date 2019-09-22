@@ -19,5 +19,13 @@ namespace Artemis.Core
             int sqInd = BitboardUtils.BitScanForward(bb);
             return sqInd.PosToString();
         }
+
+        public static int StringToPos(this string square)
+        {
+            int file = square[0] - 97;
+            int rank = (int)char.GetNumericValue(square[1]) - 1;
+            int sqInd = rank * 8 + file;
+            return sqInd;
+        }
     }
 }
