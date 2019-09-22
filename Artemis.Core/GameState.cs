@@ -187,12 +187,20 @@ namespace Artemis.Core
         public bool IsCheck()
         {
             ulong king = Pieces[Turn, (int)PieceType.King];
-            return IsAttacked(Turn, king);
+            return IsAttacked(Turn, king, false);
         }
 
-        public bool IsAttacked(int pl, ulong bb)
+        /// <summary>
+        /// Is the bitboard mask attacked by the player's pieces.
+        /// </summary>
+        /// <param name="pl">Player</param>
+        /// <param name="bb">Bitboard mask</param>
+        /// <param name="includeKing">Whether to check attacks by the king</param>
+        /// <returns></returns>
+        public bool IsAttacked(int pl, ulong bb, bool includeKing = true)
         {
-            for (int i = 0; i < 6; i++)
+            int max = includeKing ? 6 : 5;
+            for (int i = 0; i < max; i++)
             {
                 ulong attacks = moveGenerators[i].GenerateAttacks(1 - pl);
                 if ((bb & attacks) > 0)
