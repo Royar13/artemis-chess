@@ -44,10 +44,10 @@ namespace Artemis.Core.AI.Search
                         case NodeType.PVNode:
                             return node.Score;
                         case NodeType.AllNode:
-                            alpha = Math.Max(alpha, node.Score);
+                            beta = Math.Min(beta, node.Score);
                             break;
                         case NodeType.CutNode:
-                            beta = Math.Min(beta, node.Score);
+                            alpha = Math.Max(alpha, node.Score);
                             break;
                     }
 

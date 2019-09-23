@@ -30,7 +30,7 @@ namespace Artemis.Core.AI
             //Iterative Deepening Search
             var task = Task.Run(() =>
             {
-                for (int i = 1; i <= 4; i++)
+                for (int i = 1; i <= 5; i++)
                 {
                     pvSearch.Calculate(i);
                 }
