@@ -43,11 +43,11 @@ namespace Artemis.Core.AI.Search
                     {
                         case NodeType.PVNode:
                             return node.Score;
-                        case NodeType.AllNode:
-                            beta = Math.Min(beta, node.Score);
-                            break;
                         case NodeType.CutNode:
                             alpha = Math.Max(alpha, node.Score);
+                            break;
+                        case NodeType.AllNode:
+                            beta = Math.Min(beta, node.Score);
                             break;
                     }
 
@@ -127,8 +127,11 @@ namespace Artemis.Core.AI.Search
             }
 
             NodeType nodeType = GetNodeType(originalAlpha, beta, alpha);
-            TranspositionNode updatedNode = new TranspositionNode(nodeType, alpha, depth, bestMove);
-            transpositionTable.AddOrUpdate(hash, updatedNode);
+            if (nodeType != NodeType.AllNode || node != null)
+            {
+                TranspositionNode updatedNode = new TranspositionNode(nodeType, alpha, depth, bestMove);
+                transpositionTable.AddOrUpdate(hash, updatedNode);
+            }
 
             return alpha;
         }
