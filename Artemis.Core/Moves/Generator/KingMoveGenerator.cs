@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Artemis.Core.Moves.MagicBitboards;
+using System;
 using System.Collections.Generic;
 using System.Text;
 

@@ -1,6 +1,7 @@
-﻿using Artemis.Core.AI.TranspositionTable;
+﻿using Artemis.Core.AI.Transposition;
 using Artemis.Core.Moves;
 using Artemis.Core.Moves.Generator;
+using Artemis.Core.Moves.MagicBitboards;
 using System;
 using System.Collections.Generic;
 using System.Linq;

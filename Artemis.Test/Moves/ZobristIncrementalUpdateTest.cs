@@ -1,6 +1,6 @@
 ﻿using System;
 using Artemis.Core;
-using Artemis.Core.AI.TranspositionTable;
+using Artemis.Core.AI.Transposition;
 using Artemis.Core.Moves;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

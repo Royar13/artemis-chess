@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using Artemis.Core.Moves.MagicBitboards;
 
 namespace Artemis.Core.Moves.Generator
 {

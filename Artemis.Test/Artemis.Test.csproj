@@ -53,9 +53,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AI\Evaluation\MaterialBalanceTest.cs" />
+    <Compile Include="Moves\SlidingPieceUtilsTest.cs" />
     <Compile Include="Moves\ZobristIncrementalUpdateTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="MagicBitboardsDataTest.cs" />
+    <Compile Include="Moves\MagicBitboardsDataTest.cs" />
     <Compile Include="BitboardUtilsTest.cs" />
     <Compile Include="Moves\MoveGenerationTest.cs" />
   </ItemGroup>

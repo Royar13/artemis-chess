@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Artemis.Core.AI.TranspositionTable
+namespace Artemis.Core.AI.Transposition
 {
     public class ZobristHashUtils
     {
