@@ -137,8 +137,11 @@ namespace Artemis.Core.Moves
 
         protected void DisableCastling(int pl, int side)
         {
-            irrevState.CastlingAllowed[pl, side] = false;
-            gameState.ZobristHashUtils.DisableCastling(ref irrevState.ZobristHash, pl, side);
+            if (irrevState.CastlingAllowed[pl, side])
+            {
+                irrevState.CastlingAllowed[pl, side] = false;
+                gameState.ZobristHashUtils.DisableCastling(ref irrevState.ZobristHash, pl, side);
+            }
         }
 
         /// <summary>
