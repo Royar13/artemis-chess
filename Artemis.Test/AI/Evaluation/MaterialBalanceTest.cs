@@ -3,7 +3,7 @@ using Artemis.Core;
 using Artemis.Core.AI.Evaluation;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Test.AI.Evaluation
+namespace Artemis.Test.AI.Evaluation
 {
     [TestClass]
     public class MaterialBalanceTest

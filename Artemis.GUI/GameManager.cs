@@ -1,4 +1,5 @@
 ﻿using Artemis.Core;
+using Artemis.Core.AI;
 using Artemis.Core.Moves;
 using System;
 using System.Collections.Generic;
@@ -21,6 +22,8 @@ namespace Artemis.GUI
         UIPiece selectedPiece;
         public bool GameEnded;
         public List<GameAction> LegalActions;
+        public InputSource[] PlayerType { get; } = { InputSource.Player, InputSource.Engine };
+        ArtemisEngine engine;
         string movesList;
         public string MovesList
         {
@@ -59,6 +62,7 @@ namespace Artemis.GUI
         public void NewGame()
         {
             gameState = new GameState();
+            engine = new ArtemisEngine(gameState);
             boardCanvas.Children.Clear();
             MovesList = "";
             var pieces = gameState.GetPiecesList();
@@ -71,9 +75,18 @@ namespace Artemis.GUI
             StartTurn();
         }
 
-        public void StartTurn()
+        public async Task StartTurn()
         {
-            LegalActions = gameState.GetLegalMoves().Select(m => m.GetAction()).ToList();
+            if (PlayerType[gameState.Turn] == InputSource.Player)
+            {
+                LegalActions = gameState.GetLegalMoves().Select(m => m.GetAction()).ToList();
+            }
+            else
+            {
+                //engine
+                Move move = await engine.Calculate();
+                PerformAction(move.GetAction());
+            }
         }
 
         public void EndTurn()

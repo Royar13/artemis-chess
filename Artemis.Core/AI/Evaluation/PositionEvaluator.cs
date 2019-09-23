@@ -23,7 +23,7 @@ namespace Artemis.Core.AI.Evaluation
             {
                 if (result == GameResult.Checkmate)
                 {
-                    return -CHECKMATE_SCORE + depth;
+                    return -CHECKMATE_SCORE - depth;
                 }
                 else
                 {

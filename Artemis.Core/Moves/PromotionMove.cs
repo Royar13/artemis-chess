@@ -53,5 +53,18 @@ namespace Artemis.Core.Moves
         {
             return base.ToString();
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is PromotionMove)
+            {
+                PromotionMove otherMove = (PromotionMove)obj;
+                return From == otherMove.From && To == otherMove.To && promotionType == otherMove.promotionType;
+            }
+            else
+            {
+                return base.Equals(obj);
+            }
+        }
     }
 }

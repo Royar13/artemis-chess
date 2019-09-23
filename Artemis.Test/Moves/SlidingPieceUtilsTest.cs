@@ -2,7 +2,7 @@
 using Artemis.Core.Moves.MagicBitboards;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Test.Moves
+namespace Artemis.Test.Moves
 {
     [TestClass]
     public class SlidingPieceUtilsTest

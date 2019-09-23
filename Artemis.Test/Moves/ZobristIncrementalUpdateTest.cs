@@ -4,7 +4,7 @@ using Artemis.Core.AI.Transposition;
 using Artemis.Core.Moves;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Test.Moves
+namespace Artemis.Test.Moves
 {
     [TestClass]
     public class ZobristIncrementalUpdateTest

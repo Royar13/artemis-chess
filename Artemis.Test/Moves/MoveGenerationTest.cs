@@ -9,7 +9,7 @@ using DotNetEngine.Engine.Helpers;
 using DotNetEngine.Engine.Enums;
 using System.Linq;
 
-namespace Test.Moves
+namespace Artemis.Test.Moves
 {
     [TestClass]
     public class MoveGenerationTest

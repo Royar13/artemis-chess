@@ -7,6 +7,6 @@ namespace Artemis.Core.AI.Search
 {
     interface IMoveSearch
     {
-        Move CalculateMove();
+        void Calculate(int depth);
     }
 }

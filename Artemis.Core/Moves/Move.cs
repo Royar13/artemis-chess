@@ -183,5 +183,11 @@ namespace Artemis.Core.Moves
             }*/
             return str;
         }
+
+        public override bool Equals(object obj)
+        {
+            Move otherMove = (Move)obj;
+            return From == otherMove.From && To == otherMove.To;
+        }
     }
 }
