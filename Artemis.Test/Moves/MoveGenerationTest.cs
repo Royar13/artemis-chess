@@ -63,7 +63,7 @@ namespace Test.Moves
         public void CompareToEngine()
         {
             GameState gameState = new GameState();
-            string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+            string fen = "r3k2r/1b4bq/8/8/8/8/7B/R3K2R w KQkq - 0 1";
             int depth = 4;
             gameState.LoadFEN(fen);
             b.ZobristHash hash = new b.ZobristHash();

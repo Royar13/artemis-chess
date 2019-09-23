@@ -31,7 +31,7 @@ namespace Artemis.Core.Moves
 
         public override bool IsLegal()
         {
-            return !gameState.IsAttacked(1 - gameState.Turn, castlingPath[dir] & BitboardUtils.FIRST_RANK[1 - gameState.Turn]);
+            return !gameState.IsAttacked(1 - gameState.Turn, AdjustForPl(castlingPath[dir], 1 - gameState.Turn));
         }
 
         public override void Make()
