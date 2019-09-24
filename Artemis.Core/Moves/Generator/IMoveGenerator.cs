@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Artemis.Core.Moves.Generator
 {
-    interface IMoveGenerator
+    public interface IMoveGenerator
     {
         ulong GenerateAttacks(int pl);
         IEnumerable<Move> GenerateMoves();

@@ -21,7 +21,7 @@ namespace Artemis.Core.AI
         public ArtemisEngine(GameState gameState)
         {
             this.gameState = gameState;
-            evaluator = new PositionEvaluator(gameState);
+            evaluator = new PositionEvaluator(gameState, new EvaluationConfig());
             pvSearch = new PVSearch(gameState, transpositionTable, evaluator);
         }
 

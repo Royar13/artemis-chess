@@ -45,7 +45,7 @@ namespace Artemis.Core
         /// <summary>
         /// Move generators for different piece types, indexed by the piece type
         /// </summary>
-        IMoveGenerator[] moveGenerators = new IMoveGenerator[6];
+        public IMoveGenerator[] MoveGenerators = new IMoveGenerator[6];
 
         public GameState() : this(DEFAULT_FEN)
         {
@@ -58,7 +58,7 @@ namespace Artemis.Core
             moveGeneratorBuilder = new MoveGeneratorBuilder(this, magic);
             for (int i = 0; i < 6; i++)
             {
-                moveGenerators[i] = moveGeneratorBuilder.Build((PieceType)i);
+                MoveGenerators[i] = moveGeneratorBuilder.Build((PieceType)i);
             }
             LoadFEN(fen);
         }
@@ -140,7 +140,7 @@ namespace Artemis.Core
         public List<Move> GetMoves()
         {
             List<Move> moves = new List<Move>();
-            foreach (IMoveGenerator generator in moveGenerators)
+            foreach (IMoveGenerator generator in MoveGenerators)
             {
                 moves.AddRange(generator.GenerateMoves());
             }
@@ -173,7 +173,7 @@ namespace Artemis.Core
         /// <returns></returns>
         public bool HasLegalMove()
         {
-            foreach (IMoveGenerator generator in moveGenerators)
+            foreach (IMoveGenerator generator in MoveGenerators)
             {
                 foreach (Move move in generator.GenerateMoves())
                 {
@@ -207,7 +207,7 @@ namespace Artemis.Core
             int max = includeKing ? 6 : 5;
             for (int i = 0; i < max; i++)
             {
-                ulong attacks = moveGenerators[i].GenerateAttacks(1 - pl);
+                ulong attacks = MoveGenerators[i].GenerateAttacks(1 - pl);
                 if ((bb & attacks) > 0)
                 {
                     return true;

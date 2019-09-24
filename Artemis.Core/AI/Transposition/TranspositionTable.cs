@@ -8,9 +8,17 @@ namespace Artemis.Core.AI.Transposition
     {
         private Dictionary<ulong, TranspositionNode> table = new Dictionary<ulong, TranspositionNode>();
 
-        public void AddOrUpdate(ulong key, TranspositionNode node)
+        public void Add(ulong key, TranspositionNode node)
         {
             table[key] = node;
+        }
+
+        public void Update(ulong key, TranspositionNode existingNode, TranspositionNode node)
+        {
+            if (node.Depth > existingNode.Depth)
+            {
+                table[key] = node;
+            }
         }
 
         public bool TryGetValue(ulong key, out TranspositionNode node)

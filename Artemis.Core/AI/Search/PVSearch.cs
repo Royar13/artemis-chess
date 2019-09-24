@@ -127,10 +127,14 @@ namespace Artemis.Core.AI.Search
             }
 
             NodeType nodeType = GetNodeType(originalAlpha, beta, alpha);
-            if (nodeType != NodeType.AllNode || node != null)
+            TranspositionNode updatedNode = new TranspositionNode(nodeType, alpha, depth, bestMove);
+            if (node != null)
             {
-                TranspositionNode updatedNode = new TranspositionNode(nodeType, alpha, depth, bestMove);
-                transpositionTable.AddOrUpdate(hash, updatedNode);
+                transpositionTable.Update(hash, node, updatedNode);
+            }
+            else
+            {
+                transpositionTable.Add(hash, updatedNode);
             }
 
             return alpha;
