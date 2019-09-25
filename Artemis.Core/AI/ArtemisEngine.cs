@@ -55,7 +55,7 @@ namespace Artemis.Core.AI
             }
             else
             {
-                throw new Exception("Failed to find the searched position in the transposition table");
+                throw new Exception("Principal Variation is empty");
             }
         }
     }

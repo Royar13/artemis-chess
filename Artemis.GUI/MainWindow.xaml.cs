@@ -30,5 +30,10 @@ namespace Artemis.GUI
             gm.NewGame();
             MainContainer.DataContext = gm;
         }
+
+        private void NewGameBtn_Click(object sender, RoutedEventArgs e)
+        {
+            gm.NewGame();
+        }
     }
 }
