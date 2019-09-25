@@ -137,12 +137,12 @@ namespace Artemis.Core
             throw new Exception("No piece was found on the square");
         }
 
-        public List<Move> GetMoves()
+        public List<Move> GetMoves(GenerationMode generationMode = GenerationMode.Normal)
         {
             List<Move> moves = new List<Move>();
             foreach (IMoveGenerator generator in MoveGenerators)
             {
-                moves.AddRange(generator.GenerateMoves());
+                moves.AddRange(generator.GenerateMoves(generationMode));
             }
             return moves;
         }

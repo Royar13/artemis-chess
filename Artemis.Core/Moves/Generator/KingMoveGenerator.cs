@@ -30,43 +30,46 @@ namespace Artemis.Core.Moves.Generator
 
         protected override IEnumerable<Move> GetMovesFromSquare(ulong sq)
         {
-            ulong reversedOccupancy = ~gameState.Occupancy[gameState.Turn];
-            ulong to = sq << 1 & BitboardUtils.NOT_A_FILE & reversedOccupancy;
+            ulong mask = generationMode == GenerationMode.Normal ? ~gameState.Occupancy[gameState.Turn] : gameState.Occupancy[1 - gameState.Turn];
+            ulong to = sq << 1 & BitboardUtils.NOT_A_FILE & mask;
             if (to != 0)
                 yield return new Move(gameState, sq, to, pieceType);
 
-            to = sq >> 1 & BitboardUtils.NOT_H_FILE & reversedOccupancy;
+            to = sq >> 1 & BitboardUtils.NOT_H_FILE & mask;
             if (to != 0)
                 yield return new Move(gameState, sq, to, pieceType);
 
-            to = sq << 9 & BitboardUtils.NOT_A_FILE & reversedOccupancy;
+            to = sq << 9 & BitboardUtils.NOT_A_FILE & mask;
             if (to != 0)
                 yield return new Move(gameState, sq, to, pieceType);
 
-            to = sq << 7 & BitboardUtils.NOT_H_FILE & reversedOccupancy;
+            to = sq << 7 & BitboardUtils.NOT_H_FILE & mask;
             if (to != 0)
                 yield return new Move(gameState, sq, to, pieceType);
 
-            to = sq >> 7 & BitboardUtils.NOT_A_FILE & reversedOccupancy;
+            to = sq >> 7 & BitboardUtils.NOT_A_FILE & mask;
             if (to != 0)
                 yield return new Move(gameState, sq, to, pieceType);
 
-            to = sq >> 9 & BitboardUtils.NOT_H_FILE & reversedOccupancy;
+            to = sq >> 9 & BitboardUtils.NOT_H_FILE & mask;
             if (to != 0)
                 yield return new Move(gameState, sq, to, pieceType);
 
-            to = sq << 8 & reversedOccupancy;
+            to = sq << 8 & mask;
             if (to != 0)
                 yield return new Move(gameState, sq, to, pieceType);
 
-            to = sq >> 8 & reversedOccupancy;
+            to = sq >> 8 & mask;
             if (to != 0)
                 yield return new Move(gameState, sq, to, pieceType);
 
-            List<Move> castling = GenerateCastlingMoves(sq);
-            foreach (Move move in castling)
+            if (generationMode == GenerationMode.Normal)
             {
-                yield return move;
+                List<Move> castling = GenerateCastlingMoves(sq);
+                foreach (Move move in castling)
+                {
+                    yield return move;
+                }
             }
         }
 

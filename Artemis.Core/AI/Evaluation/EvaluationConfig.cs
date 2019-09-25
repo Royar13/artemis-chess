@@ -6,7 +6,7 @@ namespace Artemis.Core.AI.Evaluation
 {
     public class EvaluationConfig
     {
-        private int[] piecesValue = { 500, 290, 300, 100, 900 };
+        private int[] piecesValue = { 500, 290, 300, 100, 900, 0 };
         private int[] mobility = { 1, 5, 3, 0, 2 };
         private int pawnCentralControl = 20;
         private int pieceCentralControl = 5;

@@ -16,13 +16,16 @@ namespace Artemis.Core.AI.Search.Heuristics
 
         public void AddMove(Move move, int ply)
         {
-            if (killerMovesTable[ply][0] == null)
+            if (move.IsQuiet())
             {
-                killerMovesTable[ply][0] = move;
-            }
-            else if (killerMovesTable[ply][1] == null && !killerMovesTable[ply][0].Equals(move))
-            {
-                killerMovesTable[ply][1] = move;
+                if (killerMovesTable[ply][0] == null)
+                {
+                    killerMovesTable[ply][0] = move;
+                }
+                else if (killerMovesTable[ply][1] == null && !killerMovesTable[ply][0].Equals(move))
+                {
+                    killerMovesTable[ply][1] = move;
+                }
             }
         }
 

@@ -9,33 +9,49 @@ namespace Artemis.Core.AI.Evaluation
 {
     public class MoveEvaluator
     {
-        Move pvMove;
-        Move hashMove;
-        Move[] killerMoves;
+        EvaluationConfig evalConfig;
 
-        public MoveEvaluator(Move pvMove, Move hashMove, Move[] killerMoves)
+        public MoveEvaluator(EvaluationConfig evalConfig)
         {
-            this.pvMove = pvMove;
-            this.hashMove = hashMove;
-            this.killerMoves = killerMoves;
+            this.evalConfig = evalConfig;
         }
 
-        public int CalculateScore(Move move)
+        public ScoredMove EvaluateMove(Move move, Move pvMove, Move hashMove, Move[] killerMoves)
         {
-            int score = 0;
             if (pvMove != null && move.Equals(pvMove))
             {
-                return 1000;
+                return new ScoredMove(move, 2100);
             }
             else if (hashMove != null && move.Equals(hashMove))
             {
-                return 800;
+                return new ScoredMove(move, 2000);
             }
-            else if (killerMoves.Any(m => m != null && m.Equals(move)))
+            else if (move.IsCapture())
             {
-                return 600;
+                int captureScore = GetMaterialGain(move);
+                if (captureScore >= 0)
+                {
+                    return new ScoredMove(move, 1000 + captureScore);
+                }
             }
-            return score;
+
+            if (killerMoves.Any(m => m != null && m.Equals(move)))
+            {
+                return new ScoredMove(move, 900);
+            }
+            return new ScoredMove(move, 0);
+        }
+
+        private int GetMaterialGain(Move move)
+        {
+            PieceType capturedPiece = move.GetCapturedPieceType();
+            return evalConfig.GetPieceValue(capturedPiece) - evalConfig.GetPieceValue(move.MovedPieceType);
+        }
+
+        public ScoredMove EvaluateCapture(Move move)
+        {
+            int materialGain = GetMaterialGain(move);
+            return new ScoredMove(move, materialGain);
         }
     }
 }

@@ -11,6 +11,7 @@ namespace Artemis.Core.Moves.Generator
         protected GameState gameState;
         protected MagicBitboardsData magic;
         protected PieceType pieceType;
+        protected GenerationMode generationMode;
 
         public MoveGenerator(GameState gameState, MagicBitboardsData magic, PieceType pieceType)
         {
@@ -34,8 +35,9 @@ namespace Artemis.Core.Moves.Generator
         /// <returns></returns>
         protected abstract IEnumerable<Move> GetMovesFromSquare(ulong sq);
 
-        public IEnumerable<Move> GenerateMoves()
+        public IEnumerable<Move> GenerateMoves(GenerationMode generationMode = GenerationMode.Normal)
         {
+            this.generationMode = generationMode;
             ulong piece = gameState.Pieces[gameState.Turn, (int)pieceType];
             while (piece > 0)
             {

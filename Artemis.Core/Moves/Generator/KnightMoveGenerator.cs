@@ -30,36 +30,36 @@ namespace Artemis.Core.Moves.Generator
 
         protected override IEnumerable<Move> GetMovesFromSquare(ulong sq)
         {
-            ulong reversedOccupancy = ~gameState.Occupancy[gameState.Turn];
-            ulong to = sq << 17 & BitboardUtils.NOT_A_FILE & reversedOccupancy;
+            ulong mask = generationMode == GenerationMode.Normal ? ~gameState.Occupancy[gameState.Turn] : gameState.Occupancy[1 - gameState.Turn];
+            ulong to = sq << 17 & BitboardUtils.NOT_A_FILE & mask;
             if (to != 0)
                 yield return new Move(gameState, sq, to, pieceType);
 
-            to = sq << 10 & BitboardUtils.NOT_AB_FILES & reversedOccupancy;
+            to = sq << 10 & BitboardUtils.NOT_AB_FILES & mask;
             if (to != 0)
                 yield return new Move(gameState, sq, to, pieceType);
 
-            to = sq >> 6 & BitboardUtils.NOT_AB_FILES & reversedOccupancy;
+            to = sq >> 6 & BitboardUtils.NOT_AB_FILES & mask;
             if (to != 0)
                 yield return new Move(gameState, sq, to, pieceType);
 
-            to = sq >> 15 & BitboardUtils.NOT_A_FILE & reversedOccupancy;
+            to = sq >> 15 & BitboardUtils.NOT_A_FILE & mask;
             if (to != 0)
                 yield return new Move(gameState, sq, to, pieceType);
 
-            to = sq << 15 & BitboardUtils.NOT_H_FILE & reversedOccupancy;
+            to = sq << 15 & BitboardUtils.NOT_H_FILE & mask;
             if (to != 0)
                 yield return new Move(gameState, sq, to, pieceType);
 
-            to = sq << 6 & BitboardUtils.NOT_GH_FILES & reversedOccupancy;
+            to = sq << 6 & BitboardUtils.NOT_GH_FILES & mask;
             if (to != 0)
                 yield return new Move(gameState, sq, to, pieceType);
 
-            to = sq >> 10 & BitboardUtils.NOT_GH_FILES & reversedOccupancy;
+            to = sq >> 10 & BitboardUtils.NOT_GH_FILES & mask;
             if (to != 0)
                 yield return new Move(gameState, sq, to, pieceType);
 
-            to = sq >> 17 & BitboardUtils.NOT_H_FILE & reversedOccupancy;
+            to = sq >> 17 & BitboardUtils.NOT_H_FILE & mask;
             if (to != 0)
                 yield return new Move(gameState, sq, to, pieceType);
         }

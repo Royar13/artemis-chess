@@ -7,6 +7,6 @@ namespace Artemis.Core.Moves.Generator
     public interface IMoveGenerator
     {
         ulong GenerateAttacks(int pl);
-        IEnumerable<Move> GenerateMoves();
+        IEnumerable<Move> GenerateMoves(GenerationMode generationMode = GenerationMode.Normal);
     }
 }

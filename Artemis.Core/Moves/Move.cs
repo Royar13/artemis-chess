@@ -101,13 +101,27 @@ namespace Artemis.Core.Moves
             return !gameState.IsAttacked(1 - gameState.Turn, king);
         }
 
+        public bool IsCapture()
+        {
+            return (gameState.Occupancy[1 - gameState.Turn] & To) > 0;
+        }
+
+        public virtual PieceType GetCapturedPieceType()
+        {
+            if (capturedPieceType == null)
+            {
+                capturedPieceType = gameState.GetPieceBySquare(1 - gameState.Turn, To);
+            }
+            return capturedPieceType.Value;
+        }
+
         protected virtual void CalculateCapture()
         {
-            if ((gameState.Occupancy[1 - gameState.Turn] & To) > 0)
+            if (IsCapture())
             {
                 int pl = 1 - gameState.Turn;
                 gameState.Occupancy[pl] ^= To;
-                capturedPieceType = gameState.GetPieceBySquare(pl, To);
+                GetCapturedPieceType();
                 gameState.Pieces[pl, (int)capturedPieceType] ^= To;
                 gameState.ZobristHashUtils.UpdatePiece(ref irrevState.ZobristHash, pl, capturedPieceType.Value, To);
 

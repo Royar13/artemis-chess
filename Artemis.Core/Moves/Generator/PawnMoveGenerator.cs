@@ -49,15 +49,18 @@ namespace Artemis.Core.Moves.Generator
             ulong attacks;
             if (gameState.Turn == 0)
             {
-                to = sq << 8 & reversedFullOccupancy;
-                if (to != 0)
+                if (generationMode == GenerationMode.Normal)
                 {
-                    yield return new Move(gameState, sq, to, pieceType);
-                    if ((sq & BitboardUtils.SECOND_RANK[gameState.Turn]) > 0)
+                    to = sq << 8 & reversedFullOccupancy;
+                    if (to != 0)
                     {
-                        to = to << 8 & reversedFullOccupancy;
-                        if (to != 0)
-                            yield return new Move(gameState, sq, to, pieceType);
+                        yield return new Move(gameState, sq, to, pieceType);
+                        if ((sq & BitboardUtils.SECOND_RANK[gameState.Turn]) > 0)
+                        {
+                            to = to << 8 & reversedFullOccupancy;
+                            if (to != 0)
+                                yield return new Move(gameState, sq, to, pieceType);
+                        }
                     }
                 }
                 to = sq << 7 & BitboardUtils.NOT_H_FILE;
@@ -71,15 +74,18 @@ namespace Artemis.Core.Moves.Generator
             }
             else
             {
-                to = sq >> 8 & reversedFullOccupancy;
-                if (to != 0)
+                if (generationMode == GenerationMode.Normal)
                 {
-                    yield return new Move(gameState, sq, to, pieceType);
-                    if ((sq & BitboardUtils.SECOND_RANK[gameState.Turn]) > 0)
+                    to = sq >> 8 & reversedFullOccupancy;
+                    if (to != 0)
                     {
-                        to = to >> 8 & reversedFullOccupancy;
-                        if (to != 0)
-                            yield return new Move(gameState, sq, to, pieceType);
+                        yield return new Move(gameState, sq, to, pieceType);
+                        if ((sq & BitboardUtils.SECOND_RANK[gameState.Turn]) > 0)
+                        {
+                            to = to >> 8 & reversedFullOccupancy;
+                            if (to != 0)
+                                yield return new Move(gameState, sq, to, pieceType);
+                        }
                     }
                 }
                 to = sq >> 9 & BitboardUtils.NOT_H_FILE;
@@ -91,6 +97,7 @@ namespace Artemis.Core.Moves.Generator
                 if ((to & gameState.Occupancy[1 - gameState.Turn]) != 0)
                     yield return new Move(gameState, sq, to, pieceType);
             }
+
             //En Passant
             IrrevState irrevState = gameState.GetIrrevState();
             if ((irrevState.EnPassantCapture & attacks) > 0)

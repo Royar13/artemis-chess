@@ -34,8 +34,8 @@ namespace Artemis.Core.Moves.Generator
 
         protected override IEnumerable<Move> GetMovesFromSquare(ulong sq)
         {
-            ulong reversedOccupancy = ~gameState.Occupancy[gameState.Turn];
-            ulong attacks = GetAttacksFromSquare(gameState.Turn, sq) & reversedOccupancy;
+            ulong mask = generationMode == GenerationMode.Normal ? ~gameState.Occupancy[gameState.Turn] : gameState.Occupancy[1 - gameState.Turn];
+            ulong attacks = GetAttacksFromSquare(gameState.Turn, sq) & mask;
             while (attacks > 0)
             {
                 ulong to = BitboardUtils.GetLSB(attacks);

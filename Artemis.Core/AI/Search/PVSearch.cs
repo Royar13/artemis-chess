@@ -12,22 +12,27 @@ namespace Artemis.Core.AI.Search
     /// <summary>
     /// Principal Variation Search
     /// </summary>
-    class PVSearch : IMoveSearch
+    class PVSearch
     {
         GameState gameState;
         TranspositionTable transpositionTable;
-        PositionEvaluator evaluator;
         KillerMoves killerMoves;
+        PositionEvaluator evaluator;
+        MoveEvaluator moveEvaluator;
+        QuiescenceSearch quietSearch;
         int searchDepth;
         PVNode currentPVNode;
         bool searchingPV;
 
-        public PVSearch(GameState gameState, TranspositionTable transpositionTable, PositionEvaluator evaluator, KillerMoves killerMoves)
+        public PVSearch(GameState gameState, TranspositionTable transpositionTable, KillerMoves killerMoves, PositionEvaluator evaluator, MoveEvaluator moveEvaluator,
+            QuiescenceSearch quietSearch)
         {
             this.gameState = gameState;
             this.transpositionTable = transpositionTable;
-            this.evaluator = evaluator;
             this.killerMoves = killerMoves;
+            this.evaluator = evaluator;
+            this.moveEvaluator = moveEvaluator;
+            this.quietSearch = quietSearch;
         }
 
         public PVList Calculate(int depth, PVList prevPV)
@@ -73,7 +78,7 @@ namespace Artemis.Core.AI.Search
 
             if (depth == 0)
             {
-                return evaluator.Evaluate(depth);
+                return quietSearch.Search(alpha, beta);
             }
 
             int originalAlpha = alpha;
@@ -97,8 +102,7 @@ namespace Artemis.Core.AI.Search
                 hashMove = ttNode.BestMove;
             }
             Move[] killers = killerMoves.GetKillerMoves(searchDepth - depth);
-            MoveEvaluator moveEvaluator = new MoveEvaluator(pvMove, hashMove, killers);
-            moves = moves.OrderByDescending(m => moveEvaluator.CalculateScore(m)).ToList();
+            moves = moves.OrderByDescending(m => moveEvaluator.EvaluateMove(m, pvMove, hashMove, killers).Score).ToList();
 
             Move bestMove = null;
             bool fullSearch = true;

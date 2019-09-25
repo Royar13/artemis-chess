@@ -16,16 +16,21 @@ namespace Artemis.Core.AI
         public const int INITIAL_BETA = -INITIAL_ALPHA;
         public const int MAX_DEPTH = 10;
         GameState gameState;
-        IMoveSearch pvSearch;
+        PVSearch pvSearch;
+        QuiescenceSearch quietSearch;
         TranspositionTable transpositionTable = new TranspositionTable();
-        PositionEvaluator evaluator;
         KillerMoves killerMoves = new KillerMoves();
+        PositionEvaluator evaluator;
+        MoveEvaluator moveEvaluator;
 
         public ArtemisEngine(GameState gameState)
         {
             this.gameState = gameState;
-            evaluator = new PositionEvaluator(gameState, new EvaluationConfig());
-            pvSearch = new PVSearch(gameState, transpositionTable, evaluator, killerMoves);
+            EvaluationConfig config = new EvaluationConfig();
+            evaluator = new PositionEvaluator(gameState, config);
+            moveEvaluator = new MoveEvaluator(config);
+            quietSearch = new QuiescenceSearch(gameState, evaluator, moveEvaluator);
+            pvSearch = new PVSearch(gameState, transpositionTable, killerMoves, evaluator, moveEvaluator, quietSearch);
         }
 
         public async Task<Move> Calculate()
