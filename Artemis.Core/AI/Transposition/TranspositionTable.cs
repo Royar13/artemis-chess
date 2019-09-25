@@ -13,11 +13,11 @@ namespace Artemis.Core.AI.Transposition
             table[key] = node;
         }
 
-        public void Update(ulong key, TranspositionNode existingNode, TranspositionNode node)
+        public void Update(ulong key, TranspositionNode existingNode, TranspositionNode updatedNode)
         {
-            if (node.Depth > existingNode.Depth)
+            if (updatedNode.Depth > existingNode.Depth)
             {
-                table[key] = node;
+                table[key] = updatedNode;
             }
         }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Artemis.Core.AI.Evaluation;
+using Artemis.Core.AI.Search.Heuristics;
 using Artemis.Core.AI.Transposition;
 using Artemis.Core.Moves;
 
@@ -16,15 +17,17 @@ namespace Artemis.Core.AI.Search
         GameState gameState;
         TranspositionTable transpositionTable;
         PositionEvaluator evaluator;
+        KillerMoves killerMoves;
         int searchDepth;
         PVNode currentPVNode;
         bool searchingPV;
 
-        public PVSearch(GameState gameState, TranspositionTable transpositionTable, PositionEvaluator evaluator)
+        public PVSearch(GameState gameState, TranspositionTable transpositionTable, PositionEvaluator evaluator, KillerMoves killerMoves)
         {
             this.gameState = gameState;
             this.transpositionTable = transpositionTable;
             this.evaluator = evaluator;
+            this.killerMoves = killerMoves;
         }
 
         public PVList Calculate(int depth, PVList prevPV)
@@ -93,7 +96,8 @@ namespace Artemis.Core.AI.Search
             {
                 hashMove = ttNode.BestMove;
             }
-            MoveEvaluator moveEvaluator = new MoveEvaluator(pvMove, hashMove);
+            Move[] killers = killerMoves.GetKillerMoves(searchDepth - depth);
+            MoveEvaluator moveEvaluator = new MoveEvaluator(pvMove, hashMove, killers);
             moves = moves.OrderByDescending(m => moveEvaluator.CalculateScore(m)).ToList();
 
             Move bestMove = null;
@@ -128,6 +132,7 @@ namespace Artemis.Core.AI.Search
                         alpha = beta;
                         bestMove = move;
                         cutoff = true;
+                        killerMoves.AddMove(move, searchDepth - depth);
                     }
                     else if (score > alpha)
                     {

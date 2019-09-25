@@ -1,5 +1,6 @@
 ﻿using Artemis.Core.AI.Evaluation;
 using Artemis.Core.AI.Search;
+using Artemis.Core.AI.Search.Heuristics;
 using Artemis.Core.AI.Transposition;
 using Artemis.Core.Moves;
 using System;
@@ -13,16 +14,18 @@ namespace Artemis.Core.AI
     {
         public const int INITIAL_ALPHA = -PositionEvaluator.CHECKMATE_SCORE * 2;
         public const int INITIAL_BETA = -INITIAL_ALPHA;
+        public const int MAX_DEPTH = 10;
         GameState gameState;
         IMoveSearch pvSearch;
         TranspositionTable transpositionTable = new TranspositionTable();
         PositionEvaluator evaluator;
+        KillerMoves killerMoves = new KillerMoves();
 
         public ArtemisEngine(GameState gameState)
         {
             this.gameState = gameState;
             evaluator = new PositionEvaluator(gameState, new EvaluationConfig());
-            pvSearch = new PVSearch(gameState, transpositionTable, evaluator);
+            pvSearch = new PVSearch(gameState, transpositionTable, evaluator, killerMoves);
         }
 
         public async Task<Move> Calculate()
@@ -40,6 +43,7 @@ namespace Artemis.Core.AI
             await task;
 
             transpositionTable.Clear();
+            killerMoves.Clear();
             if (pv.First != null)
             {
                 return pv.First.Move;

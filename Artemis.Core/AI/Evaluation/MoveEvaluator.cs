@@ -1,6 +1,8 @@
-﻿using Artemis.Core.Moves;
+﻿using Artemis.Core.AI.Search.Heuristics;
+using Artemis.Core.Moves;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Artemis.Core.AI.Evaluation
@@ -9,11 +11,13 @@ namespace Artemis.Core.AI.Evaluation
     {
         Move pvMove;
         Move hashMove;
+        Move[] killerMoves;
 
-        public MoveEvaluator(Move pvMove, Move hashMove)
+        public MoveEvaluator(Move pvMove, Move hashMove, Move[] killerMoves)
         {
             this.pvMove = pvMove;
             this.hashMove = hashMove;
+            this.killerMoves = killerMoves;
         }
 
         public int CalculateScore(Move move)
@@ -26,6 +30,10 @@ namespace Artemis.Core.AI.Evaluation
             else if (hashMove != null && move.Equals(hashMove))
             {
                 return 800;
+            }
+            else if (killerMoves.Any(m => m != null && m.Equals(move)))
+            {
+                return 600;
             }
             return score;
         }
