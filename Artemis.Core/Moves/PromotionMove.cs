@@ -38,6 +38,11 @@ namespace Artemis.Core.Moves
             gameState.ZobristHashUtils.UpdatePiece(ref irrevState.ZobristHash, gameState.Turn, promotionType, To);
         }
 
+        public override bool IsQuiet()
+        {
+            return false;
+        }
+
         public override GameAction GetAction()
         {
             int? capture = null;

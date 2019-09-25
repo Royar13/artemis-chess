@@ -67,6 +67,11 @@ namespace Artemis.Core.Moves
             DisableCastling(gameState.Turn, 1);
         }
 
+        public override bool IsQuiet()
+        {
+            return true;
+        }
+
         public override GameAction GetAction()
         {
             int rookFromInd = BitboardUtils.BitScanForward(AdjustForPl(rookFrom[dir], gameState.Turn));

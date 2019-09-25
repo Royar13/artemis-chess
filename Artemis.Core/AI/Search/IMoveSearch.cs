@@ -7,6 +7,6 @@ namespace Artemis.Core.AI.Search
 {
     interface IMoveSearch
     {
-        void Calculate(int depth);
+        PVList Calculate(int depth, PVList prevPV);
     }
 }

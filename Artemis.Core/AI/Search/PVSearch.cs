@@ -17,6 +17,8 @@ namespace Artemis.Core.AI.Search
         TranspositionTable transpositionTable;
         PositionEvaluator evaluator;
         int searchDepth;
+        PVNode currentPVNode;
+        bool searchingPV;
 
         public PVSearch(GameState gameState, TranspositionTable transpositionTable, PositionEvaluator evaluator)
         {
@@ -25,35 +27,43 @@ namespace Artemis.Core.AI.Search
             this.evaluator = evaluator;
         }
 
-        public void Calculate(int depth)
+        public PVList Calculate(int depth, PVList prevPV)
         {
             searchDepth = depth;
-            Search(depth, ArtemisEngine.INITIAL_ALPHA, ArtemisEngine.INITIAL_BETA);
+            searchingPV = false;
+            if (searchDepth > 1)
+            {
+                searchingPV = true;
+                currentPVNode = prevPV.First;
+            }
+            PVList pvList = new PVList();
+            Search(depth, ArtemisEngine.INITIAL_ALPHA, ArtemisEngine.INITIAL_BETA, pvList);
+            return pvList;
         }
 
-        private int Search(int depth, int alpha, int beta)
+        private int Search(int depth, int alpha, int beta, PVList pvList)
         {
             ulong hash = gameState.GetIrrevState().ZobristHash;
-            TranspositionNode node = null;
-            if (transpositionTable.TryGetValue(hash, out node))
+            TranspositionNode ttNode = null;
+            if (transpositionTable.TryGetValue(hash, out ttNode))
             {
-                if (node.Depth >= depth)
+                if (ttNode.Depth >= depth)
                 {
-                    switch (node.NodeType)
+                    switch (ttNode.NodeType)
                     {
                         case NodeType.PVNode:
-                            return node.Score;
+                            return ttNode.Score;
                         case NodeType.CutNode:
-                            alpha = Math.Max(alpha, node.Score);
+                            alpha = Math.Max(alpha, ttNode.Score);
                             break;
                         case NodeType.AllNode:
-                            beta = Math.Min(beta, node.Score);
+                            beta = Math.Min(beta, ttNode.Score);
                             break;
                     }
 
                     if (alpha >= beta)
                     {
-                        return node.Score;
+                        return ttNode.Score;
                     }
                 }
             }
@@ -65,17 +75,32 @@ namespace Artemis.Core.AI.Search
 
             int originalAlpha = alpha;
             List<Move> moves = gameState.GetMoves();
-            if (node != null && node.BestMove != null)
+            Move pvMove = null;
+            if (searchingPV)
             {
-                Move pvMove = moves.First(m => m.Equals(node.BestMove));
-                moves.Remove(pvMove);
-                moves.Insert(0, pvMove);
+                if (currentPVNode != null)
+                {
+                    pvMove = currentPVNode.Move;
+                    currentPVNode = currentPVNode.Next;
+                }
+                else
+                {
+                    searchingPV = false;
+                }
             }
+            Move hashMove = null;
+            if (ttNode != null)
+            {
+                hashMove = ttNode.BestMove;
+            }
+            MoveEvaluator moveEvaluator = new MoveEvaluator(pvMove, hashMove);
+            moves = moves.OrderByDescending(m => moveEvaluator.CalculateScore(m)).ToList();
 
             Move bestMove = null;
             bool fullSearch = true;
             bool cutoff = false;
             bool hasMoves = false;
+            PVList newPV = new PVList();
             for (int i = 0; i < moves.Count && !cutoff; i++)
             {
                 Move move = moves[i];
@@ -86,14 +111,14 @@ namespace Artemis.Core.AI.Search
                     int score;
                     if (fullSearch || searchDepth == 1)
                     {
-                        score = -Search(depth - 1, -beta, -alpha);
+                        score = -Search(depth - 1, -beta, -alpha, newPV);
                     }
                     else
                     {
-                        score = -Search(depth - 1, -alpha - 1, -alpha);
+                        score = -Search(depth - 1, -alpha - 1, -alpha, newPV);
                         if (score > alpha)
                         {
-                            score = -Search(depth - 1, -beta, -alpha);
+                            score = -Search(depth - 1, -beta, -alpha, newPV);
                         }
                     }
 
@@ -127,10 +152,16 @@ namespace Artemis.Core.AI.Search
             }
 
             NodeType nodeType = GetNodeType(originalAlpha, beta, alpha);
-            TranspositionNode updatedNode = new TranspositionNode(nodeType, alpha, depth, bestMove);
-            if (node != null)
+            if (nodeType == NodeType.PVNode)
             {
-                transpositionTable.Update(hash, node, updatedNode);
+                PVNode node = new PVNode(bestMove);
+                newPV.AddFirst(node);
+                pvList.Replace(newPV);
+            }
+            TranspositionNode updatedNode = new TranspositionNode(nodeType, alpha, depth, bestMove);
+            if (ttNode != null)
+            {
+                transpositionTable.Update(hash, ttNode, updatedNode);
             }
             else
             {

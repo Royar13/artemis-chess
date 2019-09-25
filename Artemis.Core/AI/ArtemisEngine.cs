@@ -27,21 +27,22 @@ namespace Artemis.Core.AI
 
         public async Task<Move> Calculate()
         {
+            PVList pv = null;
             //Iterative Deepening Search
             var task = Task.Run(() =>
             {
                 for (int i = 1; i <= 5; i++)
                 {
-                    pvSearch.Calculate(i);
+                    pv = pvSearch.Calculate(i, pv);
+                    pv.Print();
                 }
             });
             await task;
 
-            TranspositionNode node;
-            if (transpositionTable.TryGetValue(gameState.GetIrrevState().ZobristHash, out node))
+            transpositionTable.Clear();
+            if (pv.First != null)
             {
-                transpositionTable.Clear();
-                return node.BestMove;
+                return pv.First.Move;
             }
             else
             {

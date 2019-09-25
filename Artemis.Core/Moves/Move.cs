@@ -144,6 +144,11 @@ namespace Artemis.Core.Moves
             }
         }
 
+        public virtual bool IsQuiet()
+        {
+            return (gameState.Occupancy[1 - gameState.Turn] & To) == 0;
+        }
+
         /// <summary>
         /// Returns a GameAction object which describes the move, for use by the GUI.
         /// It should be called before the move is made.

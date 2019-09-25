@@ -31,6 +31,11 @@ namespace Artemis.Core.Moves
             return gameState.Turn == 0 ? To >> 8 : To << 8;
         }
 
+        public override bool IsQuiet()
+        {
+            return false;
+        }
+
         public override GameAction GetAction()
         {
             int target = BitboardUtils.BitScanForward(GetEnPassantTarget());
