@@ -19,7 +19,6 @@ namespace Artemis.Core
         /// The position behind a pawn that moved 2 squares last move
         /// </summary>
         public ulong EnPassantCapture;
-        public bool IsCheck = false;
         public ulong ZobristHash;
 
         public IrrevState(GameState gameState)
@@ -40,8 +39,9 @@ namespace Artemis.Core
         /// <returns></returns>
         public IrrevState Copy()
         {
-            gameState.ZobristHashUtils.ResetHashBeforeMove(ref ZobristHash, this);
-            return new IrrevState(gameState, (bool[,])CastlingAllowed.Clone(), ZobristHash);
+            ulong hash = ZobristHash;
+            gameState.ZobristHashUtils.ResetHashBeforeMove(ref hash, this);
+            return new IrrevState(gameState, (bool[,])CastlingAllowed.Clone(), hash);
         }
     }
 }
