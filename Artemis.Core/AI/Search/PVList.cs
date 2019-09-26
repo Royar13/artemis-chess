@@ -20,7 +20,7 @@ namespace Artemis.Core.AI.Search
             First = lst.First;
         }
 
-        public void Print()
+        public override string ToString()
         {
             List<Move> pv = new List<Move>();
             PVNode node = First;
@@ -30,7 +30,7 @@ namespace Artemis.Core.AI.Search
                 node = node.Next;
             }
             string line = string.Join(", ", pv);
-            Console.WriteLine(line);
+            return line;
         }
     }
 }

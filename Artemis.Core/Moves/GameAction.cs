@@ -11,6 +11,7 @@ namespace Artemis.Core.Moves
     {
         private GameState gameState;
         private Move move;
+        private string moveStr;
         public int From { get; }
         public int To { get; }
         public int? Capture { get; }
@@ -31,11 +32,21 @@ namespace Artemis.Core.Moves
         public void Perform()
         {
             gameState.MakeMove(move);
+            moveStr = move.ToString();
         }
 
         public void Undo()
         {
             gameState.UnmakeMove(move);
+        }
+
+        /// <summary>
+        /// Should be called after the action is made
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return moveStr;
         }
     }
 }

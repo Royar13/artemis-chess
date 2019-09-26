@@ -42,7 +42,7 @@ namespace Artemis.Core.AI
                 for (int i = 1; i <= 5; i++)
                 {
                     pv = pvSearch.Calculate(i, pv);
-                    pv.Print();
+                    Console.WriteLine(pv);
                 }
             });
             await task;

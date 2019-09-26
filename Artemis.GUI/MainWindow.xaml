@@ -7,18 +7,20 @@
         mc:Ignorable="d"
         Title="Artemis Chess" SizeToContent="WidthAndHeight" Padding="10" WindowStartupLocation="CenterScreen">
     <StackPanel x:Name="MainContainer">
-        <WrapPanel>
-            <Canvas x:Name="Board" Width="500" Height="500">
-
+        <Menu BorderThickness="0,0,0,1" BorderBrush="#999999" Margin="0,0,0,10">
+            <MenuItem Header="Game">
+                <MenuItem Header="New Game" Click="NewGameBtn_Click"></MenuItem>
+            </MenuItem>
+        </Menu>
+        <DockPanel>
+            <Canvas x:Name="Board" Width="500" Height="500" DockPanel.Dock="Left">
             </Canvas>
-            <ScrollViewer Height="500">
-                <TextBlock Text="{Binding Path=MovesList}" Width="100" VerticalAlignment="Stretch" Margin="10,0,0,0" Padding="5" TextWrapping="WrapWithOverflow" Background="#FFF3F3F3"></TextBlock>
-            </ScrollViewer>
-        </WrapPanel>
-
-        <WrapPanel Margin="0,40,0,0">
-            <Button>Undo Move</Button>
-            <Button Margin="10,00,0,0" Width="100" HorizontalAlignment="Left" Click="NewGameBtn_Click">New Game</Button>
-        </WrapPanel>
+            <GroupBox Header="Moves" MaxHeight="500" Margin="10,0,0,0"  DockPanel.Dock="Right" Padding="0,5,0,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <TextBox x:Name="MovesListTB" Text="{Binding Path=MovesList, Mode=OneWay}" BorderThickness="0"
+                             IsReadOnly="True" Width="100" VerticalAlignment="Stretch" TextWrapping="WrapWithOverflow"></TextBox>
+                </ScrollViewer>
+            </GroupBox>
+        </DockPanel>
     </StackPanel>
 </Window>

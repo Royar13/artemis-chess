@@ -43,15 +43,6 @@ namespace Artemis.Core
             return bitboard;
         }
 
-        public static string PositionToString(ulong bitboard)
-        {
-            int index = BitScanForward(bitboard);
-            int rank = index / 8;
-            int file = index - rank * 8;
-            char c = (char)(97 + file);
-            return c.ToString() + (rank + 1);
-        }
-
         /// <summary>
         /// Gets the least significant bit
         /// </summary>

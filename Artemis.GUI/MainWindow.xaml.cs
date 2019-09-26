@@ -26,9 +26,10 @@ namespace Artemis.GUI
         public MainWindow()
         {
             InitializeComponent();
-            gm = new GameManager(Board);
+            MovesHistory movesHistory = new MovesHistory();
+            gm = new GameManager(Board, movesHistory);
             gm.NewGame();
-            MainContainer.DataContext = gm;
+            MovesListTB.DataContext = movesHistory;
         }
 
         private void NewGameBtn_Click(object sender, RoutedEventArgs e)

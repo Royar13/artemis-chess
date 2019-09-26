@@ -16,30 +16,17 @@ namespace Artemis.GUI
 {
     class GameManager
     {
-        GameState gameState;
-        Canvas boardCanvas;
-        List<UIPiece> uiPieces;
-        UIPiece selectedPiece;
-        public bool GameEnded;
+        private GameState gameState;
+        private ArtemisEngine engine;
+        private Canvas boardCanvas;
+        private List<UIPiece> uiPieces;
+        private UIPiece selectedPiece;
+        private LastMoveHighlight lastMoveHighlight;
+        private MovesHistory movesHistory;
+        public InputSource[] PlayerType { get; } = { InputSource.Player, InputSource.Player };
+        public bool GameEnded { get; private set; }
         public List<GameAction> LegalActions;
-        public InputSource[] PlayerType { get; } = { InputSource.Player, InputSource.Engine };
-        ArtemisEngine engine;
-        string movesList;
-        public string MovesList
-        {
-            get
-            {
-                return movesList;
-            }
-            set
-            {
-                movesList = value;
-                if (PropertyChanged != null)
-                {
-                    PropertyChanged(this, new PropertyChangedEventArgs("MovesList"));
-                }
-            }
-        }
+
         public double SquareSize
         {
             get
@@ -48,15 +35,15 @@ namespace Artemis.GUI
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public GameManager(Canvas boardCanvas)
+        public GameManager(Canvas boardCanvas, MovesHistory movesHistory)
         {
             this.boardCanvas = boardCanvas;
+            this.movesHistory = movesHistory;
             boardCanvas.Background = new ImageBrush
             {
                 ImageSource = GetImage("board.png")
             };
+            lastMoveHighlight = new LastMoveHighlight(this, boardCanvas);
         }
 
         public void NewGame()
@@ -64,7 +51,7 @@ namespace Artemis.GUI
             gameState = new GameState();
             engine = new ArtemisEngine(gameState);
             boardCanvas.Children.Clear();
-            MovesList = "";
+            movesHistory.Reset();
             var pieces = gameState.GetPiecesList();
             uiPieces = pieces.Select(p => new UIPiece(p.Item3, p.Item2, p.Item1, gameState, this, boardCanvas)).ToList();
             foreach (UIPiece piece in uiPieces)
@@ -91,6 +78,7 @@ namespace Artemis.GUI
 
         public void EndTurn()
         {
+            lastMoveHighlight.Show(movesHistory.Actions.Last());
             GameResult result = gameState.GetResult();
             if (result == GameResult.Ongoing)
             {
@@ -151,6 +139,7 @@ namespace Artemis.GUI
         public void PerformAction(GameAction action)
         {
             action.Perform();
+            movesHistory.AddAction(action);
             selectedPiece.Deselect();
             UpdatePiecesAfterAction(action);
             EndTurn();
