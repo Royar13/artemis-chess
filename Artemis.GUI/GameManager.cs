@@ -83,6 +83,7 @@ namespace Artemis.GUI
                 piece.PieceSelected += UiPiece_PieceSelected;
                 piece.Create();
             }
+            GameEnded = false;
             StartTurn();
         }
 

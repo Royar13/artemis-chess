@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Artemis.Core.Moves
@@ -179,28 +180,51 @@ namespace Artemis.Core.Moves
             return action;
         }
 
-        /// <summary>
-        /// Should be called after the move is made.
-        /// </summary>
-        /// <returns></returns>
         public override string ToString()
         {
-            char pieceNotation = MovedPieceType.ToNotation();
-            string str = pieceNotation == 'P' ? "" : pieceNotation.ToString();
-            if (capturedPieceType != null)
-            {
-                if (pieceNotation == 'P')
-                {
-                    str += From.PosToString()[0];
-                }
-                str += "x";
-            }
-            str += To.PosToString();
-            /*if (gameState.IsCheck())
-            {
-                str += "+";
-            }*/
+            string str = From.PosToString() + To.PosToString();
             return str;
+        }
+
+        /// <summary>
+        /// Should be called before the move is made.
+        /// </summary>
+        /// <returns></returns>
+        public virtual string GetPgnNotation()
+        {
+            char pieceNotation = MovedPieceType.ToNotation();
+            StringBuilder builder = new StringBuilder();
+            builder.Append(MovedPieceType == PieceType.Pawn ? "" : pieceNotation.ToString());
+            if (MovedPieceType == PieceType.Rook || MovedPieceType == PieceType.Knight)
+            {
+                ulong otherPiece = gameState.Pieces[gameState.Turn, (int)MovedPieceType] ^ From;
+                if (otherPiece != 0)
+                {
+                    Move collisionMove = gameState.MoveGenerators[(int)MovedPieceType].GenerateMoves().FirstOrDefault(m => m.From == otherPiece && m.To == To);
+                    if (collisionMove != null)
+                    {
+                        string fromSq = From.PosToString();
+                        if (fromSq[0] != otherPiece.PosToString()[0])
+                        {
+                            builder.Append(fromSq[0]);
+                        }
+                        else
+                        {
+                            builder.Append(fromSq[1]);
+                        }
+                    }
+                }
+            }
+            if (IsCapture())
+            {
+                if (MovedPieceType == PieceType.Pawn)
+                {
+                    builder.Append(From.PosToString()[0]);
+                }
+                builder.Append('x');
+            }
+            builder.Append(To.PosToString());
+            return builder.ToString();
         }
 
         public override bool Equals(object obj)

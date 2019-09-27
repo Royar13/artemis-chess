@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Artemis.Core.Moves
@@ -31,8 +32,19 @@ namespace Artemis.Core.Moves
 
         public void Perform()
         {
+            moveStr = move.GetPgnNotation();
             gameState.MakeMove(move);
-            moveStr = move.ToString();
+            if (gameState.IsCheck())
+            {
+                if (!gameState.HasLegalMove())
+                {
+                    moveStr += '#';
+                }
+                else
+                {
+                    moveStr += '+';
+                }
+            }
         }
 
         public void Undo()

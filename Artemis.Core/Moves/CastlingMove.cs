@@ -82,7 +82,7 @@ namespace Artemis.Core.Moves
             return action;
         }
 
-        public override string ToString()
+        public override string GetPgnNotation()
         {
             return notation[dir];
         }

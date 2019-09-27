@@ -54,9 +54,11 @@ namespace Artemis.Core.Moves
             return action;
         }
 
-        public override string ToString()
+        public override string GetPgnNotation()
         {
-            return base.ToString();
+            string str = base.GetPgnNotation();
+            str += "=" + promotionType.ToNotation();
+            return str;
         }
 
         public override bool Equals(object obj)
