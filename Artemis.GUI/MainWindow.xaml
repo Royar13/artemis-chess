@@ -9,18 +9,21 @@
     <StackPanel x:Name="MainContainer">
         <Menu BorderThickness="0,0,0,1" BorderBrush="#999999" Margin="0,0,0,10">
             <MenuItem Header="Game">
-                <MenuItem Header="New Game" Click="NewGameBtn_Click"></MenuItem>
+                <MenuItem Header="New Game" Click="NewGame_Click"></MenuItem>
             </MenuItem>
         </Menu>
-        <DockPanel>
+        <WrapPanel>
             <Canvas x:Name="Board" Width="500" Height="500" DockPanel.Dock="Left">
             </Canvas>
-            <GroupBox Header="Moves" MaxHeight="500" Margin="10,0,0,0"  DockPanel.Dock="Right" Padding="0,5,0,0">
+            <GroupBox Header="Moves" Height="500" Margin="10,0,0,0"  DockPanel.Dock="Right" Padding="0,5,0,0">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <TextBox x:Name="MovesListTB" Text="{Binding Path=MovesList, Mode=OneWay}" BorderThickness="0"
-                             IsReadOnly="True" Width="100" VerticalAlignment="Stretch" TextWrapping="WrapWithOverflow"></TextBox>
+                             IsReadOnly="True" Width="100" VerticalAlignment="Stretch" TextWrapping="WrapWithOverflow" TextChanged="MovesListTB_TextChanged"></TextBox>
                 </ScrollViewer>
             </GroupBox>
-        </DockPanel>
+        </WrapPanel>
+        <GroupBox Header="FEN" Margin="0,5,0,0">
+            <TextBox x:Name="FenTB" Text="{Binding Path=FEN, Mode=OneWay}" BorderThickness="0" HorizontalAlignment="Stretch" PreviewMouseLeftButtonDown="SelectivelyHandleMouseButton" KeyDown="FenTB_KeyDown" LostFocus="FenTB_LostFocus"></TextBox>
+        </GroupBox>
     </StackPanel>
 </Window>

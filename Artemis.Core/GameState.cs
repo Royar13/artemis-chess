@@ -1,4 +1,5 @@
 ﻿using Artemis.Core.AI.Transposition;
+using Artemis.Core.FormatConverters;
 using Artemis.Core.Moves;
 using Artemis.Core.Moves.Generator;
 using Artemis.Core.Moves.MagicBitboards;
@@ -10,6 +11,10 @@ namespace Artemis.Core
 {
     public class GameState
     {
+        private List<IrrevState> irrevStates = new List<IrrevState>();
+        private MagicBitboardsData magic = new MagicBitboardsData();
+        private MoveGeneratorBuilder moveGeneratorBuilder;
+        private IFormatConverter fenConverter = new FENConverter();
         const string DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         public const int BOARD_SIZE = 8;
         /// <summary>
@@ -37,11 +42,8 @@ namespace Artemis.Core
         }
 
         public int Turn { get; private set; }
-        List<IrrevState> IrrevStates = new List<IrrevState>();
-
-        MagicBitboardsData magic = new MagicBitboardsData();
         public ZobristHashUtils ZobristHashUtils { get; }
-        MoveGeneratorBuilder moveGeneratorBuilder;
+
         /// <summary>
         /// Move generators for different piece types, indexed by the piece type
         /// </summary>
@@ -60,72 +62,18 @@ namespace Artemis.Core
             {
                 MoveGenerators[i] = moveGeneratorBuilder.Build((PieceType)i);
             }
-            LoadFEN(fen);
+            fenConverter.Load(fen, this);
         }
 
-        private void Reset()
+        public void Reset()
         {
             Pieces = new ulong[2, 6];
             Occupancy = new ulong[2];
-            IrrevStates = new List<IrrevState>();
-        }
-
-        public void LoadFEN(string fen)
-        {
-            Reset();
-
             IrrevState irrevState = new IrrevState(this);
-            IrrevStates.Add(irrevState);
-            ulong currPos = 1;
-            string[] parts = fen.Split(' ');
-            string[] ranks = parts[0].Split('/');
-            for (int i = ranks.Length - 1; i >= 0; i--)
-            {
-                string rank = ranks[i];
-                for (int j = 0; j < rank.Length; j++)
-                {
-                    char c = rank[j];
-                    if (char.IsDigit(c))
-                    {
-                        int shift = (int)char.GetNumericValue(c);
-                        currPos = currPos << shift;
-                    }
-                    else
-                    {
-                        int pl = char.IsLower(c) ? 1 : 0;
-                        int pieceType = (int)c.ToPieceType();
-                        Pieces[pl, pieceType] |= currPos;
-                        Occupancy[pl] |= currPos;
-                        currPos = currPos << 1;
-                    }
-                }
-            }
-            Turn = parts[1] == "w" ? 0 : 1;
-            if (parts[2].IndexOf('Q') < 0)
-            {
-                irrevState.CastlingAllowed[0, 0] = false;
-            }
-            if (parts[2].IndexOf('K') < 0)
-            {
-                irrevState.CastlingAllowed[0, 1] = false;
-            }
-            if (parts[2].IndexOf('q') < 0)
-            {
-                irrevState.CastlingAllowed[1, 0] = false;
-            }
-            if (parts[2].IndexOf('k') < 0)
-            {
-                irrevState.CastlingAllowed[1, 1] = false;
-            }
-
-            if (parts[3] != "-")
-            {
-                irrevState.EnPassantCapture = BitboardUtils.GetBitboard(parts[3].StringToPos());
-            }
-            irrevState.ZobristHash = ZobristHashUtils.GenerateHash();
+            irrevStates = new List<IrrevState>() { irrevState };
         }
 
-        public PieceType GetPieceBySquare(int pl, ulong sq)
+        public PieceType? GetPieceBySquare(int pl, ulong sq)
         {
             for (int i = 0; i < 6; i++)
             {
@@ -134,7 +82,7 @@ namespace Artemis.Core
                     return (PieceType)i;
                 }
             }
-            throw new Exception("No piece was found on the square");
+            return null;
         }
 
         public List<Move> GetMoves(GenerationMode generationMode = GenerationMode.Normal)
@@ -191,8 +139,13 @@ namespace Artemis.Core
 
         public bool IsCheck()
         {
-            ulong king = Pieces[Turn, (int)PieceType.King];
-            return IsAttacked(Turn, king, false);
+            IrrevState irrevState = GetIrrevState();
+            if (irrevState.IsCheck == null)
+            {
+                ulong king = Pieces[Turn, (int)PieceType.King];
+                irrevState.IsCheck = IsAttacked(Turn, king, false);
+            }
+            return irrevState.IsCheck.Value;
         }
 
         /// <summary>
@@ -218,10 +171,10 @@ namespace Artemis.Core
 
         public IrrevState GetIrrevState()
         {
-            return IrrevStates.Last();
+            return irrevStates.Last();
         }
 
-        private void ChangeTurn()
+        public void ChangeTurn()
         {
             Turn = 1 - Turn;
         }
@@ -229,7 +182,7 @@ namespace Artemis.Core
         public void MakeMove(Move move)
         {
             IrrevState irrevState = GetIrrevState().Copy();
-            IrrevStates.Add(irrevState);
+            irrevStates.Add(irrevState);
             move.Make();
             ChangeTurn();
             ZobristHashUtils.UpdateTurn(ref GetIrrevState().ZobristHash);
@@ -238,7 +191,7 @@ namespace Artemis.Core
         public void UnmakeMove(Move move)
         {
             move.Unmake();
-            IrrevStates.RemoveAt(IrrevStates.Count - 1);
+            irrevStates.RemoveAt(irrevStates.Count - 1);
             ChangeTurn();
         }
 

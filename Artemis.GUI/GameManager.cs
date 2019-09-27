@@ -1,5 +1,6 @@
 ﻿using Artemis.Core;
 using Artemis.Core.AI;
+using Artemis.Core.FormatConverters;
 using Artemis.Core.Moves;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ using System.Windows.Media.Imaging;
 
 namespace Artemis.GUI
 {
-    class GameManager
+    class GameManager : INotifyPropertyChanged
     {
         private GameState gameState;
         private ArtemisEngine engine;
@@ -23,9 +24,24 @@ namespace Artemis.GUI
         private UIPiece selectedPiece;
         private LastMoveHighlight lastMoveHighlight;
         private MovesHistory movesHistory;
-        public InputSource[] PlayerType { get; } = { InputSource.Player, InputSource.Player };
+        private IFormatConverter fenConverter = new FENConverter();
+        public InputSource[] PlayerType { get; } = { InputSource.Player, InputSource.Engine };
         public bool GameEnded { get; private set; }
         public List<GameAction> LegalActions;
+        private string fen;
+        public string FEN
+        {
+            get
+            {
+                return fen;
+            }
+            set
+            {
+                fen = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("FEN"));
+            }
+        }
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public double SquareSize
         {
@@ -46,10 +62,18 @@ namespace Artemis.GUI
             lastMoveHighlight = new LastMoveHighlight(this, boardCanvas);
         }
 
-        public void NewGame()
+        public void NewGame(string fen = null)
         {
-            gameState = new GameState();
+            if (fen == null)
+            {
+                gameState = new GameState();
+            }
+            else
+            {
+                gameState = new GameState(fen);
+            }
             engine = new ArtemisEngine(gameState);
+            UpdateFEN();
             boardCanvas.Children.Clear();
             movesHistory.Reset();
             var pieces = gameState.GetPiecesList();
@@ -79,6 +103,7 @@ namespace Artemis.GUI
         public void EndTurn()
         {
             lastMoveHighlight.Show(movesHistory.Actions.Last());
+            UpdateFEN();
             GameResult result = gameState.GetResult();
             if (result == GameResult.Ongoing)
             {
@@ -96,6 +121,30 @@ namespace Artemis.GUI
                     MessageBox.Show($"Draw by stalemate");
                 }
                 GameEnded = true;
+            }
+        }
+
+        private void UpdateFEN()
+        {
+            FEN = fenConverter.Convert(gameState);
+        }
+
+        public bool LoadFen(string fenTxt)
+        {
+            if (!fenConverter.IsValid(fenTxt))
+            {
+                MessageBox.Show("Invalid FEN");
+                return false;
+            }
+            MessageBoxResult messageBoxResult = MessageBox.Show("Are you sure you want to load a new position?", "Load FEN", MessageBoxButton.YesNo);
+            if (messageBoxResult == MessageBoxResult.Yes)
+            {
+                NewGame(fenTxt);
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
 
@@ -140,7 +189,10 @@ namespace Artemis.GUI
         {
             action.Perform();
             movesHistory.AddAction(action);
-            selectedPiece.Deselect();
+            if (selectedPiece != null)
+            {
+                selectedPiece.Deselect();
+            }
             UpdatePiecesAfterAction(action);
             EndTurn();
         }

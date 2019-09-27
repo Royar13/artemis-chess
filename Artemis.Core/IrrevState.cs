@@ -20,6 +20,7 @@ namespace Artemis.Core
         /// </summary>
         public ulong EnPassantCapture;
         public ulong ZobristHash;
+        public bool? IsCheck;
 
         public IrrevState(GameState gameState)
         {
