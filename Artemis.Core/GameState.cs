@@ -62,6 +62,11 @@ namespace Artemis.Core
             {
                 MoveGenerators[i] = moveGeneratorBuilder.Build((PieceType)i);
             }
+            LoadFEN(fen);
+        }
+
+        public void LoadFEN(string fen)
+        {
             fenConverter.Load(fen, this);
         }
 
