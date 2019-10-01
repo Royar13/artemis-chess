@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Artemis.Core.AI.Evaluation;
 using Artemis.Core.AI.Search.Heuristics;
 using Artemis.Core.AI.Transposition;
@@ -23,6 +24,7 @@ namespace Artemis.Core.AI.Search
         int searchDepth;
         PVNode currentPVNode;
         bool searchingPV;
+        CancellationToken ct;
 
         public PVSearch(GameState gameState, TranspositionTable transpositionTable, KillerMoves killerMoves, PositionEvaluator evaluator, MoveEvaluator moveEvaluator,
             QuiescenceSearch quietSearch)
@@ -35,10 +37,11 @@ namespace Artemis.Core.AI.Search
             this.quietSearch = quietSearch;
         }
 
-        public PVList Calculate(int depth, PVList prevPV)
+        public PVList Calculate(int depth, PVList prevPV, CancellationToken ct)
         {
             searchDepth = depth;
             searchingPV = false;
+            this.ct = ct;
             if (searchDepth > 1)
             {
                 searchingPV = true;
@@ -51,6 +54,10 @@ namespace Artemis.Core.AI.Search
 
         private int Search(int depth, int alpha, int beta, PVList pvList)
         {
+            if (ct.IsCancellationRequested)
+            {
+                return 0;
+            }
             ulong hash = gameState.GetIrrevState().ZobristHash;
             TranspositionNode ttNode = null;
             if (transpositionTable.TryGetValue(hash, out ttNode))

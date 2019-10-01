@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -72,7 +73,7 @@ namespace Artemis.GUI
             {
                 gameState = new GameState(fen);
             }
-            engine = new ArtemisEngine(gameState);
+            engine = new ArtemisEngine(gameState, new EngineConfig());
             UpdateFEN();
             boardCanvas.Children.Clear();
             movesHistory.Reset();
@@ -96,8 +97,11 @@ namespace Artemis.GUI
             else
             {
                 //engine
-                Move move = await engine.Calculate();
-                PerformAction(move.GetAction());
+                using (CancellationTokenSource cts = new CancellationTokenSource())
+                {
+                    Move move = await engine.Calculate(cts.Token);
+                    PerformAction(move.GetAction());
+                }
             }
         }
 
