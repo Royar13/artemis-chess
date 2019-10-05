@@ -7,7 +7,7 @@ namespace Artemis.Core.AI.Evaluation
     public class EvaluationConfig
     {
         private int[] piecesValue = { 500, 290, 300, 100, 900, 0 };
-        private int[] mobility = { 1, 5, 3, 0, 2 };
+        private Modifier[] mobility = { new Modifier(1), new Modifier(5), new Modifier(3), new Modifier(0), new Modifier(0, 1, 1) };
         private int pawnCentralControl = 20;
         private int pieceCentralControl = 5;
         private int pawnSupport = 2;
@@ -15,15 +15,20 @@ namespace Artemis.Core.AI.Evaluation
         private int kingMiddlePenalty = -60;
         private int kingPawnProtectors = 8;
         private int kingAttack = 10;
+        private int extendedKingAttack = 8;
+        private int extendedKingDefense = 6;
+        private int doubledPawnsPenalty = -30;
+        private int isolatedPawnPenalty = -30;
+        private int isolatedPawnOpenFilePenalty = -45;
 
         public int GetPieceValue(PieceType pieceType)
         {
             return piecesValue[(int)pieceType];
         }
 
-        public int GetMobilityScore(PieceType pieceType)
+        public int GetMobilityScore(GameStage stage, PieceType pieceType)
         {
-            return mobility[(int)pieceType];
+            return mobility[(int)pieceType].Get(stage);
         }
 
         public int GetPawnCentralControlScore()
@@ -59,6 +64,31 @@ namespace Artemis.Core.AI.Evaluation
         public int GetKingAttackScore()
         {
             return kingAttack;
+        }
+
+        public int GetExtendedKingAttackScore()
+        {
+            return extendedKingAttack;
+        }
+
+        public int GetExtendedKingDefenseScore()
+        {
+            return extendedKingDefense;
+        }
+
+        public int GetDoubledPawnsPenalty()
+        {
+            return doubledPawnsPenalty;
+        }
+
+        public int GetIsolatedPawnPenalty()
+        {
+            return isolatedPawnPenalty;
+        }
+
+        public int GetIsolatedPawnOpenFilePenalty()
+        {
+            return isolatedPawnOpenFilePenalty;
         }
     }
 }

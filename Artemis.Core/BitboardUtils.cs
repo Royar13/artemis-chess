@@ -22,6 +22,7 @@ namespace Artemis.Core
            25, 14, 19,  9, 13,  8,  7,  6
         };
 
+        public const ulong A_FILE = 0x0101010101010101;
         public const ulong NOT_A_FILE = 0xFEFEFEFEFEFEFEFE;
         public const ulong NOT_H_FILE = 0x7F7F7F7F7F7F7F7F;
         public const ulong NOT_AB_FILES = 0xFCFCFCFCFCFCFCFC;
@@ -120,6 +121,11 @@ namespace Artemis.Core
             bb = bb - ((bb >> 1) & 0x5555555555555555UL);
             bb = (bb & 0x3333333333333333UL) + ((bb >> 2) & 0x3333333333333333UL);
             return (int)(unchecked(((bb + (bb >> 4)) & 0xF0F0F0F0F0F0F0FUL) * 0x101010101010101UL) >> 56);
+        }
+
+        public static ulong GetFileMask(int index)
+        {
+            return A_FILE << index;
         }
     }
 }

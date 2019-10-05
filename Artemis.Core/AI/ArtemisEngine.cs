@@ -18,10 +18,12 @@ namespace Artemis.Core.AI
         QuiescenceSearch quietSearch;
         TranspositionTable transpositionTable = new TranspositionTable();
         KillerMoves killerMoves = new KillerMoves();
+        EvaluationConfig evConfig;
         PositionEvaluator evaluator;
         MoveEvaluator moveEvaluator;
         CancellationTokenSource internalCts;
         CancellationTokenSource linkedCts;
+        public GameStage GameStage = GameStage.Opening;
         public IEngineConfig Config;
         public const int INITIAL_ALPHA = -PositionEvaluator.CHECKMATE_SCORE * 2;
         public const int INITIAL_BETA = -INITIAL_ALPHA;
@@ -31,8 +33,8 @@ namespace Artemis.Core.AI
         {
             this.gameState = gameState;
             Config = config;
-            EvaluationConfig evConfig = new EvaluationConfig();
-            evaluator = new PositionEvaluator(gameState, evConfig);
+            evConfig = new EvaluationConfig();
+            evaluator = new PositionEvaluator(this, gameState, evConfig);
             moveEvaluator = new MoveEvaluator(evConfig);
             quietSearch = new QuiescenceSearch(gameState, evaluator, moveEvaluator);
             pvSearch = new PVSearch(gameState, transpositionTable, killerMoves, evaluator, moveEvaluator, quietSearch);
@@ -40,6 +42,7 @@ namespace Artemis.Core.AI
 
         public async Task<Move> Calculate(CancellationToken ct)
         {
+            UpdateGameStage();
             using (internalCts = new CancellationTokenSource())
             using (linkedCts = CancellationTokenSource.CreateLinkedTokenSource(internalCts.Token, ct))
             {
@@ -95,6 +98,44 @@ namespace Artemis.Core.AI
                 else
                 {
                     throw new Exception("Principal Variation is empty");
+                }
+            }
+        }
+
+        private void UpdateGameStage()
+        {
+            int materialCount = 0;
+            for (int pl = 0; pl <= 1; pl++)
+            {
+                for (int i = 0; i < 5; i++)
+                {
+                    if ((PieceType)i != PieceType.Pawn)
+                    {
+                        materialCount += evConfig.GetPieceValue((PieceType)i);
+                    }
+                }
+            }
+            if (materialCount < 1800)
+            {
+                GameStage = GameStage.Endgame;
+            }
+            else if (GameStage != GameStage.Middlegame)
+            {
+                int developedPieces = 0;
+                for (int pl = 0; pl <= 1; pl++)
+                {
+                    ulong firstRank = BitboardUtils.FIRST_RANK[pl];
+                    ulong undevelopedKnights = firstRank & gameState.Pieces[pl, (int)PieceType.Knight];
+                    ulong undevelopedBishops = firstRank & gameState.Pieces[pl, (int)PieceType.Bishop];
+                    developedPieces += 4 - BitboardUtils.Popcount(undevelopedKnights | undevelopedBishops);
+                    if (evaluator.IsKingCastled(pl))
+                    {
+                        developedPieces += 2;
+                    }
+                }
+                if (developedPieces >= 7)
+                {
+                    GameStage = GameStage.Middlegame;
                 }
             }
         }
