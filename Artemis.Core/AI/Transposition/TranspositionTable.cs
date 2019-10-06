@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 
@@ -6,7 +7,7 @@ namespace Artemis.Core.AI.Transposition
 {
     public class TranspositionTable
     {
-        private Dictionary<ulong, TranspositionNode> table = new Dictionary<ulong, TranspositionNode>();
+        private ConcurrentDictionary<ulong, TranspositionNode> table = new ConcurrentDictionary<ulong, TranspositionNode>();
 
         public void Add(ulong key, TranspositionNode node)
         {

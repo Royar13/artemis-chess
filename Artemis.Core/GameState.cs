@@ -245,5 +245,11 @@ namespace Artemis.Core
             }
             return pieces;
         }
+
+        public GameState Copy()
+        {
+            string fen = fenConverter.Convert(this);
+            return new GameState(fen);
+        }
     }
 }

@@ -10,5 +10,6 @@ namespace Artemis.Core.AI
         public bool ConstantDepth { get; set; } = false;
         public int Depth { get; set; } = 5;
         public int TimeLimit { get; set; } = 4500;
+        public int MinimalDepthMultithreading { get; set; } = 3;
     }
 }

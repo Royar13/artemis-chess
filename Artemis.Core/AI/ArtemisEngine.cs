@@ -14,61 +14,62 @@ namespace Artemis.Core.AI
     public class ArtemisEngine
     {
         GameState gameState;
-        PVSearch pvSearch;
-        QuiescenceSearch quietSearch;
-        TranspositionTable transpositionTable = new TranspositionTable();
-        KillerMoves killerMoves = new KillerMoves();
-        PositionEvaluator evaluator;
-        MoveEvaluator moveEvaluator;
         CancellationTokenSource internalCts;
         CancellationTokenSource linkedCts;
+        private int currentDepth;
+        private int currentDepthThreads;
+        private static readonly object pvLock = new object();
+        private int pvDepth;
+        private PVList foundPV;
+        private const int THREADS_NUM = 4;
+        private SearchThread[] searchThreads = new SearchThread[THREADS_NUM];
         public IEngineConfig Config;
         public const int INITIAL_ALPHA = -PositionEvaluator.CHECKMATE_SCORE * 2;
         public const int INITIAL_BETA = -INITIAL_ALPHA;
         public const int MAX_DEPTH = 20;
+        public readonly TranspositionTable transpositionTable = new TranspositionTable();
 
         public ArtemisEngine(GameState gameState, IEngineConfig config)
         {
             this.gameState = gameState;
             Config = config;
-            EvaluationConfig evConfig = new EvaluationConfig();
-            evaluator = new PositionEvaluator(gameState, evConfig);
-            moveEvaluator = new MoveEvaluator(evConfig);
-            quietSearch = new QuiescenceSearch(gameState, evaluator, moveEvaluator);
-            pvSearch = new PVSearch(gameState, transpositionTable, killerMoves, evaluator, moveEvaluator, quietSearch);
+
+            for (int t = 0; t < THREADS_NUM; t++)
+            {
+                searchThreads[t] = new SearchThread(gameState, transpositionTable);
+            }
         }
 
         public async Task<Move> Calculate(CancellationToken ct)
         {
+            foundPV = null;
             using (internalCts = new CancellationTokenSource())
             using (linkedCts = CancellationTokenSource.CreateLinkedTokenSource(internalCts.Token, ct))
             {
-                PVList pv = null;
                 //Iterative Deepening Search
-                Task engineTask = Task.Run(() =>
+                for (int depth = 1; depth < Config.MinimalDepthMultithreading; depth++)
                 {
-                    bool con = true;
-                    int depth = 1;
-                    int reachedDepth = 0;
-                    do
+                    foundPV = searchThreads[0].Calculate(depth, foundPV, linkedCts.Token);
+                }
+
+                List<Task> tasks = new List<Task>();
+                pvDepth = Config.MinimalDepthMultithreading - 1;
+                currentDepth = Config.MinimalDepthMultithreading + 1;
+                currentDepthThreads = THREADS_NUM / 2;
+                int threadDepth = Config.MinimalDepthMultithreading;
+                for (int t = 0; t < THREADS_NUM; t++)
+                {
+                    if (t >= THREADS_NUM / 2)
                     {
-                        PVList newPV = pvSearch.Calculate(depth, pv, linkedCts.Token);
-                        if (!linkedCts.IsCancellationRequested)
-                        {
-                            pv = newPV;
-                            reachedDepth = depth;
-                        }
-                        con = !linkedCts.IsCancellationRequested && (!Config.ConstantDepth || depth <= Config.Depth);
-                        depth++;
-                    } while (con);
-                    Console.WriteLine($"Depth: {reachedDepth}, Line: {pv}");
-                    linkedCts.Token.ThrowIfCancellationRequested();
-                });
-                List<Task> tasks = new List<Task> { engineTask };
-                Task timeoutTask = null;
+                        threadDepth = Config.MinimalDepthMultithreading + 1;
+                    }
+                    Task engineTask = Task.Run(() => SearchThread(threadDepth));
+                    tasks.Add(engineTask);
+                }
+
                 if (!Config.ConstantDepth)
                 {
-                    timeoutTask = Task.Delay(Config.TimeLimit, linkedCts.Token);
+                    Task timeoutTask = Task.Delay(Config.TimeLimit, linkedCts.Token);
                     tasks.Add(timeoutTask);
                 }
 
@@ -79,7 +80,7 @@ namespace Artemis.Core.AI
                     if (!Config.ConstantDepth)
                     {
                         internalCts.Cancel();
-                        await engineTask;
+                        await Task.WhenAll(tasks);
                     }
                 }
                 catch (OperationCanceledException)
@@ -88,15 +89,62 @@ namespace Artemis.Core.AI
 
                 transpositionTable.Clear();
                 killerMoves.Clear();
-                if (pv.First != null)
+                if (foundPV.First != null)
                 {
-                    return pv.First.Move;
+                    Console.WriteLine($"Depth: {pvDepth}, Line: {foundPV}");
+                    return foundPV.First.Move;
                 }
                 else
                 {
                     throw new Exception("Principal Variation is empty");
                 }
             }
+        }
+
+        /// <summary>
+        /// Updates the PV when a thread finished a search.
+        /// </summary>
+        /// <param name="pv"></param>
+        /// <param name="depth"></param>
+        /// <returns>The depth at which the thread should search next</returns>
+        public int UpdatePV(PVList pv, int depth)
+        {
+            int searchDepth;
+            lock (pvLock)
+            {
+                if (depth > pvDepth)
+                {
+                    foundPV = pv;
+                    pvDepth = depth;
+                }
+                if (currentDepthThreads == THREADS_NUM / 2)
+                {
+                    currentDepth++;
+                    currentDepthThreads = 1;
+                }
+                else
+                {
+                    currentDepthThreads++;
+                }
+                searchDepth = currentDepth;
+            }
+            return searchDepth;
+        }
+
+        private void SearchThread(int depth)
+        {
+            PVList newPV = pvSearch.Calculate(depth, foundPV, linkedCts.Token);
+            bool con = !linkedCts.IsCancellationRequested && (!Config.ConstantDepth || depth <= Config.Depth);
+            if (!linkedCts.IsCancellationRequested)
+            {
+                int nextDepth = UpdatePV(newPV, depth);
+                if (con)
+                {
+                    SearchThread(nextDepth);
+                }
+            }
+
+            linkedCts.Token.ThrowIfCancellationRequested();
         }
     }
 }
