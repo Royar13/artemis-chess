@@ -38,9 +38,9 @@ namespace Artemis.Core.FormatConverters
             return true;
         }
 
-        public void Load(string fen, GameState gameState)
+        public void Load(string fen, GameState gameState, bool verifyValidity = false)
         {
-            if (!IsValid(fen))
+            if (verifyValidity && !IsValid(fen))
             {
                 throw new ArgumentException("Invalid FEN");
             }

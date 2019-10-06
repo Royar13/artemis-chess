@@ -42,7 +42,7 @@ namespace Artemis.Core.AI.Search
             searchDepth = depth;
             searchingPV = false;
             this.ct = ct;
-            if (searchDepth > 1)
+            if (searchDepth > 1 && prevPV != null)
             {
                 searchingPV = true;
                 currentPVNode = prevPV.First;
