@@ -2,6 +2,7 @@
 using Artemis.Core.AI.Search.Heuristics;
 using Artemis.Core.AI.Transposition;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -18,17 +19,16 @@ namespace Artemis.Core.AI.Search
         PositionEvaluator evaluator;
         MoveEvaluator moveEvaluator;
         IEngineConfig config;
-        PVList pv;
 
-        public SearchThread(ThreadMaster master, TranspositionTable transpositionTable, IEngineConfig config)
+        public SearchThread(ThreadMaster master, TranspositionTable transpositionTable, ConcurrentDictionary<ulong, bool> searchedNodes, IEngineConfig config, ZobristHashUtils zobristHashUtils)
         {
             this.master = master;
-            gameState = new GameState();
+            gameState = new GameState(zobristHashUtils);
             EvaluationConfig evConfig = new EvaluationConfig();
             evaluator = new PositionEvaluator(gameState, evConfig);
             moveEvaluator = new MoveEvaluator(evConfig);
             quietSearch = new QuiescenceSearch(gameState, evaluator, moveEvaluator);
-            pvSearch = new PVSearch(gameState, transpositionTable, killerMoves, evaluator, moveEvaluator, quietSearch);
+            pvSearch = new PVSearch(gameState, transpositionTable, killerMoves, evaluator, moveEvaluator, quietSearch, searchedNodes);
             this.config = config;
         }
 
@@ -37,27 +37,24 @@ namespace Artemis.Core.AI.Search
             gameState.LoadFEN(fen);
         }
 
-        public void SearchRecursive(int depth, CancellationToken ct)
+        public PVList Search(int startDepth, CancellationToken ct)
         {
-            pv = pvSearch.Calculate(depth, pv, ct);
-            bool con = !ct.IsCancellationRequested && (!config.ConstantDepth || depth <= config.Depth);
-            int nextDepth = 0;
-            if (!ct.IsCancellationRequested)
+            PVList pv = null;
+            bool con;
+            int depth = startDepth;
+            do
             {
-                nextDepth = master.UpdatePV(pv, depth);
-            }
+                PVList newPV = pvSearch.Calculate(depth, pv, ct);
+                if (!ct.IsCancellationRequested)
+                {
+                    pv = newPV;
+                }
+                depth++;
+                con = !ct.IsCancellationRequested && (!config.ConstantDepth || depth <= config.Depth);
+            } while (con);
 
-            if (con)
-            {
-                SearchRecursive(nextDepth, ct);
-            }
-            else
-            {
-                pv = null;
-                killerMoves.Clear();
-            }
-
-            ct.ThrowIfCancellationRequested();
+            killerMoves.Clear();
+            return pv;
         }
     }
 }

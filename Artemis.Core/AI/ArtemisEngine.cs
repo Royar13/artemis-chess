@@ -57,6 +57,7 @@ namespace Artemis.Core.AI
             transpositionTable.Clear();
             if (pv.First != null)
             {
+                pv.First.Move.SetGameState(gameState);
                 return pv.First.Move;
             }
             else

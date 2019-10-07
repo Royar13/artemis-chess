@@ -96,7 +96,7 @@ namespace Artemis.Core.FormatConverters
             {
                 irrevState.EnPassantCapture = BitboardUtils.GetBitboard(parts[3].StringToPos());
             }
-            irrevState.ZobristHash = gameState.ZobristHashUtils.GenerateHash();
+            irrevState.ZobristHash = gameState.ZobristHashUtils.GenerateHash(gameState);
         }
 
         public string Convert(GameState gameState)

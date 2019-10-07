@@ -49,14 +49,14 @@ namespace Artemis.Core
         /// </summary>
         public IMoveGenerator[] MoveGenerators = new IMoveGenerator[6];
 
-        public GameState() : this(DEFAULT_FEN)
+        public GameState(ZobristHashUtils zobristHashUtils = null) : this(DEFAULT_FEN, zobristHashUtils)
         {
         }
 
-        public GameState(string fen)
+        public GameState(string fen, ZobristHashUtils zobristHashUtils = null)
         {
             magic.Initialize();
-            ZobristHashUtils = new ZobristHashUtils(this);
+            ZobristHashUtils = zobristHashUtils ?? new ZobristHashUtils();
             moveGeneratorBuilder = new MoveGeneratorBuilder(this, magic);
             for (int i = 0; i < 6; i++)
             {

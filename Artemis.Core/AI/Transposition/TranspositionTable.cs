@@ -11,14 +11,14 @@ namespace Artemis.Core.AI.Transposition
 
         public void Add(ulong key, TranspositionNode node)
         {
-            table[key] = node;
+            table.TryAdd(key, node);
         }
 
         public void Update(ulong key, TranspositionNode existingNode, TranspositionNode updatedNode)
         {
             if (updatedNode.Depth > existingNode.Depth)
             {
-                table[key] = updatedNode;
+                table.TryUpdate(key, updatedNode, existingNode);
             }
         }
 
