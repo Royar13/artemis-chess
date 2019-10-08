@@ -183,6 +183,10 @@ namespace Artemis.Core.AI.Search
                         }
                         if (score > alpha)
                         {
+                            if (nextLmrReduction && !lmrReduction)
+                            {
+                                nextDepth++;
+                            }
                             score = -Search(nextDepth, ply + 1, -beta, -alpha, newPV, nextLmrReduction, nullMoveReduction);
                         }
                     }
