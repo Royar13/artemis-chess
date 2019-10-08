@@ -5,6 +5,7 @@ using Artemis.Core.AI.Transposition;
 using Artemis.Core.Moves;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,6 +45,8 @@ namespace Artemis.Core.AI
             using (linkedCts = CancellationTokenSource.CreateLinkedTokenSource(internalCts.Token, ct))
             {
                 PVList pv = null;
+                Stopwatch watch = new Stopwatch();
+                watch.Start();
                 //Iterative Deepening Search
                 Task engineTask = Task.Run(() =>
                 {
@@ -58,7 +61,7 @@ namespace Artemis.Core.AI
                             pv = newPV;
                             reachedDepth = depth;
                         }
-                        con = !linkedCts.IsCancellationRequested && (!Config.ConstantDepth || depth <= Config.Depth);
+                        con = !linkedCts.IsCancellationRequested && (!Config.ConstantDepth || depth < Config.Depth);
                         depth++;
                     } while (con);
                     Console.WriteLine($"Depth: {reachedDepth}, Line: {pv}");
@@ -85,6 +88,8 @@ namespace Artemis.Core.AI
                 catch (OperationCanceledException)
                 {
                 }
+                watch.Stop();
+                Console.WriteLine($"Time: {watch.ElapsedMilliseconds}");
 
                 transpositionTable.Clear();
                 killerMoves.Clear();
