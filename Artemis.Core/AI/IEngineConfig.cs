@@ -9,8 +9,12 @@ namespace Artemis.Core.AI
         bool ConstantDepth { get; }
         int Depth { get; }
         /// <summary>
-        /// Time limit per move in milliseconds
+        /// Time limit per move in milliseconds.
         /// </summary>
         int TimeLimit { get; }
+        /// <summary>
+        /// Minimal search depth to start using multiple threads.
+        /// </summary>
+        int MinimalDepthMultithreading { get; }
     }
 }

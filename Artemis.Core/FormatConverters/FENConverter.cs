@@ -38,9 +38,9 @@ namespace Artemis.Core.FormatConverters
             return true;
         }
 
-        public void Load(string fen, GameState gameState)
+        public void Load(string fen, GameState gameState, bool verifyValidity = false)
         {
-            if (!IsValid(fen))
+            if (verifyValidity && !IsValid(fen))
             {
                 throw new ArgumentException("Invalid FEN");
             }
@@ -96,7 +96,7 @@ namespace Artemis.Core.FormatConverters
             {
                 irrevState.EnPassantCapture = BitboardUtils.GetBitboard(parts[3].StringToPos());
             }
-            irrevState.ZobristHash = gameState.ZobristHashUtils.GenerateHash();
+            irrevState.ZobristHash = gameState.ZobristHashUtils.GenerateHash(gameState);
         }
 
         public string Convert(GameState gameState)

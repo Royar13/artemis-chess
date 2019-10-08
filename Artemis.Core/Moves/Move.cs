@@ -232,5 +232,10 @@ namespace Artemis.Core.Moves
             Move otherMove = (Move)obj;
             return From == otherMove.From && To == otherMove.To;
         }
+
+        public void SetGameState(GameState gameState)
+        {
+            this.gameState = gameState;
+        }
     }
 }

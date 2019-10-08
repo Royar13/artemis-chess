@@ -8,6 +8,8 @@ namespace Artemis.Core.AI.Search
     public class PVList
     {
         public PVNode First { get; private set; }
+        public int Depth;
+        public int Score;
 
         public void AddFirst(PVNode node)
         {
@@ -30,7 +32,19 @@ namespace Artemis.Core.AI.Search
                 node = node.Next;
             }
             string line = string.Join(", ", pv);
-            return line;
+            string scoreStr = Score > 0 ? "+" + Score : Score.ToString();
+            string str = $"({Depth}) {scoreStr} {line}";
+            return str;
+        }
+
+        public static bool operator >(PVList a, PVList b)
+        {
+            return a.Depth > b.Depth || (a.Depth == b.Depth && a.Score > b.Score);
+        }
+
+        public static bool operator <(PVList a, PVList b)
+        {
+            return !(a > b);
         }
     }
 }

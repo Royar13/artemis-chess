@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -25,9 +26,10 @@ namespace Artemis.Core.AI.Search
         PVNode currentPVNode;
         bool searchingPV;
         CancellationToken ct;
+        ConcurrentDictionary<ulong, bool> searchedNodes;
 
         public PVSearch(GameState gameState, TranspositionTable transpositionTable, KillerMoves killerMoves, PositionEvaluator evaluator, MoveEvaluator moveEvaluator,
-            QuiescenceSearch quietSearch)
+            QuiescenceSearch quietSearch, ConcurrentDictionary<ulong, bool> searchedNodes)
         {
             this.gameState = gameState;
             this.transpositionTable = transpositionTable;
@@ -35,6 +37,7 @@ namespace Artemis.Core.AI.Search
             this.evaluator = evaluator;
             this.moveEvaluator = moveEvaluator;
             this.quietSearch = quietSearch;
+            this.searchedNodes = searchedNodes;
         }
 
         public PVList Calculate(int depth, PVList prevPV, CancellationToken ct)
@@ -42,13 +45,15 @@ namespace Artemis.Core.AI.Search
             searchDepth = depth;
             searchingPV = false;
             this.ct = ct;
-            if (searchDepth > 1)
+            if (searchDepth > 1 && prevPV != null)
             {
                 searchingPV = true;
                 currentPVNode = prevPV.First;
             }
             PVList pvList = new PVList();
-            Search(depth, ArtemisEngine.INITIAL_ALPHA, ArtemisEngine.INITIAL_BETA, pvList);
+            int score = Search(depth, ArtemisEngine.INITIAL_ALPHA, ArtemisEngine.INITIAL_BETA, pvList);
+            pvList.Score = score;
+            pvList.Depth = depth;
             return pvList;
         }
 
@@ -116,6 +121,7 @@ namespace Artemis.Core.AI.Search
             bool cutoff = false;
             bool hasMoves = false;
             PVList newPV = new PVList();
+            int originalLen = moves.Count;
             for (int i = 0; i < moves.Count && !cutoff; i++)
             {
                 Move move = moves[i];
@@ -130,7 +136,18 @@ namespace Artemis.Core.AI.Search
                     }
                     else
                     {
-                        score = -Search(depth - 1, -alpha - 1, -alpha, newPV);
+                        ulong moveHash = gameState.GetIrrevState().ZobristHash;
+                        if (i >= originalLen || searchedNodes.TryAdd(moveHash, true))
+                        {
+                            score = -Search(depth - 1, -alpha - 1, -alpha, newPV);
+                            searchedNodes.TryRemove(moveHash, out _);
+                        }
+                        else
+                        {
+                            moves.Add(move);
+                            gameState.UnmakeMove(move);
+                            continue;
+                        }
                         if (score > alpha)
                         {
                             score = -Search(depth - 1, -beta, -alpha, newPV);

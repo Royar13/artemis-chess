@@ -15,14 +15,10 @@ namespace Artemis.Core.AI
     public class ArtemisEngine
     {
         GameState gameState;
-        PVSearch pvSearch;
-        QuiescenceSearch quietSearch;
-        TranspositionTable transpositionTable = new TranspositionTable();
-        KillerMoves killerMoves = new KillerMoves();
-        PositionEvaluator evaluator;
-        MoveEvaluator moveEvaluator;
         CancellationTokenSource internalCts;
         CancellationTokenSource linkedCts;
+        private TranspositionTable transpositionTable = new TranspositionTable();
+        private ThreadMaster threadMaster;
         public IEngineConfig Config;
         public const int INITIAL_ALPHA = -PositionEvaluator.CHECKMATE_SCORE * 2;
         public const int INITIAL_BETA = -INITIAL_ALPHA;
@@ -32,75 +28,45 @@ namespace Artemis.Core.AI
         {
             this.gameState = gameState;
             Config = config;
-            EvaluationConfig evConfig = new EvaluationConfig();
-            evaluator = new PositionEvaluator(gameState, evConfig);
-            moveEvaluator = new MoveEvaluator(evConfig);
-            quietSearch = new QuiescenceSearch(gameState, evaluator, moveEvaluator);
-            pvSearch = new PVSearch(gameState, transpositionTable, killerMoves, evaluator, moveEvaluator, quietSearch);
+            threadMaster = new ThreadMaster(gameState, transpositionTable, config);
         }
 
         public async Task<Move> Calculate(CancellationToken ct)
         {
+            PVList pv;
             using (internalCts = new CancellationTokenSource())
             using (linkedCts = CancellationTokenSource.CreateLinkedTokenSource(internalCts.Token, ct))
             {
-                PVList pv = null;
+                Task<PVList> searchTask = threadMaster.Search(linkedCts.Token);
                 Stopwatch watch = new Stopwatch();
                 watch.Start();
-                //Iterative Deepening Search
-                Task engineTask = Task.Run(() =>
-                {
-                    bool con = true;
-                    int depth = 1;
-                    int reachedDepth = 0;
-                    do
-                    {
-                        PVList newPV = pvSearch.Calculate(depth, pv, linkedCts.Token);
-                        if (!linkedCts.IsCancellationRequested)
-                        {
-                            pv = newPV;
-                            reachedDepth = depth;
-                        }
-                        con = !linkedCts.IsCancellationRequested && (!Config.ConstantDepth || depth < Config.Depth);
-                        depth++;
-                    } while (con);
-                    Console.WriteLine($"Depth: {reachedDepth}, Line: {pv}");
-                    linkedCts.Token.ThrowIfCancellationRequested();
-                });
-                List<Task> tasks = new List<Task> { engineTask };
-                Task timeoutTask = null;
                 if (!Config.ConstantDepth)
                 {
-                    timeoutTask = Task.Delay(Config.TimeLimit, linkedCts.Token);
-                    tasks.Add(timeoutTask);
-                }
-
-                try
-                {
-                    await Task.WhenAny(tasks);
-
-                    if (!Config.ConstantDepth)
+                    Task timeoutTask = Task.Delay(Config.TimeLimit, linkedCts.Token);
+                    try
                     {
+                        await timeoutTask;
                         internalCts.Cancel();
-                        await engineTask;
+                    }
+                    catch (OperationCanceledException)
+                    {
                     }
                 }
-                catch (OperationCanceledException)
-                {
-                }
+
+                pv = await searchTask;
                 watch.Stop();
                 Console.WriteLine($"Time: {watch.ElapsedMilliseconds}");
+            }
 
-                transpositionTable.Clear();
-                killerMoves.Clear();
-                if (pv.First != null)
-                {
-                    return pv.First.Move;
-                }
-                else
-                {
-                    throw new Exception("Principal Variation is empty");
-                }
+            transpositionTable.Clear();
+            if (pv.First != null)
+            {
+                pv.First.Move.SetGameState(gameState);
+                return pv.First.Move;
+            }
+            else
+            {
+                throw new Exception("Principal Variation is empty");
             }
         }
     }

@@ -6,15 +6,13 @@ namespace Artemis.Core.AI.Transposition
 {
     public class ZobristHashUtils
     {
-        GameState gameState;
         private ulong[,] piecePosBitstring = new ulong[12, 64];
         private ulong blackTurnBitstring;
         private ulong[,] castlingBitstring = new ulong[2, 2];
         private ulong[] enPassantBitstring = new ulong[8];
 
-        public ZobristHashUtils(GameState gameState)
+        public ZobristHashUtils()
         {
-            this.gameState = gameState;
             Initialize();
         }
 
@@ -44,7 +42,7 @@ namespace Artemis.Core.AI.Transposition
             }
         }
 
-        public ulong GenerateHash()
+        public ulong GenerateHash(GameState gameState)
         {
             ulong hash = 0;
             for (int pl = 0; pl < 2; pl++)
