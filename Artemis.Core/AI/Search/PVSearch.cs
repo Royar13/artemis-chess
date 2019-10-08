@@ -51,13 +51,13 @@ namespace Artemis.Core.AI.Search
                 currentPVNode = prevPV.First;
             }
             PVList pvList = new PVList();
-            int score = Search(depth, ArtemisEngine.INITIAL_ALPHA, ArtemisEngine.INITIAL_BETA, pvList, 0);
+            int score = Search(depth, ArtemisEngine.INITIAL_ALPHA, ArtemisEngine.INITIAL_BETA, pvList, false);
             pvList.Score = score;
             pvList.Depth = depth;
             return pvList;
         }
 
-        private int Search(int depth, int alpha, int beta, PVList pvList, int lmrReduction)
+        private int Search(int depth, int alpha, int beta, PVList pvList, bool lmrReduction)
         {
             if (ct.IsCancellationRequested)
             {
@@ -116,9 +116,7 @@ namespace Artemis.Core.AI.Search
             Move[] killers = killerMoves.GetKillerMoves(searchDepth - depth);
             moves = moves.OrderByDescending(m => moveEvaluator.EvaluateMove(m, pvMove, hashMove, killers).Score).ToList();
 
-            //bool lmrCandidatePosition = lmrReduction == 0 && depth >= 3 && (ttNode == null || ttNode.NodeType != NodeType.PVNode) && !gameState.IsCheck();
-            int nextDepth = depth - 1 - lmrReduction;
-            int nextReduction = lmrReduction;
+            bool lmrCandidatePosition = !lmrReduction && depth >= 3 && (ttNode == null || ttNode.NodeType != NodeType.PVNode) && !gameState.IsCheck();
 
             Move bestMove = null;
             bool fullSearch = true;
@@ -134,22 +132,25 @@ namespace Artemis.Core.AI.Search
                 {
                     hasMoves = true;
 
-                    /*if (lmrCandidatePosition && i >= 4 && move.IsQuiet() && !gameState.IsCheck())
+                    int nextDepth = depth - 1;
+                    bool nextLmrReduction = lmrReduction;
+                    if (lmrCandidatePosition && i >= 4 && move.IsQuiet() && !gameState.IsCheck())
                     {
-
-                    }*/
+                        nextLmrReduction = true;
+                        nextDepth -= 1;
+                    }
 
                     int score;
                     if (fullSearch || searchDepth == 1)
                     {
-                        score = -Search(nextDepth, -beta, -alpha, newPV, nextReduction);
+                        score = -Search(nextDepth, -beta, -alpha, newPV, nextLmrReduction);
                     }
                     else
                     {
                         ulong moveHash = gameState.GetIrrevState().ZobristHash;
                         if (i >= originalLen || searchedNodes.TryAdd(moveHash, true))
                         {
-                            score = -Search(nextDepth, -alpha - 1, -alpha, newPV, nextReduction);
+                            score = -Search(nextDepth, -alpha - 1, -alpha, newPV, nextLmrReduction);
                             searchedNodes.TryRemove(moveHash, out _);
                         }
                         else
@@ -160,7 +161,7 @@ namespace Artemis.Core.AI.Search
                         }
                         if (score > alpha)
                         {
-                            score = -Search(nextDepth, -beta, -alpha, newPV, nextReduction);
+                            score = -Search(nextDepth, -beta, -alpha, newPV, nextLmrReduction);
                         }
                     }
 
