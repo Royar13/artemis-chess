@@ -159,9 +159,13 @@ namespace Artemis.Core.Moves
             }
         }
 
+        /// <summary>
+        /// Should be called after the move is made.
+        /// </summary>
+        /// <returns></returns>
         public virtual bool IsQuiet()
         {
-            return (gameState.Occupancy[1 - gameState.Turn] & To) == 0;
+            return (gameState.Occupancy[gameState.Turn] & To) == 0;
         }
 
         /// <summary>
