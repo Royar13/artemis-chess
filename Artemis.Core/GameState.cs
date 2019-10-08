@@ -200,6 +200,20 @@ namespace Artemis.Core
             ChangeTurn();
         }
 
+        public void MakeNullMove()
+        {
+            IrrevState irrevState = GetIrrevState().Copy();
+            irrevStates.Add(irrevState);
+            ChangeTurn();
+            ZobristHashUtils.UpdateTurn(ref GetIrrevState().ZobristHash);
+        }
+
+        public void UnmakeNullMove()
+        {
+            irrevStates.RemoveAt(irrevStates.Count - 1);
+            ChangeTurn();
+        }
+
         /// <summary>
         /// Gets the result of the game.
         /// For use by the GUI.

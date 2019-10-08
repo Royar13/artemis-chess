@@ -16,5 +16,6 @@ namespace Artemis.Core.AI
         /// Minimal search depth to start using multiple threads.
         /// </summary>
         int MinimalDepthMultithreading { get; }
+        int NullMoveDepthReduction { get; }
     }
 }
