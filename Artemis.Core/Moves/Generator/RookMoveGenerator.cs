@@ -1,21 +1,19 @@
-﻿using Artemis.Core.Moves.MagicBitboards;
+﻿using Artemis.Core.Moves.PregeneratedAttacks;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Artemis.Core.Moves.Generator
 {
-    class RookMoveGenerator : SlidingMoveGenerator
+    class RookMoveGenerator : MoveGenerator
     {
-        public RookMoveGenerator(GameState gameState, MagicBitboardsData magic) : base(gameState, magic, PieceType.Rook)
+        public RookMoveGenerator(GameState gameState, PregeneratedAttacksData pregeneratedAttacks) : base(gameState, pregeneratedAttacks, PieceType.Rook)
         {
         }
 
-        protected override ulong GetAttacksFromSquare(int pl, ulong sq)
+        public override ulong GenerateAttacksFromSquare(int sqInd)
         {
-            int sqInd = BitboardUtils.BitScanForward(sq);
-            ulong attacks = magic.GetAttacks(sqInd, gameState.FullOccupancy, true);
-            return attacks;
+            return pregeneratedAttacks.GetRookAttacks(sqInd, gameState.FullOccupancy);
         }
     }
 }

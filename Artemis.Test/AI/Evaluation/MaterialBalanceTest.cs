@@ -15,7 +15,7 @@ namespace Artemis.Test.AI.Evaluation
         [TestInitialize]
         public void TestInit()
         {
-            gameState = new GameState();
+            gameState = GameStateBuilder.Build();
             evaluator = new PositionEvaluator(gameState, new EvaluationConfig());
             evaluatorPO = new PrivateObject(evaluator);
         }

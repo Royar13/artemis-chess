@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="AI\Evaluation\MaterialBalanceTest.cs" />
     <Compile Include="FormatConverters\FENConverterTest.cs" />
+    <Compile Include="GameStateBuilder.cs" />
     <Compile Include="Moves\SlidingPieceUtilsTest.cs" />
     <Compile Include="Moves\ZobristIncrementalUpdateTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

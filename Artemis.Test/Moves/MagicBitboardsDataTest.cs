@@ -1,6 +1,6 @@
 ﻿using System;
 using Artemis.Core;
-using Artemis.Core.Moves.MagicBitboards;
+using Artemis.Core.Moves.PregeneratedAttacks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Artemis.Test.Moves

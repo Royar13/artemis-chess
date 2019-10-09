@@ -39,9 +39,7 @@ namespace Artemis.Core
         /// <returns></returns>
         public static ulong GetBitboard(int sqInd)
         {
-            ulong bitboard = 1;
-            bitboard = bitboard << sqInd;
-            return bitboard;
+            return 1UL << sqInd;
         }
 
         /// <summary>

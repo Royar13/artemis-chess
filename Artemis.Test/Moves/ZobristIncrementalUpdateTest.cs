@@ -15,7 +15,7 @@ namespace Artemis.Test.Moves
         [TestInitialize]
         public void TestInit()
         {
-            gameState = new GameState();
+            gameState = GameStateBuilder.Build();
             zobristHashUtils = new PrivateObject(gameState.ZobristHashUtils);
         }
 
