@@ -1,7 +1,9 @@
 ﻿using Artemis.Core;
 using Artemis.Core.AI;
+using Artemis.Core.AI.Transposition;
 using Artemis.Core.FormatConverters;
 using Artemis.Core.Moves;
+using Artemis.Core.Moves.PregeneratedAttacks;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -18,6 +20,8 @@ namespace Artemis.GUI
 {
     class GameManager : INotifyPropertyChanged
     {
+        private ZobristHashUtils zobristHashUtils = new ZobristHashUtils();
+        private PregeneratedAttacksData pregeneratedAttacks = new PregeneratedAttacksData();
         private GameState gameState;
         private ArtemisEngine engine;
         private Canvas boardCanvas;
@@ -26,7 +30,7 @@ namespace Artemis.GUI
         private LastMoveHighlight lastMoveHighlight;
         private MovesHistory movesHistory;
         private IFormatConverter fenConverter = new FENConverter();
-        public InputSource[] PlayerType { get; } = { InputSource.Player, InputSource.Engine };
+        public InputSource[] PlayerType { get; } = { InputSource.Player, InputSource.Player };
         public bool GameEnded { get; private set; }
         public List<GameAction> LegalActions;
         private string fen;
@@ -61,17 +65,18 @@ namespace Artemis.GUI
                 ImageSource = GetImage("board.png")
             };
             lastMoveHighlight = new LastMoveHighlight(this, boardCanvas);
+            pregeneratedAttacks.Initialize();
         }
 
         public void NewGame(string fen = null)
         {
             if (fen == null)
             {
-                gameState = new GameState();
+                gameState = new GameState(pregeneratedAttacks, zobristHashUtils);
             }
             else
             {
-                gameState = new GameState(fen);
+                gameState = new GameState(fen, pregeneratedAttacks, zobristHashUtils);
             }
             engine = new ArtemisEngine(gameState, new EngineConfig());
             UpdateFEN();

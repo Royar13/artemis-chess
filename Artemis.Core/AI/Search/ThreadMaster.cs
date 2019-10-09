@@ -29,7 +29,8 @@ namespace Artemis.Core.AI.Search
             searchThreads = new SearchThread[threadsNum];
             for (int t = 0; t < threadsNum; t++)
             {
-                searchThreads[t] = new SearchThread(this, transpositionTable, searchedNodes, config, gameState.ZobristHashUtils);
+                GameState threadState = new GameState(gameState.PregeneratedAttacks, gameState.ZobristHashUtils);
+                searchThreads[t] = new SearchThread(this, threadState, transpositionTable, searchedNodes, config);
             }
         }
 

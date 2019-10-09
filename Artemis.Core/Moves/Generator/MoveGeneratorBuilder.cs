@@ -1,4 +1,4 @@
-﻿using Artemis.Core.Moves.MagicBitboards;
+﻿using Artemis.Core.Moves.PregeneratedAttacks;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,12 +8,12 @@ namespace Artemis.Core.Moves.Generator
     class MoveGeneratorBuilder
     {
         private GameState gameState;
-        private MagicBitboardsData magic;
+        private PregeneratedAttacksData pregeneratedAttacks;
 
-        public MoveGeneratorBuilder(GameState gameState, MagicBitboardsData magic)
+        public MoveGeneratorBuilder(GameState gameState, PregeneratedAttacksData pregeneratedAttacks)
         {
             this.gameState = gameState;
-            this.magic = magic;
+            this.pregeneratedAttacks = pregeneratedAttacks;
         }
 
         public IMoveGenerator Build(PieceType type)
@@ -22,22 +22,22 @@ namespace Artemis.Core.Moves.Generator
             switch (type)
             {
                 case PieceType.Bishop:
-                    generator = new BishopMoveGenerator(gameState, magic);
+                    generator = new BishopMoveGenerator(gameState, pregeneratedAttacks);
                     break;
                 case PieceType.Rook:
-                    generator = new RookMoveGenerator(gameState, magic);
+                    generator = new RookMoveGenerator(gameState, pregeneratedAttacks);
                     break;
                 case PieceType.Knight:
-                    generator = new KnightMoveGenerator(gameState, magic);
+                    generator = new KnightMoveGenerator(gameState, pregeneratedAttacks);
                     break;
                 case PieceType.Pawn:
-                    generator = new PawnMoveGenerator(gameState, magic);
+                    generator = new PawnMoveGenerator(gameState, pregeneratedAttacks);
                     break;
                 case PieceType.Queen:
-                    generator = new QueenMoveGenerator(gameState, magic);
+                    generator = new QueenMoveGenerator(gameState, pregeneratedAttacks);
                     break;
                 case PieceType.King:
-                    generator = new KingMoveGenerator(gameState, magic);
+                    generator = new KingMoveGenerator(gameState, pregeneratedAttacks);
                     break;
             }
             return generator;

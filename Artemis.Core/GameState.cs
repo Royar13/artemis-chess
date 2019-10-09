@@ -2,7 +2,7 @@
 using Artemis.Core.FormatConverters;
 using Artemis.Core.Moves;
 using Artemis.Core.Moves.Generator;
-using Artemis.Core.Moves.MagicBitboards;
+using Artemis.Core.Moves.PregeneratedAttacks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +12,6 @@ namespace Artemis.Core
     public class GameState
     {
         private List<IrrevState> irrevStates = new List<IrrevState>();
-        private MagicBitboardsData magic = new MagicBitboardsData();
         private MoveGeneratorBuilder moveGeneratorBuilder;
         private IFormatConverter fenConverter = new FENConverter();
         const string DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -43,21 +42,22 @@ namespace Artemis.Core
 
         public int Turn { get; private set; }
         public ZobristHashUtils ZobristHashUtils { get; }
+        public PregeneratedAttacksData PregeneratedAttacks { get; }
 
         /// <summary>
         /// Move generators for different piece types, indexed by the piece type
         /// </summary>
         public IMoveGenerator[] MoveGenerators = new IMoveGenerator[6];
 
-        public GameState(ZobristHashUtils zobristHashUtils = null) : this(DEFAULT_FEN, zobristHashUtils)
+        public GameState(PregeneratedAttacksData pregeneratedAttacks, ZobristHashUtils zobristHashUtils) : this(DEFAULT_FEN, pregeneratedAttacks, zobristHashUtils)
         {
         }
 
-        public GameState(string fen, ZobristHashUtils zobristHashUtils = null)
+        public GameState(string fen, PregeneratedAttacksData pregeneratedAttacks, ZobristHashUtils zobristHashUtils)
         {
-            magic.Initialize();
-            ZobristHashUtils = zobristHashUtils ?? new ZobristHashUtils();
-            moveGeneratorBuilder = new MoveGeneratorBuilder(this, magic);
+            PregeneratedAttacks = pregeneratedAttacks;
+            ZobristHashUtils = zobristHashUtils;
+            moveGeneratorBuilder = new MoveGeneratorBuilder(this, PregeneratedAttacks);
             for (int i = 0; i < 6; i++)
             {
                 MoveGenerators[i] = moveGeneratorBuilder.Build((PieceType)i);
@@ -258,12 +258,6 @@ namespace Artemis.Core
                 }
             }
             return pieces;
-        }
-
-        public GameState Copy()
-        {
-            string fen = fenConverter.Convert(this);
-            return new GameState(fen);
         }
     }
 }

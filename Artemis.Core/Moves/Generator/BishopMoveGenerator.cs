@@ -1,21 +1,19 @@
-﻿using Artemis.Core.Moves.MagicBitboards;
+﻿using Artemis.Core.Moves.PregeneratedAttacks;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Artemis.Core.Moves.Generator
 {
-    class BishopMoveGenerator : SlidingMoveGenerator
+    class BishopMoveGenerator : MoveGenerator
     {
-        public BishopMoveGenerator(GameState gameState, MagicBitboardsData magic) : base(gameState, magic, PieceType.Bishop)
+        public BishopMoveGenerator(GameState gameState, PregeneratedAttacksData pregeneratedAttacks) : base(gameState, pregeneratedAttacks, PieceType.Bishop)
         {
         }
 
-        protected override ulong GetAttacksFromSquare(int pl, ulong sq)
+        public override ulong GenerateAttacksFromSquare(int sqInd)
         {
-            int sqInd = BitboardUtils.BitScanForward(sq);
-            ulong attacks = magic.GetAttacks(sqInd, gameState.FullOccupancy, false);
-            return attacks;
+            return pregeneratedAttacks.GetBishopAttacks(sqInd, gameState.FullOccupancy);
         }
     }
 }
