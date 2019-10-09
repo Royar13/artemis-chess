@@ -10,13 +10,15 @@ namespace Artemis.Core.AI.Search
 {
     public class QuiescenceSearch
     {
+        ArtemisEngine engine;
         GameState gameState;
         PositionEvaluator evaluator;
         MoveEvaluator moveEvaluator;
         const int DELTA_PRUNING_MARGIN = 200;
 
-        public QuiescenceSearch(GameState gameState, PositionEvaluator evaluator, MoveEvaluator moveEvaluator)
+        public QuiescenceSearch(ArtemisEngine engine, GameState gameState, PositionEvaluator evaluator, MoveEvaluator moveEvaluator)
         {
+            this.engine = engine;
             this.gameState = gameState;
             this.evaluator = evaluator;
             this.moveEvaluator = moveEvaluator;
@@ -24,7 +26,7 @@ namespace Artemis.Core.AI.Search
 
         public int Search(int alpha, int beta)
         {
-            int standPat = evaluator.Evaluate(0);
+            int standPat = evaluator.Evaluate(0, engine.GameStage);
             int originalAlpha = alpha;
             if (standPat >= beta)
             {

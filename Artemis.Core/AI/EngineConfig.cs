@@ -12,5 +12,6 @@ namespace Artemis.Core.AI
         public int TimeLimit { get; set; } = 4500;
         public int MinimalDepthMultithreading { get; set; } = 3;
         public int NullMoveDepthReduction { get; set; } = 2;
+        public bool Multithreading { get; set; } = true;
     }
 }

@@ -8,5 +8,6 @@ namespace Artemis.Core.Moves.Generator
     {
         ulong GenerateAttacks(int pl);
         IEnumerable<Move> GenerateMoves(GenerationMode generationMode = GenerationMode.Normal);
+        IEnumerable<Move> GetMovesFromSquare(ulong sq);
     }
 }

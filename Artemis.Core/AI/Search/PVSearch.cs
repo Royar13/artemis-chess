@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -65,6 +66,13 @@ namespace Artemis.Core.AI.Search
             {
                 return 0;
             }
+
+            if (gameState.IsCheck() && depth < ArtemisEngine.MAX_DEPTH)
+            {
+                //check extension
+                depth += 1;
+            }
+
             ulong hash = gameState.GetIrrevState().ZobristHash;
             TranspositionNode ttNode = null;
             if (transpositionTable.TryGetValue(hash, out ttNode))
@@ -99,11 +107,10 @@ namespace Artemis.Core.AI.Search
 
             Move bestMove = null;
             bool cutoff = false;
-            bool hasMoves = false;
             PVList newPV = new PVList();
             int originalAlpha = alpha;
 
-            if (depth > config.NullMoveDepthReduction + 1 && !nullMoveReduction && !gameState.IsCheck())
+            if (ply > 0 && depth > config.NullMoveDepthReduction + 1 && !nullMoveReduction && !gameState.IsCheck())
             {
                 //null move pruning
                 gameState.MakeNullMove();
@@ -115,12 +122,6 @@ namespace Artemis.Core.AI.Search
                     //alpha-beta cutoff
                     return beta;
                 }
-            }
-
-            if (gameState.IsCheck())
-            {
-                //check extension
-                depth += 1;
             }
 
             List<Move> moves = gameState.GetMoves();
@@ -146,48 +147,48 @@ namespace Artemis.Core.AI.Search
             moves = moves.OrderByDescending(m => moveEvaluator.EvaluateMove(m, pvMove, hashMove, killers).Score).ToList();
 
             int originalLen = moves.Count;
+            int moveCount = 0;
             for (int i = 0; i < moves.Count && !cutoff; i++)
             {
                 Move move = moves[i];
                 gameState.MakeMove(move);
                 if (move.IsLegal())
                 {
-                    hasMoves = true;
-
                     int nextDepth = depth - 1;
                     bool nextLmrReduction = lmrReduction;
-                    if (lmrCandidatePosition && i >= 4 && move.IsQuiet() && !gameState.IsCheck())
+                    if (lmrCandidatePosition && moveCount >= 4 && move.IsQuiet() && !gameState.IsCheck())
                     {
                         nextLmrReduction = true;
                         nextDepth -= 1;
                     }
 
                     int score;
-                    if (i == 0 || searchDepth == 1)
+                    if (moveCount == 0 || searchDepth == 1)
                     {
                         score = -Search(nextDepth, ply + 1, -beta, -alpha, newPV, nextLmrReduction, nullMoveReduction);
                     }
                     else
                     {
                         ulong moveHash = gameState.GetIrrevState().ZobristHash;
-                        if (i >= originalLen || searchedNodes.TryAdd(moveHash, true))
+                        if (!config.Multithreading || i >= originalLen || searchedNodes.TryAdd(moveHash, true))
                         {
                             score = -Search(nextDepth, ply + 1, -alpha - 1, -alpha, newPV, nextLmrReduction, nullMoveReduction);
                             searchedNodes.TryRemove(moveHash, out _);
+
+                            if (score > alpha)
+                            {
+                                if (nextLmrReduction && !lmrReduction)
+                                {
+                                    nextDepth++;
+                                }
+                                score = -Search(nextDepth, ply + 1, -beta, -alpha, newPV, nextLmrReduction, nullMoveReduction);
+                            }
                         }
                         else
                         {
                             moves.Add(move);
                             gameState.UnmakeMove(move);
                             continue;
-                        }
-                        if (score > alpha)
-                        {
-                            if (nextLmrReduction && !lmrReduction)
-                            {
-                                nextDepth++;
-                            }
-                            score = -Search(nextDepth, ply + 1, -beta, -alpha, newPV, nextLmrReduction, nullMoveReduction);
                         }
                     }
 
@@ -204,12 +205,15 @@ namespace Artemis.Core.AI.Search
                         alpha = score;
                         bestMove = move;
                     }
+
+                    moveCount++;
                 }
                 gameState.UnmakeMove(move);
             }
 
-            if (!hasMoves)
+            if (moveCount == 0)
             {
+                //player has no legal moves
                 if (gameState.IsCheck())
                 {
                     return -PositionEvaluator.CHECKMATE_SCORE - depth;

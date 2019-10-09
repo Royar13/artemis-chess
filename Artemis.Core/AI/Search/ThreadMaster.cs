@@ -20,7 +20,7 @@ namespace Artemis.Core.AI.Search
         private SearchThread[] searchThreads;
         private ConcurrentDictionary<ulong, bool> searchedNodes = new ConcurrentDictionary<ulong, bool>();
 
-        public ThreadMaster(GameState gameState, TranspositionTable transpositionTable, IEngineConfig config)
+        public ThreadMaster(ArtemisEngine engine, GameState gameState, TranspositionTable transpositionTable, IEngineConfig config)
         {
             this.gameState = gameState;
             this.transpositionTable = transpositionTable;
@@ -29,7 +29,7 @@ namespace Artemis.Core.AI.Search
             searchThreads = new SearchThread[threadsNum];
             for (int t = 0; t < threadsNum; t++)
             {
-                searchThreads[t] = new SearchThread(this, transpositionTable, searchedNodes, config, gameState.ZobristHashUtils);
+                searchThreads[t] = new SearchThread(engine, this, transpositionTable, searchedNodes, config, gameState.ZobristHashUtils);
             }
         }
 
@@ -37,7 +37,8 @@ namespace Artemis.Core.AI.Search
         {
             List<Task<PVList>> tasks = new List<Task<PVList>>();
             string fen = fenConverter.Convert(gameState);
-            for (int t = 0; t < threadsNum; t++)
+            int currentThreadsNum = config.Multithreading ? threadsNum : 1;
+            for (int t = 0; t < currentThreadsNum; t++)
             {
                 SearchThread thread = searchThreads[t];
                 thread.LoadPosition(fen);

@@ -20,14 +20,14 @@ namespace Artemis.Core.AI.Search
         MoveEvaluator moveEvaluator;
         IEngineConfig config;
 
-        public SearchThread(ThreadMaster master, TranspositionTable transpositionTable, ConcurrentDictionary<ulong, bool> searchedNodes, IEngineConfig config, ZobristHashUtils zobristHashUtils)
+        public SearchThread(ArtemisEngine engine, ThreadMaster master, TranspositionTable transpositionTable, ConcurrentDictionary<ulong, bool> searchedNodes, IEngineConfig config, ZobristHashUtils zobristHashUtils)
         {
             this.master = master;
             gameState = new GameState(zobristHashUtils);
             EvaluationConfig evConfig = new EvaluationConfig();
             evaluator = new PositionEvaluator(gameState, evConfig);
             moveEvaluator = new MoveEvaluator(evConfig);
-            quietSearch = new QuiescenceSearch(gameState, evaluator, moveEvaluator);
+            quietSearch = new QuiescenceSearch(engine, gameState, evaluator, moveEvaluator);
             pvSearch = new PVSearch(gameState, transpositionTable, killerMoves, evaluator, moveEvaluator, quietSearch, searchedNodes, config);
             this.config = config;
         }

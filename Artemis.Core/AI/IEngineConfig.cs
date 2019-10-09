@@ -17,5 +17,6 @@ namespace Artemis.Core.AI
         /// </summary>
         int MinimalDepthMultithreading { get; }
         int NullMoveDepthReduction { get; }
+        bool Multithreading { get; }
     }
 }
