@@ -51,7 +51,7 @@ namespace Artemis.Core.Moves.Generator
             ulong from = BitboardUtils.GetBitboard(sqInd);
             while (moves > 0)
             {
-                ulong to = BitboardUtils.GetLSB(moves);
+                ulong to = gameState.Turn == 0 ? BitboardUtils.GetMSB(moves) : BitboardUtils.GetLSB(moves);
                 Move move = new Move(gameState, from, to, pieceType);
                 yield return move;
                 moves ^= to;

@@ -51,6 +51,23 @@ namespace Artemis.Core
             return bb & (~bb + 1);
         }
 
+        /// <summary>
+        /// Gets the most significant bit
+        /// </summary>
+        /// <param name="bb"></param>
+        /// <returns></returns>
+        public static ulong GetMSB(ulong bb)
+        {
+            bb |= bb >> 1;
+            bb |= bb >> 2;
+            bb |= bb >> 4;
+            bb |= bb >> 8;
+            bb |= bb >> 16;
+            bb |= bb >> 32;
+            bb = bb & ~(bb >> 1);
+            return bb;
+        }
+
         public static ulong RandomBitstring()
         {
             var buffer = new byte[sizeof(ulong)];

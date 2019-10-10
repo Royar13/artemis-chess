@@ -23,10 +23,44 @@ namespace Artemis.Test
             ulong bb4 = BitboardUtils.GetLSB(0b1000000);
             ulong expectedBb4 = 0b1000000;
 
+            ulong bb5 = BitboardUtils.GetLSB(0);
+            ulong expectedBb5 = 0;
+
             Assert.AreEqual(expectedBb1, bb1);
             Assert.AreEqual(expectedBb2, bb2);
             Assert.AreEqual(expectedBb3, bb3);
             Assert.AreEqual(expectedBb4, bb4);
+            Assert.AreEqual(expectedBb5, bb5);
+        }
+
+        [TestMethod]
+        public void GetMSBTest()
+        {
+            ulong bb1 = BitboardUtils.GetMSB(0b01110100011100);
+            ulong expectedBb1 = 0b1000000000000;
+
+            ulong bb2 = BitboardUtils.GetMSB(0b111);
+            ulong expectedBb2 = 0b100;
+
+            ulong bb3 = BitboardUtils.GetMSB(0b1001110010);
+            ulong expectedBb3 = 0b1000000000;
+
+            ulong bb4 = BitboardUtils.GetMSB(0b1000000);
+            ulong expectedBb4 = 0b1000000;
+
+            ulong bb5 = BitboardUtils.GetMSB(0);
+            ulong expectedBb5 = 0;
+
+            ulong bb6 = BitboardUtils.GetMSB(0x30AB067088F2);
+            ulong expectedBb6 = 0x200000000000;
+
+
+            Assert.AreEqual(expectedBb1, bb1);
+            Assert.AreEqual(expectedBb2, bb2);
+            Assert.AreEqual(expectedBb3, bb3);
+            Assert.AreEqual(expectedBb4, bb4);
+            Assert.AreEqual(expectedBb5, bb5);
+            Assert.AreEqual(expectedBb6, bb6);
         }
 
         [TestMethod]
