@@ -24,7 +24,7 @@ namespace Artemis.Core.AI
         public IEngineConfig Config;
         public const int INITIAL_ALPHA = -PositionEvaluator.CHECKMATE_SCORE * 2;
         public const int INITIAL_BETA = -INITIAL_ALPHA;
-        public const int MAX_DEPTH = 20;
+        public const int MAX_DEPTH = 50;
         public GameStage GameStage = GameStage.Opening;
 
         public ArtemisEngine(GameState gameState, IEngineConfig config)
