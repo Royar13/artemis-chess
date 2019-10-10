@@ -41,46 +41,62 @@ namespace Artemis.Core.AI.Evaluation
             ulong[,] pieceAttacks = new ulong[2, 5];
             ulong[] kingAttacks = new ulong[2];
             int[] kingAttacksScore = new int[2];
-            int[] castlingSide = { -1, -1 };
-            double[] kingAttackModifier = { 1, 1 };
+            int[] kingFile = {  BitboardUtils.GetFile(BitboardUtils.BitScanForward(gameState.Pieces[0, (int)PieceType.King])),
+                                BitboardUtils.GetFile(BitboardUtils.BitScanForward(gameState.Pieces[1, (int)PieceType.King])) };
+            double kingAttackModifier = 1 + Math.Min(1 + Math.Abs(kingFile[1] - kingFile[0]), 5) / (double)5 * 0.6;
             for (int pl = 0; pl <= 1; pl++)
             {
                 int sign = pl == gameState.Turn ? 1 : -1;
 
                 if (gameStage != GameStage.Endgame)
                 {
+                    //rooks connected
+                    int rooksConnectedScore = GetRooksConnectedScore(pl);
+                    score += sign * rooksConnectedScore;
+
                     //king safety
-                    bool kingCastled = IsKingCastled(pl, out castlingSide[pl]);
-                    if (!kingCastled)
+                    bool rooksConnected = rooksConnectedScore > 0;
+                    int kingFileScore = sign * config.GetKingFileScore(pl, kingFile[pl], rooksConnected, gameState.GetIrrevState());
+                    score += kingFileScore;
+
+                    int startFile = Math.Max(0, kingFile[pl] - 1);
+                    int endFile = Math.Min(7, kingFile[pl] + 1);
+                    for (int f = startFile; f <= endFile; f++)
                     {
-                        IrrevState irrevState = gameState.GetIrrevState();
-                        if (!irrevState.CastlingAllowed[pl, 0] && !irrevState.CastlingAllowed[pl, 1])
+                        ulong fileMask = BitboardUtils.GetFileMask(f);
+                        //moved king pawns penalty
+                        if (kingFile[pl] != 4 || f == 5)
                         {
-                            score += sign * config.GetKingMiddlePenalty();
+                            //don't penalize center pawn moves, except moves of the f pawn.
+                            ulong friendlyPawn = fileMask & gameState.Pieces[pl, (int)PieceType.Pawn];
+                            if (friendlyPawn > 0)
+                            {
+                                //least advanced pawn
+                                int pawnRank = BitboardUtils.GetRank(pl == 0 ? BitboardUtils.BitScanForward(friendlyPawn) : BitboardUtils.BitScanBackward(friendlyPawn));
+                                score += sign * config.GetKingPawnMovedPenalty(pl, pawnRank);
+                            }
+                            else
+                            {
+                                score += sign * config.GetNoKingPawnPenalty();
+                            }
+                        }
+
+                        //pawn storm
+                        ulong enemyPawn = fileMask & gameState.Pieces[1 - pl, (int)PieceType.Pawn];
+                        if (enemyPawn > 0)
+                        {
+                            //most advanced pawn
+                            int pawnRank = BitboardUtils.GetRank(pl == 0 ? BitboardUtils.BitScanForward(enemyPawn) : BitboardUtils.BitScanBackward(enemyPawn));
+                            score -= sign * config.GetPawnStormScore(1 - pl, pawnRank);
+                        }
+
+                        //king open files penalty
+                        if (enemyPawn == 0)
+                        {
+                            score += sign * config.GetKingOpenFilePenalty();
                         }
                     }
-                    else
-                    {
-                        score += sign * config.GetKingCastledScore(castlingSide[pl]);
-                    }
                 }
-            }
-
-            if (castlingSide[0] != castlingSide[1])
-            {
-                if (castlingSide[0] >= 0)
-                {
-                    kingAttackModifier[0] = 1.5;
-                }
-                if (castlingSide[1] >= 0)
-                {
-                    kingAttackModifier[1] = 1.5;
-                }
-            }
-
-            for (int pl = 0; pl <= 1; pl++)
-            {
-                int sign = pl == gameState.Turn ? 1 : -1;
 
                 //pawn structure
                 score += sign * EvaluatePawnStructure(pl);
@@ -92,54 +108,37 @@ namespace Artemis.Core.AI.Evaluation
                 int file = BitboardUtils.GetFile(BitboardUtils.BitScanForward(opKing));
                 opKingSurrounding = opKing | gameState.MoveGenerators[(int)PieceType.King].GenerateAttacks(1 - pl);
                 opKingQuarter = GetKingQuarter(1 - pl, file);
-                ulong pawnProtectors = gameState.Pieces[pl, (int)PieceType.Pawn] & opKingSurrounding;
-                score += sign * BitboardUtils.Popcount(pawnProtectors) * config.GetKingPawnProtectorsScore();
 
                 for (int i = 0; i < 5; i++)
                 {
-
                     PieceType pieceType = (PieceType)i;
                     //material
                     score += sign * BitboardUtils.Popcount(gameState.Pieces[pl, i]) * config.GetPieceValue(pieceType);
-                    pieceAttacks[pl, i] = gameState.MoveGenerators[i].GenerateAttacks(pl);
-                    //mobility
-                    score += sign * BitboardUtils.Popcount(pieceAttacks[pl, i]) * config.GetMobilityScore(gameStage, pieceType);
 
-                    if (pieceType == PieceType.Pawn)
+                    if (pieceType != PieceType.Pawn && gameStage != GameStage.Endgame)
                     {
-                        //pawn central control
-                        ulong pawnsCenterControl = (gameState.Pieces[pl, i] | pieceAttacks[pl, i]) & BitboardUtils.CENTER_MASK;
-                        score += sign * BitboardUtils.SparsePopcount(pawnsCenterControl) * config.GetPawnCentralControlScore();
-                        //pawn support
-                        score += sign * BitboardUtils.SparsePopcount(pieceAttacks[pl, i] & gameState.Pieces[pl, i]) * config.GetPawnSupportScore();
-                    }
-                    else
-                    {
-                        if (gameStage != GameStage.Endgame)
+                        ulong piece = gameState.Pieces[pl, i];
+                        while (piece > 0)
                         {
-                            ulong piece = gameState.Pieces[pl, i];
-                            while (piece > 0)
-                            {
-                                ulong pieceSq = BitboardUtils.GetLSB(piece);
+                            int pieceSq = BitboardUtils.PopLSB(ref piece);
+                            ulong attacks = gameState.MoveGenerators[i].GenerateAttacksFromSquare(pieceSq);
 
-                                ulong attacks= gameState.MoveGenerators[i].
-                                //center control
-                                ulong piecesCenterControl = (gameState.Occupancy[pl] | attacks) & BitboardUtils.EXTENDED_CENTER_MASK;
-                                score += sign * BitboardUtils.Popcount(piecesCenterControl) * config.GetPieceCentralControlScore();
+                            //mobility
+                            score += sign * BitboardUtils.Popcount(attacks) * config.GetMobilityScore(gameStage, pieceType);
 
-                                //king attack
-                                ulong directKingAttacks = opKingSurrounding & pieceAttacks[pl, i];
-                                ulong quarterKingAttacks = opKingQuarter & (pieceAttacks[pl, i] ^ directKingAttacks);
-                                kingAttacks[pl] |= directKingAttacks | quarterKingAttacks;
-                                kingAttacksScore[pl] += (int)((BitboardUtils.SparsePopcount(directKingAttacks) * config.GetPieceAttackScore(pieceType) +
-                                    BitboardUtils.Popcount(quarterKingAttacks) * config.GetExtendedPieceAttackScore(pieceType)) * kingAttackModifier[pl]);
+                            //center control
+                            ulong piecesCenterControl = (gameState.Occupancy[pl] | attacks) & BitboardUtils.EXTENDED_CENTER_MASK;
+                            score += sign * BitboardUtils.Popcount(piecesCenterControl) * config.GetPieceCentralControlScore();
 
-                                piece ^= pieceSq;
-                            }
+                            //king attack
+                            ulong directKingAttacks = opKingSurrounding & attacks;
+                            ulong quarterKingAttacks = opKingQuarter & (attacks ^ directKingAttacks);
+                            kingAttacks[pl] |= directKingAttacks | quarterKingAttacks;
+                            kingAttacksScore[pl] += (int)((BitboardUtils.SparsePopcount(directKingAttacks) * config.GetPieceAttackScore(pieceType) +
+                                BitboardUtils.Popcount(quarterKingAttacks) * config.GetExtendedPieceAttackScore(pieceType)) * kingAttackModifier);
+                            pieceAttacks[pl, i] |= attacks;
                         }
                     }
-
-
                 }
             }
 
@@ -165,30 +164,18 @@ namespace Artemis.Core.AI.Evaluation
             return score;
         }
 
-        private ulong GetSafeKingsideSquares(int pl)
-        {
-            ulong mask = SAFE_KINGSIDE_SQUARES;
-            if (pl == 1)
-            {
-                mask <<= 56;
-            }
-            return mask;
-        }
-
-        private ulong GetSafeQueensideSquares(int pl)
-        {
-            ulong mask = SAFE_QUEENSIDE_SQUARES;
-            if (pl == 1)
-            {
-                mask <<= 56;
-            }
-            return mask;
-        }
-
         private int EvaluatePawnStructure(int pl)
         {
             int score = 0;
             ulong pawns = gameState.Pieces[pl, (int)PieceType.Pawn];
+            ulong pawnAttacks = gameState.MoveGenerators[(int)PieceType.Pawn].GenerateAttacks(pl);
+
+            //pawn central control
+            ulong pawnsCenterControl = (pawns | pawnAttacks) & BitboardUtils.CENTER_MASK;
+            score += BitboardUtils.SparsePopcount(pawnsCenterControl) * config.GetPawnCentralControlScore();
+            //pawn support
+            score += BitboardUtils.SparsePopcount(pawnAttacks & pawns) * config.GetPawnSupportScore();
+
             ulong abovePawns;
             if (pl == 0)
             {
@@ -241,7 +228,46 @@ namespace Artemis.Core.AI.Evaluation
 
         public int GetRooksConnectedScore(int pl)
         {
-
+            int score = 0;
+            if (BitboardUtils.SparsePopcount(gameState.Pieces[pl, (int)PieceType.Rook]) == 2)
+            {
+                int rooksConnectedScore = config.GetRooksConnectedScore();
+                ulong rooks = gameState.Pieces[pl, (int)PieceType.Rook];
+                int firstRookSq = BitboardUtils.PopLSB(ref rooks);
+                ulong firstRook = BitboardUtils.GetBitboard(firstRookSq);
+                ulong firstRookAttacks = gameState.MoveGenerators[(int)PieceType.Rook].GenerateAttacksFromSquare(firstRookSq);
+                int secondRookSq = BitboardUtils.PopLSB(ref rooks);
+                ulong secondRook = BitboardUtils.GetBitboard(secondRookSq);
+                if ((firstRookAttacks & secondRook) > 0)
+                {
+                    //fully connected
+                    score = rooksConnectedScore;
+                }
+                else
+                {
+                    ulong secondRookAttacks = gameState.MoveGenerators[(int)PieceType.Rook].GenerateAttacksFromSquare(secondRookSq);
+                    if ((firstRookAttacks & secondRookAttacks) > 0)
+                    {
+                        //semi-connected
+                        score = (int)(rooksConnectedScore * 0.8);
+                    }
+                    else if ((firstRook & BitboardUtils.FIRST_RANK[pl]) > 0 && (secondRook & BitboardUtils.FIRST_RANK[pl]) > 0)
+                    {
+                        ulong sqBetweenRooks = secondRook ^ (secondRook - 2 * firstRook);
+                        if ((gameState.Pieces[pl, (int)PieceType.King] & sqBetweenRooks) == 0)
+                        {
+                            //there can be at most 5 blockers
+                            int blockers = BitboardUtils.Popcount(gameState.FullOccupancy & sqBetweenRooks);
+                            score = (int)(rooksConnectedScore * (6 - blockers) / (double)6);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                score = 1;
+            }
+            return score;
         }
 
         private ulong GetKingQuarter(int pl, int kingFile)

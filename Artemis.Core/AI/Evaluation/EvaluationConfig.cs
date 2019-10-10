@@ -11,9 +11,8 @@ namespace Artemis.Core.AI.Evaluation
         private int pawnCentralControl = 20;
         private int pieceCentralControl = 5;
         private int pawnSupport = 2;
-        private int[] kingCastled = { 30, 40 };
-        private int kingMiddlePenalty = -30;
-        private int kingPawnProtectors = 8;
+        private int[] kingFile = { 15, 20, 15, -15, -10, 5, 25, 15 };
+        private int rooksConnected = 20;
         private int[] pieceAttack = { 10, 6, 6, 0, 12 };
         private int pawnStorm = 4;
         private int pawnStormPerRank = 2;
@@ -50,19 +49,26 @@ namespace Artemis.Core.AI.Evaluation
             return pieceCentralControl;
         }
 
-        public int GetKingCastledScore(int side)
+        public int GetKingFileScore(int pl, int file, bool rooksConnected, IrrevState irrevState)
         {
-            return kingCastled[side];
+            int score = kingFile[file];
+            if (score < 0)
+            {
+                if (!irrevState.CastlingAllowed[pl, 0] && !irrevState.CastlingAllowed[pl, 1])
+                {
+                    score = (int)(score * 1.5);
+                }
+            }
+            else if (!rooksConnected)
+            {
+                score = (int)(score * 0.2);
+            }
+            return score;
         }
 
-        public int GetKingMiddlePenalty()
+        public int GetRooksConnectedScore()
         {
-            return kingMiddlePenalty;
-        }
-
-        public int GetKingPawnProtectorsScore()
-        {
-            return kingPawnProtectors;
+            return rooksConnected;
         }
 
         public int GetPieceAttackScore(PieceType pieceType)
@@ -114,6 +120,11 @@ namespace Artemis.Core.AI.Evaluation
             int initialRank = pl == 0 ? 1 : 6;
             int moved = Math.Min(3, Math.Abs(rank - initialRank));
             return kingPawnMovedPenalty * moved;
+        }
+
+        public int GetNoKingPawnPenalty()
+        {
+            return kingPawnMovedPenalty * 2;
         }
 
         public int GetKingOpenFilePenalty()

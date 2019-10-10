@@ -84,10 +84,21 @@ namespace Artemis.Core
         public static int BitScanForward(ulong bb)
         {
             ulong lsb = GetLSB(bb);
-            return BitScanForwardSingleBit(lsb);
+            return GetSquareInd(lsb);
         }
 
-        private static int BitScanForwardSingleBit(ulong bit)
+        /// <summary>
+        /// Gets the index of the most significant bit
+        /// </summary>
+        /// <param name="bb"></param>
+        /// <returns></returns>
+        public static int BitScanBackward(ulong bb)
+        {
+            ulong msb = GetMSB(bb);
+            return GetSquareInd(msb);
+        }
+
+        private static int GetSquareInd(ulong bit)
         {
             ulong debruijn64 = 0x03f79d71b4cb0a89;
             return index64[(bit * debruijn64) >> 58];
@@ -97,7 +108,7 @@ namespace Artemis.Core
         {
             ulong lsb = GetLSB(bb);
             bb ^= lsb;
-            return BitScanForwardSingleBit(lsb);
+            return GetSquareInd(lsb);
         }
 
         public static ulong OneEast(ulong bb)

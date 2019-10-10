@@ -102,7 +102,7 @@ namespace Artemis.Core.AI
                     ulong undevelopedKnights = firstRank & gameState.Pieces[pl, (int)PieceType.Knight];
                     ulong undevelopedBishops = firstRank & gameState.Pieces[pl, (int)PieceType.Bishop];
                     developedPieces += 4 - BitboardUtils.Popcount(undevelopedKnights | undevelopedBishops);
-                    if (evaluator.IsKingCastled(pl, out _))
+                    if (evaluator.GetRooksConnectedScore(pl) > 0)
                     {
                         developedPieces += 2;
                     }

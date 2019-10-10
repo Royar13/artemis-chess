@@ -30,7 +30,7 @@ namespace Artemis.GUI
         private LastMoveHighlight lastMoveHighlight;
         private MovesHistory movesHistory;
         private IFormatConverter fenConverter = new FENConverter();
-        public InputSource[] PlayerType { get; } = { InputSource.Player, InputSource.Player };
+        public InputSource[] PlayerType { get; } = { InputSource.Player, InputSource.Engine };
         public bool GameEnded { get; private set; }
         public List<GameAction> LegalActions;
         private string fen;
