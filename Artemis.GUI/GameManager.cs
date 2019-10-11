@@ -82,6 +82,7 @@ namespace Artemis.GUI
             UpdateFEN();
             boardCanvas.Children.Clear();
             movesHistory.Reset();
+            lastMoveHighlight.Initialize();
             var pieces = gameState.GetPiecesList();
             uiPieces = pieces.Select(p => new UIPiece(p.Item3, p.Item2, p.Item1, gameState, this, boardCanvas)).ToList();
             foreach (UIPiece piece in uiPieces)
