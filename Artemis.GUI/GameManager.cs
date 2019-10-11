@@ -65,22 +65,26 @@ namespace Artemis.GUI
                 ImageSource = GetImage("board.png")
             };
             lastMoveHighlight = new LastMoveHighlight(this, boardCanvas);
-            pregeneratedAttacks.Initialize();
+            gameState = new GameState(pregeneratedAttacks, zobristHashUtils);
+            engine = new ArtemisEngine(gameState, new EngineConfig());
         }
 
         public void NewGame(string fen = null)
         {
+            if (!pregeneratedAttacks.IsInitialized)
+            {
+                pregeneratedAttacks.Initialize();
+            }
             if (fen == null)
             {
-                gameState = new GameState(pregeneratedAttacks, zobristHashUtils);
+                gameState.LoadPosition();
             }
             else
             {
-                gameState = new GameState(fen, pregeneratedAttacks, zobristHashUtils);
+                gameState.LoadPosition(fen);
             }
-            engine = new ArtemisEngine(gameState, new EngineConfig());
             UpdateFEN();
-            boardCanvas.Children.Clear();
+            ClearBoard();
             movesHistory.Reset();
             lastMoveHighlight.Initialize();
             var pieces = gameState.GetPiecesList();
@@ -92,6 +96,12 @@ namespace Artemis.GUI
             }
             GameEnded = false;
             StartTurn();
+        }
+
+        private void ClearBoard()
+        {
+            boardCanvas.Children.Clear();
+            lastMoveHighlight.Hide();
         }
 
         public async Task StartTurn()

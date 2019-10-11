@@ -52,7 +52,7 @@ namespace Artemis.Test.Moves
 
         private void TestMove(string fen, Move move, ulong expectedHash)
         {
-            gameState.LoadFEN(fen);
+            gameState.LoadPosition(fen);
             expectedHash ^= GetZobristHash();
             gameState.MakeMove(move);
             Assert.AreEqual(expectedHash, GetZobristHash());

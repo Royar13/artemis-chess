@@ -52,5 +52,12 @@ namespace Artemis.GUI
             Canvas.SetLeft(lastMoveTo, toLoc.X);
             Canvas.SetTop(lastMoveTo, toLoc.Y);
         }
+
+        public void Hide()
+        {
+            boardCanvas.Children.Remove(lastMoveFrom);
+            boardCanvas.Children.Remove(lastMoveTo);
+            added = false;
+        }
     }
 }

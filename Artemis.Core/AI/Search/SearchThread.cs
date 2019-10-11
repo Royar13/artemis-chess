@@ -34,7 +34,7 @@ namespace Artemis.Core.AI.Search
 
         public void LoadPosition(string fen)
         {
-            gameState.LoadFEN(fen);
+            gameState.LoadPosition(fen);
         }
 
         public PVList Search(int startDepth, CancellationToken ct)

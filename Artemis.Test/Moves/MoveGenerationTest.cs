@@ -24,7 +24,7 @@ namespace Artemis.Test.Moves
             foreach (string pos in positions)
             {
                 string[] parts = pos.Split('|');
-                gameState.LoadFEN(parts[0]);
+                gameState.LoadPosition(parts[0]);
                 int amount = GenerateMoves(gameState, int.Parse(parts[1]));
                 totalAmount += amount;
                 int expectedAmount = int.Parse(parts[2]);
@@ -62,7 +62,7 @@ namespace Artemis.Test.Moves
         {
             GameState gameState = GameStateBuilder.Build();
             string fen = "rnbqkbnr/p1pppppp/8/Pp6/8/8/1PPPPPPP/RNBQKBNR b KQkq - 0 2";
-            gameState.LoadFEN(fen);
+            gameState.LoadPosition(fen);
             List<Move> legalMoves = gameState.GetLegalMoves();
         }
     }

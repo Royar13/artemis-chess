@@ -49,6 +49,8 @@ namespace Artemis.Core
         /// </summary>
         public IMoveGenerator[] MoveGenerators = new IMoveGenerator[6];
 
+        public event EventHandler NewPositionLoaded;
+
         public GameState(PregeneratedAttacksData pregeneratedAttacks, ZobristHashUtils zobristHashUtils) : this(DEFAULT_FEN, pregeneratedAttacks, zobristHashUtils)
         {
         }
@@ -62,12 +64,13 @@ namespace Artemis.Core
             {
                 MoveGenerators[i] = moveGeneratorBuilder.Build((PieceType)i);
             }
-            LoadFEN(fen);
+            LoadPosition(fen);
         }
 
-        public void LoadFEN(string fen)
+        public void LoadPosition(string fen = DEFAULT_FEN)
         {
             fenConverter.Load(fen, this);
+            NewPositionLoaded?.Invoke(this, EventArgs.Empty);
         }
 
         public void Reset()

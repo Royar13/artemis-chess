@@ -9,6 +9,7 @@ namespace Artemis.Core.Moves.PregeneratedAttacks
         private MagicBitboardsData magic = new MagicBitboardsData();
         private ulong[] knightAttacks = new ulong[64];
         private ulong[] kingAttacks = new ulong[64];
+        public bool IsInitialized { get; private set; } = false;
 
         public void Initialize()
         {
@@ -18,6 +19,7 @@ namespace Artemis.Core.Moves.PregeneratedAttacks
                 knightAttacks[i] = CalculateKnightAttacks(i);
                 kingAttacks[i] = CalculateKingAttacks(i);
             }
+            IsInitialized = true;
         }
 
         private ulong CalculateKnightAttacks(int sqInd)

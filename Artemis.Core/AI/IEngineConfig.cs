@@ -12,10 +12,6 @@ namespace Artemis.Core.AI
         /// Time limit per move in milliseconds.
         /// </summary>
         int TimeLimit { get; }
-        /// <summary>
-        /// Minimal search depth to start using multiple threads.
-        /// </summary>
-        int MinimalDepthMultithreading { get; }
         int NullMoveDepthReduction { get; }
         bool Multithreading { get; }
     }

@@ -30,10 +30,16 @@ namespace Artemis.Core.AI
         public ArtemisEngine(GameState gameState, IEngineConfig config)
         {
             this.gameState = gameState;
+            gameState.NewPositionLoaded += GameState_NewPositionLoaded;
             evConfig = new EvaluationConfig();
             evaluator = new PositionEvaluator(gameState, evConfig);
             Config = config;
             threadMaster = new ThreadMaster(this, gameState, transpositionTable, config);
+        }
+
+        private void GameState_NewPositionLoaded(object sender, EventArgs e)
+        {
+            GameStage = GameStage.Opening;
         }
 
         public async Task<Move> Calculate(CancellationToken ct)
