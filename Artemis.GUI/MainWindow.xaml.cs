@@ -79,8 +79,8 @@ namespace Artemis.GUI
 
         private void FenTB_LostFocus(object sender, RoutedEventArgs e)
         {
-            TextBox tb = (TextBox)sender;
-            tb.Text = gm.FEN;
+            //trigger property update, simply by reassigning the current value
+            gm.FEN = gm.FEN;
         }
     }
 }
