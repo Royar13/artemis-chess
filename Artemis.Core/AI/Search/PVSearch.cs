@@ -57,6 +57,7 @@ namespace Artemis.Core.AI.Search
             int score = Search(depth, 0, ArtemisEngine.INITIAL_ALPHA, ArtemisEngine.INITIAL_BETA, pvList, false, false);
             pvList.Score = score;
             pvList.Depth = depth;
+            Console.WriteLine(pvList);
             return pvList;
         }
 
@@ -73,6 +74,8 @@ namespace Artemis.Core.AI.Search
                 depth += 1;
             }
 
+            int originalAlpha = alpha;
+            int originalBeta = beta;
             ulong hash = gameState.GetIrrevState().ZobristHash;
             TranspositionNode ttNode = null;
             if (transpositionTable.TryGetValue(hash, out ttNode))
@@ -108,7 +111,6 @@ namespace Artemis.Core.AI.Search
             Move bestMove = null;
             bool cutoff = false;
             PVList newPV = new PVList();
-            int originalAlpha = alpha;
 
             if (ply > 0 && depth > config.NullMoveDepthReduction + 1 && !nullMoveReduction && !gameState.IsCheck())
             {
@@ -224,7 +226,7 @@ namespace Artemis.Core.AI.Search
                 }
             }
 
-            NodeType nodeType = GetNodeType(originalAlpha, beta, alpha);
+            NodeType nodeType = GetNodeType(originalAlpha, originalBeta, alpha);
             if (nodeType == NodeType.PVNode)
             {
                 PVNode node = new PVNode(bestMove);
