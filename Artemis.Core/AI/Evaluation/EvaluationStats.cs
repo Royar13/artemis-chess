@@ -26,6 +26,8 @@ namespace Artemis.Core.AI.Evaluation
         public int[] KingDefenseScore = new int[2];
         public int[,] KingDefensePieceScore = new int[2, 5];
         public int[] AttackDefenseDif = new int[2];
+        public int[] EndgameKingSquare = new int[2];
+        public int[] EndgameCornerMate = new int[2];
 
         string lineSep = "----------------------------------------------------------------------------------------------------------------------------------------------------";
         string secondSep = "\t\t\t\t\t";
@@ -62,6 +64,10 @@ namespace Artemis.Core.AI.Evaluation
             AppendPieceStat(builder, "Center Control\t\t", CenterControlPieceScore);
             AppendPieceStat(builder, "King Attack\t\t", KingAttackPieceScore);
             AppendPieceStat(builder, "King Defense\t\t", KingDefensePieceScore);
+            builder.AppendLine($"\t\t\t\t\t\tENDGAME");
+            builder.AppendLine(lineSep);
+            AppendStat(builder, "King Square\t\t", EndgameKingSquare);
+            AppendStat(builder, "Corner Mate\t\t", EndgameCornerMate);
             return builder.ToString();
         }
 

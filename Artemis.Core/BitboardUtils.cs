@@ -98,7 +98,7 @@ namespace Artemis.Core
             return GetSquareInd(msb);
         }
 
-        private static int GetSquareInd(ulong bit)
+        public static int GetSquareInd(ulong bit)
         {
             ulong debruijn64 = 0x03f79d71b4cb0a89;
             return index64[(bit * debruijn64) >> 58];
@@ -162,6 +162,32 @@ namespace Artemis.Core
         public static int GetMostAdvanced(int pl, ulong pieces)
         {
             return pl == 0 ? BitScanBackward(pieces) : BitScanForward(pieces);
+        }
+
+        public static int DistanceToCenter(int sq)
+        {
+            int file = GetFile(sq);
+            int rank = GetRank(sq);
+            int fileDistance = (int)Math.Abs(3.5 - file);
+            int rankDistance = (int)Math.Abs(3.5 - rank);
+            return Math.Max(fileDistance, rankDistance);
+        }
+
+        public static int Distance(int sq1, int sq2)
+        {
+            int file1 = GetFile(sq1);
+            int rank1 = GetRank(sq1);
+            int file2 = GetFile(sq2);
+            int rank2 = GetRank(sq2);
+            int distance = Math.Abs(file2 - file1) + Math.Abs(rank2 - rank1);
+            return distance;
+        }
+
+        public static int MirrorRank(int sq)
+        {
+            int file = GetFile(sq);
+            int mirroredSq = 56 - sq + 2 * file;
+            return mirroredSq;
         }
     }
 }

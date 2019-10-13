@@ -156,5 +156,13 @@ namespace Artemis.Test
             long sparsePopcountTime = stopwatch.ElapsedMilliseconds;
             Console.WriteLine($"Popcount: {popcountTime}ms,\nSparse Popcount: {sparsePopcountTime}ms");
         }
+
+        [TestMethod]
+        public void MirrorRankTest()
+        {
+            Assert.AreEqual(50, BitboardUtils.MirrorRank(10));
+            Assert.AreEqual(6, BitboardUtils.MirrorRank(62));
+            Assert.AreEqual(36, BitboardUtils.MirrorRank(28));
+        }
     }
 }

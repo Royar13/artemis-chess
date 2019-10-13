@@ -7,7 +7,7 @@ namespace Artemis.Core.AI.Evaluation
     public class EvaluationConfig
     {
         private int[] piecesValue = { 500, 290, 300, 100, 900, 0 };
-        private Modifier[] mobility = { new Modifier(1), new Modifier(5), new Modifier(3), new Modifier(0), new Modifier(0, 1, 1) };
+        private Modifier[] mobility = { new Modifier(0, 1, 0), new Modifier(5), new Modifier(3), new Modifier(0), new Modifier(0, 1, 1) };
         private int pawnCentralControl = 20;
         private int pieceCentralControl = 5;
         private int pawnSupport = 2;
@@ -22,6 +22,16 @@ namespace Artemis.Core.AI.Evaluation
         private int doubledPawnsPenalty = -30;
         private int isolatedPawnPenalty = -30;
         private int isolatedPawnOpenFilePenalty = -45;
+        private int[] endgameKingSquare ={  0, 6, 12, 18, 18, 12, 6, 0,
+                                            10, 16, 22, 28, 28, 22, 16, 10,
+                                            20, 26, 32, 38, 38, 32, 26, 20,
+                                            30, 36, 42, 48, 48, 42, 36, 30,
+                                            35, 41, 47, 53, 53, 47, 41, 35,
+                                            30, 36, 42, 48, 48, 42, 36, 30,
+                                            25, 31, 37, 43, 43, 37, 31, 25,
+                                            20, 26, 32, 38, 38, 32, 26, 20 };
+        private int endgameEnemyKingCenterDistance = 10;
+        private int endgameKingsDistance = 5;
 
         public int GetPieceValue(PieceType pieceType)
         {
@@ -119,6 +129,26 @@ namespace Artemis.Core.AI.Evaluation
         public int GetKingOpenFilePenalty()
         {
             return kingOpenFilePenalty;
+        }
+
+        public int GetEndgameKingSquareScore(int pl, int kingSq)
+        {
+            if (pl == 1)
+            {
+                kingSq = BitboardUtils.MirrorRank(kingSq);
+            }
+            return endgameKingSquare[kingSq];
+        }
+
+        public int GetEndgameEnemyKingCenterDistanceScore(int distance)
+        {
+            return endgameEnemyKingCenterDistance * distance;
+        }
+
+        public int GetEndgameKingsDistanceScore(int distance)
+        {
+            int score = (14 - distance) * endgameKingsDistance;
+            return score;
         }
     }
 }

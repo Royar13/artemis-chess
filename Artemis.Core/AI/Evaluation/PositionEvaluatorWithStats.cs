@@ -22,9 +22,9 @@ namespace Artemis.Core.AI.Evaluation
             return score;
         }
 
-        public override int GetRooksConnectedScore(int pl)
+        public override int EvaluateRooksConnected(int pl)
         {
-            int score = base.GetRooksConnectedScore(pl);
+            int score = base.EvaluateRooksConnected(pl);
             stats.RooksConnectedScore[pl] = ApplySign(pl, score);
             return score;
         }
@@ -59,6 +59,20 @@ namespace Artemis.Core.AI.Evaluation
             return score;
         }
 
+        protected override int EvaluateEndgameCornerMate(int pl, int[] material)
+        {
+            int score = base.EvaluateEndgameCornerMate(pl, material);
+            stats.EndgameCornerMate[pl] = ApplySign(pl, score);
+            return score;
+        }
+
+        protected override int EvaluateEndgameKingSquare(int pl)
+        {
+            int score = base.EvaluateEndgameKingSquare(pl);
+            stats.EndgameKingSquare[pl] = ApplySign(pl, score);
+            return score;
+        }
+
         protected override int EvaluateKingFile(int pl, int kingFile, int rooksConnectedScore)
         {
             int score = base.EvaluateKingFile(pl, kingFile, rooksConnectedScore);
@@ -76,9 +90,9 @@ namespace Artemis.Core.AI.Evaluation
             return score;
         }
 
-        protected override int EvaluateMaterial(int pl, PieceType pieceType)
+        protected override int EvaluateMaterial(int pl, PieceType pieceType, int[] materialArr)
         {
-            int score = base.EvaluateMaterial(pl, pieceType);
+            int score = base.EvaluateMaterial(pl, pieceType, materialArr);
             stats.MaterialScore[pl] += ApplySign(pl, score);
             return score;
         }

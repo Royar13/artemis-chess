@@ -50,12 +50,13 @@ namespace Artemis.Core.AI.Evaluation
             int[] kingFile = {  BitboardUtils.GetFile(BitboardUtils.BitScanForward(gameState.Pieces[0, (int)PieceType.King])),
                                 BitboardUtils.GetFile(BitboardUtils.BitScanForward(gameState.Pieces[1, (int)PieceType.King])) };
             double kingAttackModifier = CalculateKingAttackModifier(kingFile);
+            int[] material = new int[2];
             for (int pl = 0; pl <= 1; pl++)
             {
                 if (gameStage != GameStage.Endgame)
                 {
                     //rooks connected
-                    int rooksConnectedScore = GetRooksConnectedScore(pl);
+                    int rooksConnectedScore = EvaluateRooksConnected(pl);
                     score += rooksConnectedScore;
 
                     //king safety
@@ -91,9 +92,9 @@ namespace Artemis.Core.AI.Evaluation
                 {
                     PieceType pieceType = (PieceType)i;
                     //material
-                    score += EvaluateMaterial(pl, pieceType);
+                    score += EvaluateMaterial(pl, pieceType, material);
 
-                    if (pieceType != PieceType.Pawn && gameStage != GameStage.Endgame)
+                    if (pieceType != PieceType.Pawn)
                     {
                         ulong piece = gameState.Pieces[pl, i];
                         while (piece > 0)
@@ -107,12 +108,15 @@ namespace Artemis.Core.AI.Evaluation
                             //center control
                             score += EvaluatePieceCenterControl(pl, pieceType, attacks);
 
-                            //king attack
-                            ulong directKingAttacks = kingSurrounding[1 - pl] & attacks;
-                            ulong quarterKingAttacks = opKingQuarter & (attacks ^ directKingAttacks);
-                            kingAttacks[pl] |= directKingAttacks | quarterKingAttacks;
-                            CalculatePieceKingAttackScore(pl, pieceType, directKingAttacks, quarterKingAttacks, kingAttackModifier, kingAttacksScore);
-                            pieceAttacks[pl, i] |= attacks;
+                            if (gameStage != GameStage.Endgame)
+                            {
+                                //king attack
+                                ulong directKingAttacks = kingSurrounding[1 - pl] & attacks;
+                                ulong quarterKingAttacks = opKingQuarter & (attacks ^ directKingAttacks);
+                                kingAttacks[pl] |= directKingAttacks | quarterKingAttacks;
+                                CalculatePieceKingAttackScore(pl, pieceType, directKingAttacks, quarterKingAttacks, kingAttackModifier, kingAttacksScore);
+                                pieceAttacks[pl, i] |= attacks;
+                            }
                         }
                     }
                 }
@@ -128,6 +132,19 @@ namespace Artemis.Core.AI.Evaluation
                         CalculatePieceKingDefenseScore(pl, (PieceType)i, pieceAttacks[pl, i], kingAttacks[1 - pl], kingSurrounding[pl], kingAttacksScore);
                     }
                     score += EvaluateAttackVsDefense(1 - pl, kingAttacksScore);
+                }
+            }
+            else
+            {
+                //endgame specific parameters
+                for (int pl = 0; pl <= 1; pl++)
+                {
+                    //advanced king bonus
+                    score += EvaluateEndgameKingSquare(pl);
+
+                    //big material advantage
+                    //march king towards enemy king, and push enemy king to the corner
+                    score += EvaluateEndgameCornerMate(pl, material);
                 }
             }
             return score;
@@ -210,9 +227,10 @@ namespace Artemis.Core.AI.Evaluation
             return ApplySign(pl, score);
         }
 
-        protected virtual int EvaluateMaterial(int pl, PieceType pieceType)
+        protected virtual int EvaluateMaterial(int pl, PieceType pieceType, int[] materialArr)
         {
             int score = BitboardUtils.Popcount(gameState.Pieces[pl, (int)pieceType]) * config.GetPieceValue(pieceType);
+            materialArr[pl] += score;
             return ApplySign(pl, score);
         }
 
@@ -319,7 +337,7 @@ namespace Artemis.Core.AI.Evaluation
             return ApplySign(pl, score);
         }
 
-        public virtual int GetRooksConnectedScore(int pl)
+        public virtual int EvaluateRooksConnected(int pl)
         {
             int score = 0;
             if (BitboardUtils.SparsePopcount(gameState.Pieces[pl, (int)PieceType.Rook]) == 2)
@@ -359,6 +377,27 @@ namespace Artemis.Core.AI.Evaluation
             else
             {
                 score = 1;
+            }
+            return ApplySign(pl, score);
+        }
+
+        protected virtual int EvaluateEndgameKingSquare(int pl)
+        {
+            int kingSq = BitboardUtils.GetSquareInd(gameState.Pieces[pl, (int)PieceType.King]);
+            int score = config.GetEndgameKingSquareScore(pl, kingSq);
+            return ApplySign(pl, score);
+        }
+
+        protected virtual int EvaluateEndgameCornerMate(int pl, int[] material)
+        {
+            int score = 0;
+            if (material[pl] - material[1 - pl] >= config.GetPieceValue(PieceType.Rook))
+            {
+                int king = BitboardUtils.GetSquareInd(gameState.Pieces[pl, (int)PieceType.King]);
+                int enemyKing = BitboardUtils.GetSquareInd(gameState.Pieces[1 - pl, (int)PieceType.King]);
+                int enemyKingCenterDistance = BitboardUtils.DistanceToCenter(enemyKing);
+                int kingsDistance = BitboardUtils.Distance(king, enemyKing);
+                score += config.GetEndgameEnemyKingCenterDistanceScore(enemyKingCenterDistance) + config.GetEndgameKingsDistanceScore(kingsDistance);
             }
             return ApplySign(pl, score);
         }
