@@ -145,6 +145,9 @@ namespace Artemis.Core.AI.Evaluation
                     //big material advantage
                     //march king towards enemy king, and push enemy king to the corner
                     score += EvaluateEndgameCornerMate(pl, material);
+
+                    //King & Pawn vs King
+                    score += EvaluateEndgameKPK(pl, material);
                 }
             }
             return score;
@@ -400,6 +403,65 @@ namespace Artemis.Core.AI.Evaluation
                 score += config.GetEndgameEnemyKingCenterDistanceScore(enemyKingCenterDistance) + config.GetEndgameKingsDistanceScore(kingsDistance);
             }
             return ApplySign(pl, score);
+        }
+
+        protected virtual int EvaluateEndgameKPK(int pl, int[] material)
+        {
+            int score = 0;
+            if (material[pl] == config.GetPieceValue(PieceType.Pawn) && material[1 - pl] == 0)
+            {
+                int winConditions = 0;
+                int king = BitboardUtils.GetSquareInd(gameState.Pieces[pl, (int)PieceType.King]);
+                int kingRank = BitboardUtils.GetRank(king);
+                int pawn = BitboardUtils.GetSquareInd(gameState.Pieces[pl, (int)PieceType.Pawn]);
+                int pawnRank = BitboardUtils.GetRank(pawn);
+                if (GetOpposition() == pl)
+                {
+                    //has opposition
+                    winConditions++;
+                }
+
+                if (pl == 0)
+                {
+                    if (kingRank >= 5)
+                    {
+                        //6th rank
+                        winConditions++;
+                    }
+                    if (kingRank > pawnRank)
+                    {
+                        //king in front of pawn
+                        winConditions++;
+                    }
+                }
+                else
+                {
+                    if (kingRank <= 2)
+                    {
+                        //6th rank
+                        winConditions++;
+                    }
+                    if (kingRank < pawnRank)
+                    {
+                        //king in front of pawn
+                        winConditions++;
+                    }
+                }
+                if (winConditions >= 2)
+                {
+                    score += 5 * config.GetPieceValue(PieceType.Pawn);
+                }
+            }
+            return ApplySign(pl, score);
+        }
+
+        protected int GetOpposition()
+        {
+            int wking = BitboardUtils.GetSquareInd(gameState.Pieces[0, (int)PieceType.King]);
+            int bking = BitboardUtils.GetSquareInd(gameState.Pieces[1, (int)PieceType.King]);
+            int distance = BitboardUtils.Distance(wking, bking);
+            int opposition = distance % 2 == 0 ? 1 - gameState.Turn : gameState.Turn;
+            return opposition;
         }
 
         protected virtual ulong GetKingQuarter(int pl, int kingFile)

@@ -17,6 +17,7 @@ namespace Artemis.Core.AI.Search
     /// </summary>
     class PVSearch
     {
+        ArtemisEngine engine;
         GameState gameState;
         TranspositionTable transpositionTable;
         KillerMoves killerMoves;
@@ -30,9 +31,10 @@ namespace Artemis.Core.AI.Search
         ConcurrentDictionary<ulong, bool> searchedNodes;
         IEngineConfig config;
 
-        public PVSearch(GameState gameState, TranspositionTable transpositionTable, KillerMoves killerMoves, PositionEvaluator evaluator, MoveEvaluator moveEvaluator,
+        public PVSearch(ArtemisEngine engine, GameState gameState, TranspositionTable transpositionTable, KillerMoves killerMoves, PositionEvaluator evaluator, MoveEvaluator moveEvaluator,
             QuiescenceSearch quietSearch, ConcurrentDictionary<ulong, bool> searchedNodes, IEngineConfig config)
         {
+            this.engine = engine;
             this.gameState = gameState;
             this.transpositionTable = transpositionTable;
             this.killerMoves = killerMoves;
@@ -111,7 +113,7 @@ namespace Artemis.Core.AI.Search
             bool cutoff = false;
             PVList newPV = new PVList();
 
-            if (ply > 0 && depth > config.NullMoveDepthReduction + 1 && !nullMoveReduction && !gameState.IsCheck())
+            if (ply > 0 && depth > config.NullMoveDepthReduction + 1 && !nullMoveReduction && engine.GameStage != GameStage.Endgame && !gameState.IsCheck())
             {
                 //null move pruning
                 gameState.MakeNullMove();

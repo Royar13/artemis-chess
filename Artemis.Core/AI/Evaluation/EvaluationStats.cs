@@ -28,6 +28,7 @@ namespace Artemis.Core.AI.Evaluation
         public int[] AttackDefenseDif = new int[2];
         public int[] EndgameKingSquare = new int[2];
         public int[] EndgameCornerMate = new int[2];
+        public int[] EndgameKPK = new int[2];
 
         string lineSep = "----------------------------------------------------------------------------------------------------------------------------------------------------";
         string secondSep = "\t\t\t\t\t";
@@ -68,6 +69,7 @@ namespace Artemis.Core.AI.Evaluation
             builder.AppendLine(lineSep);
             AppendStat(builder, "King Square\t\t", EndgameKingSquare);
             AppendStat(builder, "Corner Mate\t\t", EndgameCornerMate);
+            AppendStat(builder, "KPK\t\t\t", EndgameKPK);
             return builder.ToString();
         }
 

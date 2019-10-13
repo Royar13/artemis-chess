@@ -113,6 +113,13 @@ namespace Artemis.Core.AI.Evaluation
             return score;
         }
 
+        protected override int EvaluateEndgameKPK(int pl, int[] material)
+        {
+            int score = base.EvaluateEndgameKPK(pl, material);
+            stats.EndgameKPK[pl] = ApplySign(pl, score);
+            return score;
+        }
+
         protected override int EvaluatePawnStorm(int pl, ulong pawnsOnFile, double kingAttackModifier)
         {
             int score = base.EvaluatePawnStorm(pl, pawnsOnFile, kingAttackModifier);

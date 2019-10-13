@@ -25,9 +25,26 @@ namespace Artemis.Test.AI.Evaluation
         public void EvaluationTest()
         {
             EvaluationStats stats1 = new EvaluationStats();
-            gameState.LoadPosition("5nkb/8/8/8/3K4/8/8/8 w - - 1 11");
+            gameState.LoadPosition("8/6p1/8/8/6k1/8/6K1/8 w - - 6 4");
             int eval1 = evaluator.Evaluate(0, GameStage.Endgame, out stats1);
             Console.WriteLine(stats1);
+        }
+
+        [TestMethod]
+        public void EvaluateKPKEndgame()
+        {
+            EvaluationStats stats = new EvaluationStats();
+            gameState.LoadPosition("8/8/8/5kp1/8/6K1/8/8 w - - 0 4");
+            evaluator.Evaluate(0, GameStage.Endgame, out stats);
+            Assert.AreEqual(0, stats.EndgameKPK[1]);
+
+            gameState.LoadPosition("8/8/8/6p1/7k/8/6K1/8 w - - 0 4");
+            evaluator.Evaluate(0, GameStage.Endgame, out stats);
+            Assert.AreEqual(0, stats.EndgameKPK[1]);
+
+            gameState.LoadPosition("8/6p1/8/8/6k1/8/6K1/8 w - - 6 4");
+            evaluator.Evaluate(0, GameStage.Endgame, out stats);
+            Assert.AreNotEqual(0, stats.EndgameKPK[1]);
         }
     }
 }

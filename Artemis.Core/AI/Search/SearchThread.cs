@@ -28,7 +28,7 @@ namespace Artemis.Core.AI.Search
             evaluator = new PositionEvaluator(gameState, evConfig);
             moveEvaluator = new MoveEvaluator(evConfig);
             quietSearch = new QuiescenceSearch(engine, gameState, evaluator, moveEvaluator);
-            pvSearch = new PVSearch(gameState, transpositionTable, killerMoves, evaluator, moveEvaluator, quietSearch, searchedNodes, config);
+            pvSearch = new PVSearch(engine, gameState, transpositionTable, killerMoves, evaluator, moveEvaluator, quietSearch, searchedNodes, config);
             this.config = config;
         }
 
