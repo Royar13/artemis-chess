@@ -82,5 +82,10 @@ namespace Artemis.GUI
             //trigger property update, simply by reassigning the current value
             gm.FEN = gm.FEN;
         }
+
+        private void UndoMove_Click(object sender, RoutedEventArgs e)
+        {
+            gm.Undo();
+        }
     }
 }

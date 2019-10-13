@@ -10,6 +10,7 @@
         <Menu BorderThickness="0,0,0,1" BorderBrush="#999999" Margin="0,0,0,10">
             <MenuItem Header="Game">
                 <MenuItem Header="New Game" Click="NewGame_Click"></MenuItem>
+                <MenuItem Header="Undo Move" Click="UndoMove_Click"></MenuItem>
             </MenuItem>
         </Menu>
         <WrapPanel>

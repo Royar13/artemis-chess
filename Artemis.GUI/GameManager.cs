@@ -30,6 +30,8 @@ namespace Artemis.GUI
         private LastMoveHighlight lastMoveHighlight;
         private MovesHistory movesHistory;
         private IFormatConverter fenConverter = new FENConverter();
+        private CancellationTokenSource cts;
+        private Task<Move> engineTask;
         public InputSource[] PlayerType { get; } = { InputSource.Player, InputSource.Engine };
         public bool GameEnded { get; private set; }
         public List<GameAction> LegalActions;
@@ -88,14 +90,22 @@ namespace Artemis.GUI
             movesHistory.Reset();
             lastMoveHighlight.Initialize();
             var pieces = gameState.GetPiecesList();
-            uiPieces = pieces.Select(p => new UIPiece(p.Item3, p.Item2, p.Item1, gameState, this, boardCanvas)).ToList();
-            foreach (UIPiece piece in uiPieces)
+            uiPieces = new List<UIPiece>();
+            foreach (var piece in pieces)
             {
-                piece.PieceSelected += UiPiece_PieceSelected;
-                piece.Create();
+                CreatePiece(piece.Item3, piece.Item2, piece.Item1);
             }
             GameEnded = false;
             StartTurn();
+        }
+
+        private UIPiece CreatePiece(PieceType pieceType, int pl, int position)
+        {
+            UIPiece piece = new UIPiece(pieceType, pl, position, gameState, this, boardCanvas);
+            piece.PieceSelected += UiPiece_PieceSelected;
+            piece.Create();
+            uiPieces.Add(piece);
+            return piece;
         }
 
         private void ClearBoard()
@@ -113,10 +123,15 @@ namespace Artemis.GUI
             else
             {
                 //engine
-                using (CancellationTokenSource cts = new CancellationTokenSource())
+                using (cts = new CancellationTokenSource())
                 {
-                    Move move = await engine.Calculate(cts.Token);
-                    PerformAction(move.GetAction());
+                    engineTask = engine.Calculate(cts.Token);
+                    Move move = await engineTask;
+                    engineTask = null;
+                    if (!cts.IsCancellationRequested)
+                    {
+                        PerformAction(move.GetAction());
+                    }
                 }
             }
         }
@@ -235,6 +250,72 @@ namespace Artemis.GUI
             if (action.ExtraAction != null)
             {
                 UpdatePiecesAfterAction(action.ExtraAction);
+            }
+        }
+
+        public async Task Undo()
+        {
+            if (movesHistory.Actions.Count == 0)
+                return;
+
+            if (engineTask != null)
+            {
+                cts.Cancel();
+                await engineTask;
+            }
+
+            if (PlayerType[1 - gameState.Turn] == InputSource.Engine && PlayerType[gameState.Turn] == InputSource.Player && movesHistory.Actions.Count > 1)
+            {
+                UndoAction();
+            }
+            UndoAction();
+            UpdateFEN();
+            GameEnded = false;
+            StartTurn();
+        }
+
+        protected void UndoAction()
+        {
+            GameAction action = movesHistory.Actions.Last();
+            action.Undo();
+            movesHistory.RemoveAction();
+            if (selectedPiece != null)
+            {
+                selectedPiece.Deselect();
+            }
+            UpdatePiecesAfterActionUndo(action);
+            if (movesHistory.Actions.Count > 0)
+            {
+                lastMoveHighlight.Show(movesHistory.Actions.Last());
+            }
+            else
+            {
+                lastMoveHighlight.Hide();
+            }
+        }
+
+        public void UpdatePiecesAfterActionUndo(GameAction action)
+        {
+            UIPiece piece = GetPieceByPos(action.To);
+            piece.UpdatePosition(action.From);
+
+            if (action.Capture != null)
+            {
+                ulong capturedBB = BitboardUtils.GetBitboard(action.Capture.Value);
+                PieceType capturedPieceType = gameState.GetPieceBySquare(gameState.Turn, capturedBB).Value;
+                CreatePiece(capturedPieceType, gameState.Turn, action.Capture.Value);
+            }
+
+            if (action.ChangeType != null)
+            {
+                ulong fromBB = BitboardUtils.GetBitboard(action.From);
+                PieceType originalPieceType = gameState.GetPieceBySquare(1 - gameState.Turn, fromBB).Value;
+                piece.ChangeType(originalPieceType);
+            }
+
+            if (action.ExtraAction != null)
+            {
+                UpdatePiecesAfterActionUndo(action.ExtraAction);
             }
         }
     }

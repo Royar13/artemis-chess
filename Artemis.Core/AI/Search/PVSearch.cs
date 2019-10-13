@@ -102,7 +102,7 @@ namespace Artemis.Core.AI.Search
                 }
             }
 
-            if (depth == 0)
+            if (depth == 0 || ply == ArtemisEngine.MAX_DEPTH)
             {
                 return quietSearch.Search(alpha, beta);
             }
