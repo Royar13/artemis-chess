@@ -48,7 +48,7 @@ namespace Artemis.Core.AI.Search
             }
 
             PVList[] foundPV = await Task.WhenAll(tasks);
-            foundPV = foundPV.Where(p => p != null).ToArray();
+            foundPV = foundPV.Where(p => p != null && p.First != null).ToArray();
 
             PVList bestPV = foundPV[0];
             for (int i = 1; i < foundPV.Length; i++)

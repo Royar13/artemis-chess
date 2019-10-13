@@ -71,7 +71,7 @@ namespace Artemis.Core.AI
             }
 
             transpositionTable.Clear();
-            if (pv.First != null)
+            if (pv != null && pv.First != null)
             {
                 pv.First.Move.SetGameState(gameState);
                 return pv.First.Move;
@@ -108,7 +108,7 @@ namespace Artemis.Core.AI
                     ulong undevelopedKnights = firstRank & gameState.Pieces[pl, (int)PieceType.Knight];
                     ulong undevelopedBishops = firstRank & gameState.Pieces[pl, (int)PieceType.Bishop];
                     developedPieces += 4 - BitboardUtils.Popcount(undevelopedKnights | undevelopedBishops);
-                    if (evaluator.GetRooksConnectedScore(pl) > 0)
+                    if (Math.Abs(evaluator.GetRooksConnectedScore(pl)) > 0)
                     {
                         developedPieces += 2;
                     }

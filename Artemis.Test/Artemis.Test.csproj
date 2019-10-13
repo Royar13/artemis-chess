@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AI\Evaluation\MaterialBalanceTest.cs" />
+    <Compile Include="AI\Evaluation\PositionEvaluatorTest.cs" />
     <Compile Include="FormatConverters\FENConverterTest.cs" />
     <Compile Include="GameStateBuilder.cs" />
     <Compile Include="Moves\SlidingPieceUtilsTest.cs" />

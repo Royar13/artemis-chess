@@ -22,6 +22,12 @@ namespace Artemis.Core.AI.Evaluation
             this.config = config;
         }
 
+        private int ApplySign(int pl, int score)
+        {
+            int sign = pl == gameState.Turn ? 1 : -1;
+            return sign * score;
+        }
+
         public int Evaluate(int depth, GameStage gameStage)
         {
             GameResult result = gameState.GetResult();
@@ -41,79 +47,53 @@ namespace Artemis.Core.AI.Evaluation
             ulong[,] pieceAttacks = new ulong[2, 5];
             ulong[] kingAttacks = new ulong[2];
             int[] kingAttacksScore = new int[2];
+            ulong[] kingSurrounding = new ulong[2];
             int[] kingFile = {  BitboardUtils.GetFile(BitboardUtils.BitScanForward(gameState.Pieces[0, (int)PieceType.King])),
                                 BitboardUtils.GetFile(BitboardUtils.BitScanForward(gameState.Pieces[1, (int)PieceType.King])) };
-            double kingAttackModifier = 1 + Math.Min(1 + Math.Abs(kingFile[1] - kingFile[0]), 5) / (double)5 * 0.6;
+            double kingAttackModifier = CalculateKingAttackModifier(kingFile);
             for (int pl = 0; pl <= 1; pl++)
             {
-                int sign = pl == gameState.Turn ? 1 : -1;
-
                 if (gameStage != GameStage.Endgame)
                 {
                     //rooks connected
                     int rooksConnectedScore = GetRooksConnectedScore(pl);
-                    score += sign * rooksConnectedScore;
+                    score += rooksConnectedScore;
 
                     //king safety
-                    bool rooksConnected = rooksConnectedScore > 0;
-                    int kingFileScore = sign * config.GetKingFileScore(pl, kingFile[pl], rooksConnected, gameState.GetIrrevState());
-                    score += kingFileScore;
+                    score += EvaluateKingFile(pl, kingFile[pl], rooksConnectedScore);
 
-                    int startFile = Math.Max(0, kingFile[pl] - 1);
-                    int endFile = Math.Min(7, kingFile[pl] + 1);
-                    for (int f = startFile; f <= endFile; f++)
+                    int startFile = Math.Min(5, Math.Max(0, kingFile[pl] - 1));
+                    int pawnProtectorsMoves = 0;
+                    for (int f = startFile; f <= startFile + 2; f++)
                     {
                         ulong fileMask = BitboardUtils.GetFileMask(f);
                         //moved king pawns penalty
-                        if (kingFile[pl] != 4 || f == 5)
-                        {
-                            //don't penalize center pawn moves, except moves of the f pawn.
-                            ulong friendlyPawn = fileMask & gameState.Pieces[pl, (int)PieceType.Pawn];
-                            if (friendlyPawn > 0)
-                            {
-                                //least advanced pawn
-                                int pawnRank = BitboardUtils.GetRank(pl == 0 ? BitboardUtils.BitScanForward(friendlyPawn) : BitboardUtils.BitScanBackward(friendlyPawn));
-                                score += sign * config.GetKingPawnMovedPenalty(pl, pawnRank);
-                            }
-                            else
-                            {
-                                score += sign * config.GetNoKingPawnPenalty();
-                            }
-                        }
+                        pawnProtectorsMoves += GetPawnMovesOfFile(pl, f, kingFile[pl]);
 
                         //pawn storm
-                        ulong enemyPawn = fileMask & gameState.Pieces[1 - pl, (int)PieceType.Pawn];
-                        if (enemyPawn > 0)
-                        {
-                            //most advanced pawn
-                            int pawnRank = BitboardUtils.GetRank(pl == 0 ? BitboardUtils.BitScanForward(enemyPawn) : BitboardUtils.BitScanBackward(enemyPawn));
-                            score -= sign * config.GetPawnStormScore(1 - pl, pawnRank);
-                        }
+                        ulong enemyPawnsOnFile = fileMask & gameState.Pieces[1 - pl, (int)PieceType.Pawn];
+                        score += EvaluatePawnStorm(1 - pl, enemyPawnsOnFile, kingAttackModifier);
 
                         //king open files penalty
-                        if (enemyPawn == 0)
-                        {
-                            score += sign * config.GetKingOpenFilePenalty();
-                        }
+                        score += EvaluateOpenKingFile(pl, enemyPawnsOnFile);
                     }
+                    score += EvaluateKingPawnMoves(pl, pawnProtectorsMoves);
                 }
 
                 //pawn structure
-                score += sign * EvaluatePawnStructure(pl);
+                score += EvaluatePawnStructure(pl);
 
-                ulong opKingSurrounding = 0;
                 ulong opKingQuarter = 0;
-
                 ulong opKing = gameState.Pieces[1 - pl, (int)PieceType.King];
                 int file = BitboardUtils.GetFile(BitboardUtils.BitScanForward(opKing));
-                opKingSurrounding = opKing | gameState.MoveGenerators[(int)PieceType.King].GenerateAttacks(1 - pl);
+                kingSurrounding[1 - pl] = opKing | gameState.MoveGenerators[(int)PieceType.King].GenerateAttacks(1 - pl);
                 opKingQuarter = GetKingQuarter(1 - pl, file);
 
                 for (int i = 0; i < 5; i++)
                 {
                     PieceType pieceType = (PieceType)i;
                     //material
-                    score += sign * BitboardUtils.Popcount(gameState.Pieces[pl, i]) * config.GetPieceValue(pieceType);
+                    score += EvaluateMaterial(pl, pieceType);
 
                     if (pieceType != PieceType.Pawn && gameStage != GameStage.Endgame)
                     {
@@ -124,18 +104,16 @@ namespace Artemis.Core.AI.Evaluation
                             ulong attacks = gameState.MoveGenerators[i].GenerateAttacksFromSquare(pieceSq);
 
                             //mobility
-                            score += sign * BitboardUtils.Popcount(attacks) * config.GetMobilityScore(gameStage, pieceType);
+                            score += EvaluateMobility(pl, pieceType, attacks, gameStage);
 
                             //center control
-                            ulong piecesCenterControl = (gameState.Occupancy[pl] | attacks) & BitboardUtils.EXTENDED_CENTER_MASK;
-                            score += sign * BitboardUtils.Popcount(piecesCenterControl) * config.GetPieceCentralControlScore();
+                            score += EvaluatePieceCenterControl(pl, pieceType, attacks);
 
                             //king attack
-                            ulong directKingAttacks = opKingSurrounding & attacks;
+                            ulong directKingAttacks = kingSurrounding[1 - pl] & attacks;
                             ulong quarterKingAttacks = opKingQuarter & (attacks ^ directKingAttacks);
                             kingAttacks[pl] |= directKingAttacks | quarterKingAttacks;
-                            kingAttacksScore[pl] += (int)((BitboardUtils.SparsePopcount(directKingAttacks) * config.GetPieceAttackScore(pieceType) +
-                                BitboardUtils.Popcount(quarterKingAttacks) * config.GetExtendedPieceAttackScore(pieceType)) * kingAttackModifier);
+                            CalculatePieceKingAttackScore(pl, pieceType, directKingAttacks, quarterKingAttacks, kingAttackModifier, kingAttacksScore);
                             pieceAttacks[pl, i] |= attacks;
                         }
                     }
@@ -147,24 +125,141 @@ namespace Artemis.Core.AI.Evaluation
                 //complete king attack analysis
                 for (int pl = 0; pl <= 1; pl++)
                 {
-                    int sign = pl == gameState.Turn ? -1 : 1;
-                    int defenseScore = 0;
                     for (int i = 0; i < 5; i++)
                     {
-                        ulong defense = kingAttacks[1 - pl] & pieceAttacks[pl, i];
-                        defenseScore += BitboardUtils.Popcount(defense) * config.GetPieceDefenseScore((PieceType)i);
+                        CalculatePieceKingDefenseScore(pl, (PieceType)i, pieceAttacks[pl, i], kingAttacks[1 - pl], kingSurrounding[pl], kingAttacksScore);
                     }
-                    int opAttackScore = kingAttacksScore[1 - pl] - defenseScore;
-                    if (opAttackScore > 0)
-                    {
-                        score += sign * opAttackScore;
-                    }
+                    score += EvaluateAttackVsDefense(1 - pl, kingAttacksScore);
                 }
             }
             return score;
         }
 
-        private int EvaluatePawnStructure(int pl)
+        protected virtual double CalculateKingAttackModifier(int[] kingFile)
+        {
+            double modifier = 1 + Math.Min(1 + Math.Abs(kingFile[1] - kingFile[0]), 5) / (double)5 * 0.6;
+            if (gameState.Pieces[0, (int)PieceType.Queen] == 0 && gameState.Pieces[1, (int)PieceType.Queen] == 0)
+            {
+                modifier -= 0.5;
+            }
+            return modifier;
+        }
+
+        protected virtual int GetPawnMoves(int pl, int rank)
+        {
+            if (pl == 0)
+            {
+                return rank - 1;
+            }
+            else
+            {
+                return 6 - rank;
+            }
+        }
+
+        protected virtual int GetPawnMovesOfFile(int pl, int file, int kingFile)
+        {
+            int pawnMoves = 0;
+            if (kingFile != 4 || file == 5)
+            {
+                //don't penalize center pawn moves, except moves of the f pawn.
+                ulong fileMask = BitboardUtils.GetFileMask(file);
+                ulong friendlyPawn = fileMask & gameState.Pieces[pl, (int)PieceType.Pawn];
+                if (friendlyPawn > 0)
+                {
+                    int pawnRank = BitboardUtils.GetRank(BitboardUtils.GetLeastAdvanced(pl, friendlyPawn));
+                    pawnMoves += Math.Min(3, GetPawnMoves(pl, pawnRank));
+                }
+                else
+                {
+                    pawnMoves += 3;
+                }
+            }
+            return pawnMoves;
+        }
+
+        protected virtual int EvaluateKingPawnMoves(int pl, int moves)
+        {
+            int score = config.GetKingPawnMovedPenalty(moves);
+            return ApplySign(pl, score);
+        }
+
+        protected virtual int EvaluatePawnStorm(int pl, ulong pawnsOnFile, double kingAttackModifier)
+        {
+            int score = 0;
+            if (pawnsOnFile > 0)
+            {
+                int pawnRank = BitboardUtils.GetRank(BitboardUtils.GetMostAdvanced(pl, pawnsOnFile));
+                score = (int)(config.GetPawnStormScore(pl, pawnRank) * kingAttackModifier);
+            }
+            return ApplySign(pl, score);
+        }
+
+        protected virtual int EvaluateOpenKingFile(int pl, ulong enemyPawnsOnFile)
+        {
+            int score = 0;
+            if (enemyPawnsOnFile == 0)
+            {
+                score = config.GetKingOpenFilePenalty();
+            }
+            return ApplySign(pl, score);
+        }
+
+        protected virtual int EvaluateKingFile(int pl, int kingFile, int rooksConnectedScore)
+        {
+            bool rooksConnected = Math.Abs(rooksConnectedScore) > 0;
+            int score = config.GetKingFileScore(pl, kingFile, rooksConnected, gameState.GetIrrevState());
+            return ApplySign(pl, score);
+        }
+
+        protected virtual int EvaluateMaterial(int pl, PieceType pieceType)
+        {
+            int score = BitboardUtils.Popcount(gameState.Pieces[pl, (int)pieceType]) * config.GetPieceValue(pieceType);
+            return ApplySign(pl, score);
+        }
+
+        protected virtual int EvaluateMobility(int pl, PieceType pieceType, ulong pieceAttacks, GameStage gameStage)
+        {
+            int score = BitboardUtils.Popcount(pieceAttacks) * config.GetMobilityScore(gameStage, pieceType);
+            return ApplySign(pl, score);
+        }
+
+        protected virtual int EvaluatePieceCenterControl(int pl, PieceType pieceType, ulong pieceAttacks)
+        {
+            ulong pieceCenterControl = (gameState.Pieces[pl, (int)pieceType] | pieceAttacks) & BitboardUtils.EXTENDED_CENTER_MASK;
+            int score = BitboardUtils.Popcount(pieceCenterControl) * config.GetPieceCentralControlScore();
+            return ApplySign(pl, score);
+        }
+
+        protected virtual int CalculatePieceKingAttackScore(int pl, PieceType pieceType, ulong directKingAttacks, ulong quarterKingAttacks, double kingAttackModifier, int[] kingAttacksScore)
+        {
+            int score = (int)((BitboardUtils.SparsePopcount(directKingAttacks) * config.GetPieceAttackScore(pieceType) +
+                                BitboardUtils.Popcount(quarterKingAttacks) * config.GetExtendedPieceAttackScore(pieceType)) * kingAttackModifier);
+            kingAttacksScore[pl] += score;
+            return score;
+        }
+
+        protected virtual int CalculatePieceKingDefenseScore(int pl, PieceType pieceType, ulong pieceAttacks, ulong opKingAttacks, ulong kingSurrounding, int[] kingAttacksScore)
+        {
+            ulong defense = opKingAttacks & pieceAttacks & kingSurrounding;
+            ulong extendedDefense = (opKingAttacks & pieceAttacks) ^ defense;
+            int score = BitboardUtils.Popcount(defense) * config.GetPieceDefenseScore(pieceType) +
+                BitboardUtils.Popcount(extendedDefense) * config.GetExtendedPieceDefenseScore(pieceType);
+            kingAttacksScore[1 - pl] -= score;
+            return score;
+        }
+
+        protected virtual int EvaluateAttackVsDefense(int pl, int[] kingAttacksScore)
+        {
+            int score = 0;
+            if (kingAttacksScore[pl] > 0)
+            {
+                score = ApplySign(pl, kingAttacksScore[pl]);
+            }
+            return score;
+        }
+
+        protected virtual int EvaluatePawnStructure(int pl)
         {
             int score = 0;
             ulong pawns = gameState.Pieces[pl, (int)PieceType.Pawn];
@@ -223,10 +318,10 @@ namespace Artemis.Core.AI.Evaluation
             }
             score += isolatedPawns * config.GetIsolatedPawnPenalty();
             score += isolatedPawnsOnEmptyFile * config.GetIsolatedPawnOpenFilePenalty();
-            return score;
+            return ApplySign(pl, score);
         }
 
-        public int GetRooksConnectedScore(int pl)
+        public virtual int GetRooksConnectedScore(int pl)
         {
             int score = 0;
             if (BitboardUtils.SparsePopcount(gameState.Pieces[pl, (int)PieceType.Rook]) == 2)
@@ -267,10 +362,10 @@ namespace Artemis.Core.AI.Evaluation
             {
                 score = 1;
             }
-            return score;
+            return ApplySign(pl, score);
         }
 
-        private ulong GetKingQuarter(int pl, int kingFile)
+        protected virtual ulong GetKingQuarter(int pl, int kingFile)
         {
             ulong quarter = kingQuarter[kingFile];
             if (pl == 1)

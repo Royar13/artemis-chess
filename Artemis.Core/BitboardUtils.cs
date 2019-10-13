@@ -153,5 +153,15 @@ namespace Artemis.Core
         {
             return A_FILE << index;
         }
+
+        public static int GetLeastAdvanced(int pl, ulong pieces)
+        {
+            return pl == 0 ? BitScanForward(pieces) : BitScanBackward(pieces);
+        }
+
+        public static int GetMostAdvanced(int pl, ulong pieces)
+        {
+            return pl == 0 ? BitScanBackward(pieces) : BitScanForward(pieces);
+        }
     }
 }

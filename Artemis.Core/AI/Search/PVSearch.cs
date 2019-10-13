@@ -57,7 +57,6 @@ namespace Artemis.Core.AI.Search
             int score = Search(depth, 0, ArtemisEngine.INITIAL_ALPHA, ArtemisEngine.INITIAL_BETA, pvList, false, false);
             pvList.Score = score;
             pvList.Depth = depth;
-            Console.WriteLine(pvList);
             return pvList;
         }
 

@@ -14,10 +14,9 @@ namespace Artemis.Core.AI.Evaluation
         private int[] kingFile = { 15, 20, 15, -15, -10, 5, 25, 15 };
         private int rooksConnected = 20;
         private int[] pieceAttack = { 10, 6, 6, 0, 12 };
-        private int pawnStorm = 4;
-        private int pawnStormPerRank = 2;
+        private int[] pawnStormRank = { 0, 0, 2, 4, 7, 12, 16 };
         private int kingPawnMovedPenalty = -6;
-        private int kingOpenFilePenalty = -20;
+        private int kingOpenFilePenalty = -25;
         private double directAttackModifier = 1.3;
         private int[] pieceDefense = { 3, 4, 5, 1, 1 };
         private int doubledPawnsPenalty = -30;
@@ -83,6 +82,11 @@ namespace Artemis.Core.AI.Evaluation
 
         public int GetPieceDefenseScore(PieceType pieceType)
         {
+            return (int)(pieceDefense[(int)pieceType] * directAttackModifier);
+        }
+
+        public int GetExtendedPieceDefenseScore(PieceType pieceType)
+        {
             return pieceDefense[(int)pieceType];
         }
 
@@ -103,28 +107,13 @@ namespace Artemis.Core.AI.Evaluation
 
         public int GetPawnStormScore(int pl, int rank)
         {
-            int score = 0;
-            if (pl == 0 && rank >= 3)
-            {
-                score = pawnStorm + pawnStormPerRank * (rank - 3);
-            }
-            else if (pl == 1 && rank <= 4)
-            {
-                score = pawnStorm + pawnStormPerRank * (4 - rank);
-            }
+            int score = pl == 0 ? pawnStormRank[rank] : pawnStormRank[7 - rank];
             return score;
         }
 
-        public int GetKingPawnMovedPenalty(int pl, int rank)
+        public int GetKingPawnMovedPenalty(int moves)
         {
-            int initialRank = pl == 0 ? 1 : 6;
-            int moved = Math.Min(3, Math.Abs(rank - initialRank));
-            return kingPawnMovedPenalty * moved;
-        }
-
-        public int GetNoKingPawnPenalty()
-        {
-            return kingPawnMovedPenalty * 2;
+            return moves == 0 ? 0 : (int)(kingPawnMovedPenalty * Math.Pow(1.5, moves));
         }
 
         public int GetKingOpenFilePenalty()
