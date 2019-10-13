@@ -6,15 +6,14 @@ namespace Artemis.Core.AI.Evaluation
 {
     public class PositionEvaluator
     {
-        GameState gameState;
-        EvaluationConfig config;
+        protected GameState gameState;
+        protected EvaluationConfig config;
         public const int CHECKMATE_SCORE = 1000000;
         /// <summary>
         /// A mask of the 16 squares (quarter of the board) around the king, indexed by the king's file
         /// </summary>
-        private readonly ulong[] kingQuarter = { 0x0F0F0F0F00000000, 0x0F0F0F0F00000000, 0x0F0F0F0F00000000,
-            0x3C3C3C3C00000000, 0x3C3C3C3C00000000,
-            0xF0F0F0F000000000, 0xF0F0F0F000000000, 0xF0F0F0F000000000 };
+        private readonly ulong[] kingQuarter = { 0x0F0F0F0F, 0x0F0F0F0F, 0x0F0F0F0F,
+            0x3C3C3C3C, 0x3C3C3C3C, 0xF0F0F0F0, 0xF0F0F0F0, 0xF0F0F0F0 };
 
         public PositionEvaluator(GameState gameState, EvaluationConfig config)
         {
@@ -22,7 +21,7 @@ namespace Artemis.Core.AI.Evaluation
             this.config = config;
         }
 
-        private int ApplySign(int pl, int score)
+        protected int ApplySign(int pl, int score)
         {
             int sign = pl == gameState.Turn ? 1 : -1;
             return sign * score;
@@ -83,11 +82,10 @@ namespace Artemis.Core.AI.Evaluation
                 //pawn structure
                 score += EvaluatePawnStructure(pl);
 
-                ulong opKingQuarter = 0;
                 ulong opKing = gameState.Pieces[1 - pl, (int)PieceType.King];
                 int file = BitboardUtils.GetFile(BitboardUtils.BitScanForward(opKing));
                 kingSurrounding[1 - pl] = opKing | gameState.MoveGenerators[(int)PieceType.King].GenerateAttacks(1 - pl);
-                opKingQuarter = GetKingQuarter(1 - pl, file);
+                ulong opKingQuarter = GetKingQuarter(1 - pl, file);
 
                 for (int i = 0; i < 5; i++)
                 {
