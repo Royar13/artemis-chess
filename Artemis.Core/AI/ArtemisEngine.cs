@@ -91,7 +91,7 @@ namespace Artemis.Core.AI
                 {
                     if ((PieceType)i != PieceType.Pawn)
                     {
-                        materialCount += evConfig.GetPieceValue((PieceType)i);
+                        materialCount += BitboardUtils.SparsePopcount(gameState.Pieces[pl, i]) * evConfig.GetPieceValue((PieceType)i);
                     }
                 }
             }
