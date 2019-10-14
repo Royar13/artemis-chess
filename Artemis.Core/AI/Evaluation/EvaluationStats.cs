@@ -21,6 +21,7 @@ namespace Artemis.Core.AI.Evaluation
         public int[,] MobilityPieceScore = new int[2, 5];
         public int[] CenterControlScore = new int[2];
         public int[,] CenterControlPieceScore = new int[2, 5];
+        public int[] RookRankScore = new int[2];
         public int[] KingAttackScore = new int[2];
         public int[,] KingAttackPieceScore = new int[2, 5];
         public int[] KingDefenseScore = new int[2];
@@ -56,6 +57,7 @@ namespace Artemis.Core.AI.Evaluation
             AppendStat(builder, "Material\t\t\t", MaterialScore);
             AppendStat(builder, "Mobility\t\t\t", MobilityScore);
             AppendStat(builder, "Center Control\t\t", CenterControlScore);
+            AppendStat(builder, "Rook Rank\t\t", RookRankScore);
             AppendStat(builder, "King Attack\t\t", KingAttackScore);
             AppendStat(builder, "King Defense\t\t", KingDefenseScore);
             AppendStat(builder, "Attack-Defense Dif\t", AttackDefenseDif);

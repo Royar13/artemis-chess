@@ -108,6 +108,12 @@ namespace Artemis.Core.AI.Evaluation
                             //center control
                             score += EvaluatePieceCenterControl(pl, pieceType, attacks);
 
+                            //rook on open file & 7th rank
+                            if (pieceType == PieceType.Rook)
+                            {
+                                score += EvaluateRookRank(pl, pieceSq, gameStage);
+                            }
+
                             if (gameStage != GameStage.Endgame)
                             {
                                 //king attack
@@ -276,6 +282,13 @@ namespace Artemis.Core.AI.Evaluation
                 score = ApplySign(pl, kingAttacksScore[pl]);
             }
             return score;
+        }
+
+        protected virtual int EvaluateRookRank(int pl, int rookSqInd, GameStage gameStage)
+        {
+            int rank = BitboardUtils.GetRank(rookSqInd);
+            int score = config.GetRookRankScore(pl, rank, gameStage);
+            return ApplySign(pl, score);
         }
 
         protected virtual int EvaluatePawnStructure(int pl)

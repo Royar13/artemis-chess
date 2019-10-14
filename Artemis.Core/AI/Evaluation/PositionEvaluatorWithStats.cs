@@ -22,6 +22,13 @@ namespace Artemis.Core.AI.Evaluation
             return score;
         }
 
+        protected override int EvaluateRookRank(int pl, int rookSqInd, GameStage gameStage)
+        {
+            int score = base.EvaluateRookRank(pl, rookSqInd, gameStage);
+            stats.RookRankScore[pl] += ApplySign(pl, score);
+            return score;
+        }
+
         public override int EvaluateRooksConnected(int pl)
         {
             int score = base.EvaluateRooksConnected(pl);
