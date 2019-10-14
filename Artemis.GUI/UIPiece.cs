@@ -200,6 +200,11 @@ namespace Artemis.GUI
             Canvas.SetTop(pieceRect, loc.Y);
         }
 
+        public void UpdatePosition()
+        {
+            UpdatePosition(Position);
+        }
+
         private BitmapImage GetImage()
         {
             return GetImageOfPiece(PieceType);

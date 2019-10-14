@@ -1,4 +1,5 @@
 ﻿using Artemis.Core;
+using Artemis.GUI.Settings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,15 +22,19 @@ namespace Artemis.GUI
     /// </summary>
     public partial class MainWindow : Window
     {
-        GameManager gm;
+        private GameManager gm;
+        private UISettings settings;
+        private SettingsDataAccess settingsData = new SettingsDataAccess();
 
         public MainWindow()
         {
             InitializeComponent();
             MovesHistory movesHistory = new MovesHistory();
-            gm = new GameManager(Board, movesHistory);
+            UISettings gmSettings = new UISettings();
+            settingsData.Load(gmSettings);
+            gm = new GameManager(Board, movesHistory, gmSettings);
             gm.NewGame();
-            MainContainer.DataContext = gm;
+            DataContext = gm;
             MovesListTB.DataContext = movesHistory;
         }
 
@@ -86,6 +91,26 @@ namespace Artemis.GUI
         private void UndoMove_Click(object sender, RoutedEventArgs e)
         {
             gm.Undo();
+        }
+
+        private void Settings_Click(object sender, RoutedEventArgs e)
+        {
+            OpenSettings();
+        }
+
+        private void OpenSettings()
+        {
+            settings = new UISettings();
+            settingsData.Load(settings);
+            SettingsWindow settingsWindow = new SettingsWindow(settings);
+            settingsWindow.SettingsUpdated += SettingsWindow_SettingsUpdated;
+            settingsWindow.Owner = this;
+            settingsWindow.Show();
+        }
+
+        private async void SettingsWindow_SettingsUpdated(object sender, SettingsUpdatedEventArgs e)
+        {
+            await gm.UpdateSettings(e.Settings);
         }
     }
 }

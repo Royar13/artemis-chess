@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Artemis.GUI
 {
-    enum InputSource
+    public enum InputSource
     {
         Player,
         Engine

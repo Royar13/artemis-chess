@@ -3,13 +3,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:GUI"
+        xmlns:local="clr-namespace:Artemis.GUI"
         mc:Ignorable="d"
-        Title="Artemis Chess" SizeToContent="WidthAndHeight" Padding="10" WindowStartupLocation="CenterScreen">
+        Title="Artemis Chess" SizeToContent="WidthAndHeight" Padding="10" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize">
     <StackPanel x:Name="MainContainer">
         <Menu BorderThickness="0,0,0,1" BorderBrush="#999999" Margin="0,0,0,10">
             <MenuItem Header="Game">
                 <MenuItem Header="New Game" Click="NewGame_Click"></MenuItem>
+                <MenuItem Header="Settings" Click="Settings_Click"></MenuItem>
                 <MenuItem Header="Undo Move" Click="UndoMove_Click"></MenuItem>
             </MenuItem>
         </Menu>
@@ -24,7 +25,9 @@
             </GroupBox>
         </WrapPanel>
         <GroupBox Header="FEN" Margin="0,5,0,0">
-            <TextBox x:Name="FenTB" Text="{Binding Path=FEN, Mode=OneWay}" BorderThickness="0" HorizontalAlignment="Stretch" PreviewMouseLeftButtonDown="SelectivelyHandleMouseButton" KeyDown="FenTB_KeyDown" LostFocus="FenTB_LostFocus"></TextBox>
+            <TextBox x:Name="FenTB" Text="{Binding Path=FEN, Mode=OneWay}" BorderThickness="0"
+                     HorizontalAlignment="Stretch" PreviewMouseLeftButtonDown="SelectivelyHandleMouseButton"
+                     KeyDown="FenTB_KeyDown" LostFocus="FenTB_LostFocus" MaxWidth="600"></TextBox>
         </GroupBox>
     </StackPanel>
 </Window>

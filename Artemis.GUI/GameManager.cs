@@ -4,6 +4,7 @@ using Artemis.Core.AI.Transposition;
 using Artemis.Core.FormatConverters;
 using Artemis.Core.Moves;
 using Artemis.Core.Moves.PregeneratedAttacks;
+using Artemis.GUI.Settings;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -32,7 +33,8 @@ namespace Artemis.GUI
         private IFormatConverter fenConverter = new FENConverter();
         private CancellationTokenSource cts;
         private Task<Move> engineTask;
-        public InputSource[] PlayerType { get; } = { InputSource.Player, InputSource.Engine };
+        private IEngineConfig engineConfig;
+        private ISettings settings;
         public bool GameEnded { get; private set; }
         public List<GameAction> LegalActions;
         private string fen;
@@ -58,17 +60,19 @@ namespace Artemis.GUI
             }
         }
 
-        public GameManager(Canvas boardCanvas, MovesHistory movesHistory)
+        public GameManager(Canvas boardCanvas, MovesHistory movesHistory, ISettings settings)
         {
             this.boardCanvas = boardCanvas;
             this.movesHistory = movesHistory;
+            this.settings = settings;
+            engineConfig = settings;
             boardCanvas.Background = new ImageBrush
             {
                 ImageSource = GetImage("board.png")
             };
             lastMoveHighlight = new LastMoveHighlight(this, boardCanvas);
             gameState = new GameState(pregeneratedAttacks, zobristHashUtils);
-            engine = new ArtemisEngine(gameState, new EngineConfig());
+            engine = new ArtemisEngine(gameState, engineConfig);
         }
 
         public void NewGame(string fen = null)
@@ -116,7 +120,7 @@ namespace Artemis.GUI
 
         public async Task StartTurn()
         {
-            if (PlayerType[gameState.Turn] == InputSource.Player)
+            if (settings.PlayerType[gameState.Turn] == InputSource.Player)
             {
                 LegalActions = gameState.GetLegalMoves().Select(m => m.GetAction()).ToList();
             }
@@ -195,9 +199,30 @@ namespace Artemis.GUI
             Point p = new Point();
             int file = BitboardUtils.GetFile(pos);
             int rank = BitboardUtils.GetRank(pos);
+            if (settings.BottomColor == 0)
+            {
+                rank = GameState.BOARD_SIZE - rank - 1;
+            }
             p.X = SquareSize * file;
-            p.Y = SquareSize * (GameState.BOARD_SIZE - rank - 1);
+            p.Y = SquareSize * rank;
             return p;
+        }
+
+        public async Task UpdateSettings(ISettings updatedSettings)
+        {
+            await CancelEngineCalc();
+            if (selectedPiece != null)
+            {
+                selectedPiece.Deselect();
+            }
+            ISettings oldSettings = settings;
+            engineConfig.Update(updatedSettings);
+            settings = updatedSettings;
+            if (updatedSettings.BottomColor != oldSettings.BottomColor)
+            {
+                UpdateBottomColor();
+            }
+            StartTurn();
         }
 
         private void UiPiece_PieceSelected(object sender, EventArgs e)
@@ -253,18 +278,23 @@ namespace Artemis.GUI
             }
         }
 
-        public async Task Undo()
+        private async Task CancelEngineCalc()
         {
-            if (movesHistory.Actions.Count == 0)
-                return;
-
             if (engineTask != null)
             {
                 cts.Cancel();
                 await engineTask;
             }
+        }
 
-            if (PlayerType[1 - gameState.Turn] == InputSource.Engine && PlayerType[gameState.Turn] == InputSource.Player && movesHistory.Actions.Count > 1)
+        public async Task Undo()
+        {
+            if (movesHistory.Actions.Count == 0)
+                return;
+
+            await CancelEngineCalc();
+
+            if (settings.PlayerType[1 - gameState.Turn] == InputSource.Engine && settings.PlayerType[gameState.Turn] == InputSource.Player && movesHistory.Actions.Count > 1)
             {
                 UndoAction();
             }
@@ -317,6 +347,15 @@ namespace Artemis.GUI
             {
                 UpdatePiecesAfterActionUndo(action.ExtraAction);
             }
+        }
+
+        public void UpdateBottomColor()
+        {
+            foreach (UIPiece piece in uiPieces)
+            {
+                piece.UpdatePosition();
+            }
+            lastMoveHighlight.UpdatePosition();
         }
     }
 }

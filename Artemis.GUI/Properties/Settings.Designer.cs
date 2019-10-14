@@ -22,5 +22,98 @@ namespace Artemis.GUI.Properties {
                 return defaultInstance;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int WhitePlayerType {
+            get {
+                return ((int)(this["WhitePlayerType"]));
+            }
+            set {
+                this["WhitePlayerType"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public int BlackPlayerType {
+            get {
+                return ((int)(this["BlackPlayerType"]));
+            }
+            set {
+                this["BlackPlayerType"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ConstantDepth {
+            get {
+                return ((bool)(this["ConstantDepth"]));
+            }
+            set {
+                this["ConstantDepth"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("7")]
+        public int Depth {
+            get {
+                return ((int)(this["Depth"]));
+            }
+            set {
+                this["Depth"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("4500")]
+        public int TimeLimit {
+            get {
+                return ((int)(this["TimeLimit"]));
+            }
+            set {
+                this["TimeLimit"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool Multithreading {
+            get {
+                return ((bool)(this["Multithreading"]));
+            }
+            set {
+                this["Multithreading"] = value;
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2")]
+        public int NullMoveDepthReduction {
+            get {
+                return ((int)(this["NullMoveDepthReduction"]));
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int BottomColor {
+            get {
+                return ((int)(this["BottomColor"]));
+            }
+            set {
+                this["BottomColor"] = value;
+            }
+        }
     }
 }

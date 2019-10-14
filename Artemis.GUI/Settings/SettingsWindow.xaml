@@ -1,0 +1,67 @@
+﻿<Window x:Class="Artemis.GUI.Settings.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Artemis.GUI.Settings"
+        mc:Ignorable="d"
+        Title="Settings"  SizeToContent="Height" Width="400" WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
+    <Window.Resources>
+        <Style x:Key="RowLabel" TargetType="Label">
+            <Setter Property="Margin" Value="0,10,0,10" />
+        </Style>
+    </Window.Resources>
+    <Grid x:Name="MainGrid" Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Label Style="{StaticResource RowLabel}">Players:</Label>
+        <WrapPanel Grid.Column="1" VerticalAlignment="Center">
+            <Label>White</Label>
+            <ComboBox ItemsSource="{Binding Path=PlayerTypeEntries}"
+                  DisplayMemberPath="Display"
+                  SelectedValuePath="Value"
+                  SelectedValue="{Binding Path=WhitePlayerType}" />
+            <Label Margin="20,0,0,0">Black</Label>
+            <ComboBox ItemsSource="{Binding Path=PlayerTypeEntries}"
+                  DisplayMemberPath="Display"
+                  SelectedValuePath="Value"
+                  SelectedValue="{Binding Path=BlackPlayerType}" />
+        </WrapPanel>
+        <Label Grid.Row="1" Style="{StaticResource RowLabel}">Bottom Color:</Label>
+        <WrapPanel Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Margin="5,0,0,0">
+            <ComboBox ItemsSource="{Binding Path=ColorEntries}"
+                  DisplayMemberPath="Display"
+                  SelectedValuePath="Value"
+                  SelectedValue="{Binding Path=BottomColor}" />
+        </WrapPanel>
+        <Label Grid.Row="2" Style="{StaticResource RowLabel}">Limit by:</Label>
+        <WrapPanel Grid.Row="2" Grid.Column="1" VerticalAlignment="Center">
+            <RadioButton GroupName="LimitBy" Content="Time" IsChecked="{Binding Path=ConstantDepth, Converter={StaticResource BoolInverterConverter}}"></RadioButton>
+            <RadioButton GroupName="LimitBy" Content="Depth" Margin="15,0,0,0" IsChecked="{Binding Path=ConstantDepth}"></RadioButton>
+        </WrapPanel>
+        <Label Grid.Row="3" Style="{StaticResource RowLabel}">Time per move:</Label>
+        <WrapPanel Grid.Row="3" Grid.Column="1" VerticalAlignment="Center">
+            <ComboBox ItemsSource="{Binding Path=TimeLimitEntries}"
+                  DisplayMemberPath="Display"
+                  SelectedValuePath="Value"
+                  SelectedValue="{Binding Path=TimeLimit}" IsEnabled="{Binding Path=ConstantDepth, Converter={StaticResource BoolInverterConverter}}" />
+            <Label>Seconds</Label>
+        </WrapPanel>
+        <Label Grid.Row="4" Style="{StaticResource RowLabel}">Depth:</Label>
+        <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Path=Depth}" VerticalAlignment="Center" Width="50" HorizontalAlignment="Left" IsEnabled="{Binding Path=ConstantDepth}" />
+        <Label Grid.Row="5" Style="{StaticResource RowLabel}">Multithreading:</Label>
+        <CheckBox Grid.Row="5" Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding Path=Multithreading}"></CheckBox>
+        <Button x:Name="SaveBtn" Grid.Row="6" Margin="0,10,0,0" Click="SaveBtn_Click">Save</Button>
+    </Grid>
+</Window>

@@ -18,6 +18,7 @@ namespace Artemis.GUI
         private Rectangle lastMoveFrom;
         private Rectangle lastMoveTo;
         bool added = false;
+        GameAction action;
 
         public LastMoveHighlight(GameManager gm, Canvas boardCanvas)
         {
@@ -39,18 +40,14 @@ namespace Artemis.GUI
 
         public void Show(GameAction action)
         {
+            this.action = action;
             if (!added)
             {
                 boardCanvas.Children.Add(lastMoveFrom);
                 boardCanvas.Children.Add(lastMoveTo);
                 added = true;
             }
-            Point fromLoc = gm.GetLocationOfPos(action.From);
-            Canvas.SetLeft(lastMoveFrom, fromLoc.X);
-            Canvas.SetTop(lastMoveFrom, fromLoc.Y);
-            Point toLoc = gm.GetLocationOfPos(action.To);
-            Canvas.SetLeft(lastMoveTo, toLoc.X);
-            Canvas.SetTop(lastMoveTo, toLoc.Y);
+            UpdatePosition();
         }
 
         public void Hide()
@@ -58,6 +55,19 @@ namespace Artemis.GUI
             boardCanvas.Children.Remove(lastMoveFrom);
             boardCanvas.Children.Remove(lastMoveTo);
             added = false;
+        }
+
+        public void UpdatePosition()
+        {
+            if (added)
+            {
+                Point fromLoc = gm.GetLocationOfPos(action.From);
+                Canvas.SetLeft(lastMoveFrom, fromLoc.X);
+                Canvas.SetTop(lastMoveFrom, fromLoc.Y);
+                Point toLoc = gm.GetLocationOfPos(action.To);
+                Canvas.SetLeft(lastMoveTo, toLoc.X);
+                Canvas.SetTop(lastMoveTo, toLoc.Y);
+            }
         }
     }
 }
