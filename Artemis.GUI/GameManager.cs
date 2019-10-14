@@ -40,14 +40,31 @@ namespace Artemis.GUI
         private string fen;
         public string FEN
         {
-            get
-            {
-                return fen;
-            }
+            get { return fen; }
             set
             {
                 fen = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("FEN"));
+            }
+        }
+        private Brush turnColor;
+        public Brush TurnColor
+        {
+            get { return turnColor; }
+            set
+            {
+                turnColor = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("TurnColor"));
+            }
+        }
+        private bool displayEngineTurn = false;
+        public bool DisplayEngineTurn
+        {
+            get { return displayEngineTurn; }
+            set
+            {
+                displayEngineTurn = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("DisplayEngineTurn"));
             }
         }
         public event PropertyChangedEventHandler PropertyChanged;
@@ -120,6 +137,10 @@ namespace Artemis.GUI
 
         public async Task StartTurn()
         {
+            Color color = gameState.Turn == 0 ? Colors.White : Colors.Black;
+            TurnColor = new SolidColorBrush(color);
+            DisplayEngineTurn = settings.PlayerType[gameState.Turn] == InputSource.Engine;
+
             if (settings.PlayerType[gameState.Turn] == InputSource.Player)
             {
                 LegalActions = gameState.GetLegalMoves().Select(m => m.GetAction()).ToList();
@@ -143,6 +164,7 @@ namespace Artemis.GUI
         public void EndTurn()
         {
             lastMoveHighlight.Show(movesHistory.Actions.Last());
+            DisplayEngineTurn = false;
             UpdateFEN();
             GameResult result = gameState.GetResult();
             if (result == GameResult.Ongoing)
@@ -332,14 +354,14 @@ namespace Artemis.GUI
             if (action.Capture != null)
             {
                 ulong capturedBB = BitboardUtils.GetBitboard(action.Capture.Value);
-                PieceType capturedPieceType = gameState.GetPieceBySquare(gameState.Turn, capturedBB).Value;
-                CreatePiece(capturedPieceType, gameState.Turn, action.Capture.Value);
+                PieceType capturedPieceType = gameState.GetPieceBySquare(1 - gameState.Turn, capturedBB).Value;
+                CreatePiece(capturedPieceType, 1 - gameState.Turn, action.Capture.Value);
             }
 
             if (action.ChangeType != null)
             {
                 ulong fromBB = BitboardUtils.GetBitboard(action.From);
-                PieceType originalPieceType = gameState.GetPieceBySquare(1 - gameState.Turn, fromBB).Value;
+                PieceType originalPieceType = gameState.GetPieceBySquare(gameState.Turn, fromBB).Value;
                 piece.ChangeType(originalPieceType);
             }
 

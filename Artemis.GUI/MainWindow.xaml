@@ -24,6 +24,11 @@
                 </ScrollViewer>
             </GroupBox>
         </WrapPanel>
+        <WrapPanel Margin="10, 10, 0, 10">
+            <Rectangle Width="15" Height="15" Stroke="#FF3C3C3C" Fill="{Binding Path=TurnColor, Mode=OneWay}"></Rectangle>
+            <Image Source="img/hourglass.png" Width="15" Height="15" Margin="15,0,0,0"
+                   Visibility="{Binding Path=DisplayEngineTurn, Converter={StaticResource BoolToVis}}" />
+        </WrapPanel>
         <GroupBox Header="FEN" Margin="0,5,0,0">
             <TextBox x:Name="FenTB" Text="{Binding Path=FEN, Mode=OneWay}" BorderThickness="0"
                      HorizontalAlignment="Stretch" PreviewMouseLeftButtonDown="SelectivelyHandleMouseButton"
