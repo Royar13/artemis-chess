@@ -7,22 +7,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Artemis.Test.AI.Evaluation
 {
     [TestClass]
-    public class PositionEvaluatorTest
+    public class PositionEvaluatorTest : PositionEvaluatorTestBase
     {
-        GameState gameState;
-        EvaluationConfig evConfig;
-        PrivateObject evConfigPO;
-        PositionEvaluatorWithStats evaluator;
-
-        [TestInitialize]
-        public void TestInit()
-        {
-            gameState = GameStateBuilder.Build();
-            evConfig = new EvaluationConfig();
-            evConfigPO = new PrivateObject(evConfig);
-            evaluator = new PositionEvaluatorWithStats(gameState, evConfig);
-        }
-
         [TestMethod]
         public void EvaluationTest()
         {

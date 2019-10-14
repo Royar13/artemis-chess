@@ -38,6 +38,11 @@ namespace Artemis.Core.Moves.Generator
 
         public abstract ulong GenerateAttacksFromSquare(int sqInd);
 
+        public virtual ulong GenerateAttacksFromSquare(int sqInd, int pl)
+        {
+            return GenerateAttacksFromSquare(sqInd);
+        }
+
         /// <summary>
         /// Gets an enumerable of the moves from a square.
         /// </summary>

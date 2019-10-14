@@ -22,6 +22,8 @@ namespace Artemis.Core.AI.Evaluation
         private int doubledPawnsPenalty = -30;
         private int isolatedPawnPenalty = -30;
         private int isolatedPawnOpenFilePenalty = -45;
+        private int[] passedPawnRank = { 0, 0, 0, 5, 10, 15, 20 };
+        private double passedPawnDefenderModifier = 1.7;
         private int[] rookRank = { 0, 0, 0, 0, 0, 10, 20, 10 };
         private int rookOpenFile = 15;
         private int[] endgameKingSquare ={  0, 6, 12, 18, 18, 12, 6, 0,
@@ -165,6 +167,16 @@ namespace Artemis.Core.AI.Evaluation
         public int GetEndgameKingsDistanceScore(int distance)
         {
             int score = (14 - distance) * endgameKingsDistance;
+            return score;
+        }
+
+        public int GetPassedPawnScore(int pl, int rank, int pawnDefenders)
+        {
+            if (pl == 1)
+            {
+                rank = 7 - rank;
+            }
+            int score = (int)(passedPawnRank[rank] * Math.Pow(passedPawnDefenderModifier, pawnDefenders));
             return score;
         }
     }

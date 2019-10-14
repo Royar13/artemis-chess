@@ -16,6 +16,7 @@ namespace Artemis.Core.AI.Evaluation
         public int[] PawnStormScore = new int[2];
         public int[] OpenKingFilesScore = new int[2];
         public int[] PawnStructureScore = new int[2];
+        public int[] PassedPawnScore = new int[2];
         public int[] MaterialScore = new int[2];
         public int[] MobilityScore = new int[2];
         public int[,] MobilityPieceScore = new int[2, 5];
@@ -55,6 +56,7 @@ namespace Artemis.Core.AI.Evaluation
             AppendStat(builder, "King Open Files\t\t", OpenKingFilesScore);
             AppendStat(builder, "Pawn Storm\t\t", PawnStormScore);
             AppendStat(builder, "Pawn Structure\t\t", PawnStructureScore);
+            AppendStat(builder, "Passed Pawn\t\t", PassedPawnScore);
             AppendStat(builder, "Material\t\t\t", MaterialScore);
             AppendStat(builder, "Mobility\t\t\t", MobilityScore);
             AppendStat(builder, "Center Control\t\t", CenterControlScore);

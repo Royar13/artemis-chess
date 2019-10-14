@@ -340,7 +340,7 @@ namespace Artemis.Core.AI.Evaluation
             pawns ^= doubledPawns;
             ulong pawnsCopy = pawns;
             int isolatedPawns = 0;
-            int isolatedPawnsOnEmptyFile = 0;
+            int isolatedPawnsOnOpenFile = 0;
             ulong opPawns = gameState.Pieces[1 - pl, (int)PieceType.Pawn];
             while (pawnsCopy > 0)
             {
@@ -350,6 +350,9 @@ namespace Artemis.Core.AI.Evaluation
                 ulong leftFileMask = file > 0 ? BitboardUtils.GetFileMask(file - 1) : 0;
                 ulong rightFileMask = file < 7 ? BitboardUtils.GetFileMask(file + 1) : 0;
                 ulong fileMask = leftFileMask | rightFileMask;
+                ulong threeFilesMask = fileMask | BitboardUtils.GetFileMask(file);
+                //passed pawn
+                score += CalculatePassedPawnScore(pl, pawn, rank, threeFilesMask);
                 if ((pawns & fileMask) == 0)
                 {
                     ulong aboveMask = BitboardUtils.GetFileMask(file);
@@ -363,7 +366,7 @@ namespace Artemis.Core.AI.Evaluation
                     }
                     if ((opPawns & aboveMask) == 0)
                     {
-                        isolatedPawnsOnEmptyFile++;
+                        isolatedPawnsOnOpenFile++;
                     }
                     else
                     {
@@ -372,7 +375,7 @@ namespace Artemis.Core.AI.Evaluation
                 }
             }
             score += isolatedPawns * config.GetIsolatedPawnPenalty();
-            score += isolatedPawnsOnEmptyFile * config.GetIsolatedPawnOpenFilePenalty();
+            score += isolatedPawnsOnOpenFile * config.GetIsolatedPawnOpenFilePenalty();
             return ApplySign(pl, score);
         }
 
@@ -418,6 +421,36 @@ namespace Artemis.Core.AI.Evaluation
                 score = 1;
             }
             return ApplySign(pl, score);
+        }
+
+        /// <summary>
+        /// Give a score to a pawn if it's a passed pawn
+        /// </summary>
+        /// <param name="pl">Player that has the pawn</param>
+        /// <param name="pawnRank">Rank of the pawn (1-6)</param>
+        /// <param name="threeFilesMask">The files to the left and right of the pawn, and the pawn's file.
+        /// Only two files for A and H pawns.</param>
+        /// <returns></returns>
+        protected virtual int CalculatePassedPawnScore(int pl, int pawnSq, int pawnRank, ulong threeFilesMask)
+        {
+            int score = 0;
+            if (pl == 0)
+            {
+                threeFilesMask <<= (pawnRank + 1) * 8;
+            }
+            else
+            {
+                threeFilesMask >>= (8 - pawnRank) * 8;
+            }
+            ulong enemyPawns = gameState.Pieces[1 - pl, (int)PieceType.Pawn];
+            ulong enemyPawnsOnFiles = threeFilesMask & enemyPawns;
+            if (enemyPawnsOnFiles == 0)
+            {
+                ulong attacksBackwards = gameState.MoveGenerators[(int)PieceType.Pawn].GenerateAttacksFromSquare(pawnSq, 1 - pl);
+                int pawnDefenders = BitboardUtils.SparsePopcount(attacksBackwards & gameState.Pieces[pl, (int)PieceType.Pawn]);
+                score = config.GetPassedPawnScore(pl, pawnRank, pawnDefenders);
+            }
+            return score;
         }
 
         protected virtual int EvaluateEndgameKingSquare(int pl)

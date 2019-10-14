@@ -26,6 +26,12 @@ namespace Artemis.Core.Moves.Generator
             return GenerateAttacksByPawns(pawn, pl);
         }
 
+        public override ulong GenerateAttacksFromSquare(int sqInd, int pl)
+        {
+            ulong bb = BitboardUtils.GetBitboard(sqInd);
+            return GenerateAttacksByPawns(bb, pl);
+        }
+
         private ulong GenerateAttacksByPawns(ulong pawns, int pl)
         {
             ulong attacks = 0;
