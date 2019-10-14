@@ -5,9 +5,18 @@ Its main features are:
 * Bitboards board representation
 * Principal Variation Search (PVS)
 * Quiescence Search
+* Multithreading
 * Transposition Table
-* Killer Heuristic
+* Null Move Heuristic
+* Killer Move Heuristic
+* Late Move Reductions
 * A user interface to play against the engine
 
-It is still a work in progress, and there are many features I hope to add in the future, such as advanced pruning techniques
-and improvements to the evaluation method.
+## Future Goals
+This is still a work in progress, and there are many features I still want to add. The main ones are:
+* Threefold repetition and 50-move rule
+* UCI/XBoard support
+* Integration with a Chess server such as FICS
+* Advanced pruning techniques
+* Improvements and tuning of the evaluation function
+* Time management logic
