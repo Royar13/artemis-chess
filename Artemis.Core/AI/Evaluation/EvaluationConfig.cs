@@ -23,6 +23,7 @@ namespace Artemis.Core.AI.Evaluation
         private int isolatedPawnPenalty = -30;
         private int isolatedPawnOpenFilePenalty = -45;
         private int[] rookRank = { 0, 0, 0, 0, 0, 10, 20, 10 };
+        private int rookOpenFile = 15;
         private int[] endgameKingSquare ={  0, 6, 12, 18, 18, 12, 6, 0,
                                             10, 16, 22, 28, 28, 22, 16, 10,
                                             20, 26, 32, 38, 38, 32, 26, 20,
@@ -130,6 +131,11 @@ namespace Artemis.Core.AI.Evaluation
                 score = pl == 0 ? rookRank[rank] : rookRank[7 - rank];
             }
             return score;
+        }
+
+        public int GetRookOpenFileScore()
+        {
+            return rookOpenFile;
         }
 
         public int GetKingPawnMovedPenalty(int moves)

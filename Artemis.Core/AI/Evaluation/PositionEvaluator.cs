@@ -111,6 +111,7 @@ namespace Artemis.Core.AI.Evaluation
                             //rook on open file & 7th rank
                             if (pieceType == PieceType.Rook)
                             {
+                                score += EvaluateRookOpenFile(pl, pieceSq);
                                 score += EvaluateRookRank(pl, pieceSq, gameStage);
                             }
 
@@ -288,6 +289,28 @@ namespace Artemis.Core.AI.Evaluation
         {
             int rank = BitboardUtils.GetRank(rookSqInd);
             int score = config.GetRookRankScore(pl, rank, gameStage);
+            return ApplySign(pl, score);
+        }
+
+        protected virtual int EvaluateRookOpenFile(int pl, int rookSqInd)
+        {
+            int score = 0;
+            int rank = BitboardUtils.GetRank(rookSqInd);
+            int file = BitboardUtils.GetFile(rookSqInd);
+            ulong fileMask = BitboardUtils.GetFileMask(file);
+            if (pl == 0)
+            {
+                fileMask <<= 8 * rank;
+            }
+            else
+            {
+                fileMask >>= 8 * (7 - rank);
+            }
+            ulong pawns = gameState.Pieces[pl, (int)PieceType.Pawn] & fileMask;
+            if (pawns == 0)
+            {
+                score = config.GetRookOpenFileScore();
+            }
             return ApplySign(pl, score);
         }
 

@@ -29,6 +29,13 @@ namespace Artemis.Core.AI.Evaluation
             return score;
         }
 
+        protected override int EvaluateRookOpenFile(int pl, int rookSqInd)
+        {
+            int score = base.EvaluateRookOpenFile(pl, rookSqInd);
+            stats.RookOpenFileScore[pl] += ApplySign(pl, score);
+            return score;
+        }
+
         public override int EvaluateRooksConnected(int pl)
         {
             int score = base.EvaluateRooksConnected(pl);

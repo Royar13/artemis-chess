@@ -60,6 +60,54 @@ namespace Artemis.Test.AI.Evaluation
             evaluator.Evaluate(0, GameStage.Endgame, out stats);
             Assert.AreEqual(rookRankScores[7], stats.RookRankScore[0]);
             Assert.AreEqual(rookRankScores[5], stats.RookRankScore[1]);
+
+            stats = new EvaluationStats();
+            gameState.LoadPosition("2bqkbR1/p3pp2/3p3n/P2p3p/p3P2P/1r1P1N2/1PQB1P2/1N2K3 b - - 2 17");
+            evaluator.Evaluate(0, GameStage.Opening, out stats);
+            Assert.AreEqual(0, stats.RookRankScore[0]);
+            Assert.AreEqual(0, stats.RookRankScore[1]);
+        }
+
+        [TestMethod]
+        public void RookOpenFileTest()
+        {
+            int rookOpenFileScore = (int)evConfigPO.GetField("rookOpenFile");
+
+            EvaluationStats stats = new EvaluationStats();
+            gameState.LoadPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+            evaluator.Evaluate(0, GameStage.Opening, out stats);
+            Assert.AreEqual(0, stats.RookOpenFileScore[0]);
+            Assert.AreEqual(0, stats.RookOpenFileScore[1]);
+
+            stats = new EvaluationStats();
+            gameState.LoadPosition("1nbqkbn1/3pppp1/1p4r1/p1P3r1/2P3pP/P3PN2/2RP1P2/1NBQKB1R w K - 5 14");
+            evaluator.Evaluate(0, GameStage.Endgame, out stats);
+            Assert.AreEqual(0, stats.RookOpenFileScore[0]);
+            Assert.AreEqual(0, stats.RookOpenFileScore[1]);
+
+            stats = new EvaluationStats();
+            gameState.LoadPosition("1nbqkbn1/2pppppr/1p1r4/p7/2P3pP/PP3N2/2RPPP2/1NBQKB1R b K - 1 8");
+            evaluator.Evaluate(0, GameStage.Middlegame, out stats);
+            Assert.AreEqual(0, stats.RookOpenFileScore[0]);
+            Assert.AreEqual(rookOpenFileScore * 2, stats.RookOpenFileScore[1]);
+
+            stats = new EvaluationStats();
+            gameState.LoadPosition("2bqkbR1/p3pp2/3p3n/P2p3p/p3P2P/1r1P1N2/1PQB1P2/1N2K3 b - - 2 17");
+            evaluator.Evaluate(0, GameStage.Middlegame, out stats);
+            Assert.AreEqual(rookOpenFileScore, stats.RookOpenFileScore[0]);
+            Assert.AreEqual(rookOpenFileScore, stats.RookOpenFileScore[1]);
+
+            stats = new EvaluationStats();
+            gameState.LoadPosition("2bqkb2/p4p2/3pp3/P2p1R1p/p3P2P/3P1N2/1Q1B1P2/1N2K3 b - - 0 20");
+            evaluator.Evaluate(0, GameStage.Middlegame, out stats);
+            Assert.AreEqual(rookOpenFileScore, stats.RookOpenFileScore[0]);
+            Assert.AreEqual(0, stats.RookOpenFileScore[1]);
+
+            stats = new EvaluationStats();
+            gameState.LoadPosition("2bqkb1r/p1r1p3/2n2n1R/1p1p2pR/P6P/2QP1N2/1PP1BPP1/1NB1K3 w k - 1 18");
+            evaluator.Evaluate(0, GameStage.Opening, out stats);
+            Assert.AreEqual(rookOpenFileScore * 2, stats.RookOpenFileScore[0]);
+            Assert.AreEqual(rookOpenFileScore * 2, stats.RookOpenFileScore[1]);
         }
 
         [TestMethod]
