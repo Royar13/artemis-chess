@@ -237,6 +237,10 @@ namespace Artemis.GUI
             {
                 rank = GameState.BOARD_SIZE - rank - 1;
             }
+            else
+            {
+                file = GameState.BOARD_SIZE - file - 1;
+            }
             p.X = SquareSize * file;
             p.Y = SquareSize * rank;
             return p;
