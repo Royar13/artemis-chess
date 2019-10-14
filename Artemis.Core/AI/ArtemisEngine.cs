@@ -1,4 +1,5 @@
 ﻿using Artemis.Core.AI.Evaluation;
+using Artemis.Core.AI.Opening;
 using Artemis.Core.AI.Search;
 using Artemis.Core.AI.Search.Heuristics;
 using Artemis.Core.AI.Transposition;
@@ -20,6 +21,7 @@ namespace Artemis.Core.AI
         private TranspositionTable transpositionTable = new TranspositionTable();
         private EvaluationConfig evConfig;
         private PositionEvaluator evaluator;
+        private OpeningBook openingBook;
         private ThreadMaster threadMaster;
         public IEngineConfig Config;
         public const int INITIAL_ALPHA = -PositionEvaluator.CHECKMATE_SCORE * 2;
@@ -27,13 +29,14 @@ namespace Artemis.Core.AI
         public const int MAX_DEPTH = 50;
         public GameStage GameStage = GameStage.Opening;
 
-        public ArtemisEngine(GameState gameState, IEngineConfig config)
+        public ArtemisEngine(GameState gameState, IEngineConfig config, OpeningBook openingBook)
         {
             this.gameState = gameState;
             gameState.NewPositionLoaded += GameState_NewPositionLoaded;
             evConfig = new EvaluationConfig();
             evaluator = new PositionEvaluator(gameState, evConfig);
             Config = config;
+            this.openingBook = openingBook;
             threadMaster = new ThreadMaster(this, gameState, transpositionTable, config);
         }
 
@@ -44,6 +47,11 @@ namespace Artemis.Core.AI
 
         public async Task<Move> Calculate(CancellationToken ct)
         {
+            Move openingMove;
+            if (Config.UseOpeningBook && openingBook.TryGetMove(gameState, out openingMove))
+            {
+                return openingMove;
+            }
             UpdateGameStage();
             PVList pv;
             using (internalCts = new CancellationTokenSource())

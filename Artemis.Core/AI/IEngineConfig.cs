@@ -14,6 +14,7 @@ namespace Artemis.Core.AI
         int TimeLimit { get; }
         int NullMoveDepthReduction { get; }
         bool Multithreading { get; }
+        bool UseOpeningBook { get; }
         void Update(IEngineConfig config);
     }
 }

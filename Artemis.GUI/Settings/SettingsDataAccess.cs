@@ -14,6 +14,7 @@ namespace Artemis.GUI.Settings
             settings.Depth = Properties.Settings.Default.Depth;
             settings.TimeLimit = Properties.Settings.Default.TimeLimit;
             settings.Multithreading = Properties.Settings.Default.Multithreading;
+            settings.UseOpeningBook = Properties.Settings.Default.UseOpeningBook;
             settings.WhitePlayerType = (InputSource)Properties.Settings.Default.WhitePlayerType;
             settings.BlackPlayerType = (InputSource)Properties.Settings.Default.BlackPlayerType;
             settings.BottomColor = Properties.Settings.Default.BottomColor;
@@ -26,6 +27,7 @@ namespace Artemis.GUI.Settings
             Properties.Settings.Default.Depth = settings.Depth;
             Properties.Settings.Default.TimeLimit = settings.TimeLimit;
             Properties.Settings.Default.Multithreading = settings.Multithreading;
+            Properties.Settings.Default.UseOpeningBook = settings.UseOpeningBook;
             Properties.Settings.Default.WhitePlayerType = (int)settings.WhitePlayerType;
             Properties.Settings.Default.BlackPlayerType = (int)settings.BlackPlayerType;
             Properties.Settings.Default.BottomColor = settings.BottomColor;

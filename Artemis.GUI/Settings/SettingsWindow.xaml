@@ -24,6 +24,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Label Style="{StaticResource RowLabel}">Players:</Label>
         <WrapPanel Grid.Column="1" VerticalAlignment="Center">
@@ -62,6 +63,8 @@
         <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Path=Depth}" VerticalAlignment="Center" Width="50" HorizontalAlignment="Left" IsEnabled="{Binding Path=ConstantDepth}" />
         <Label Grid.Row="5" Style="{StaticResource RowLabel}">Multithreading:</Label>
         <CheckBox Grid.Row="5" Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding Path=Multithreading}"></CheckBox>
-        <Button x:Name="SaveBtn" Grid.Row="6" Margin="0,10,0,0" Click="SaveBtn_Click">Save</Button>
+        <Label Grid.Row="6" Style="{StaticResource RowLabel}">Opening Book:</Label>
+        <CheckBox Grid.Row="6" Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding Path=UseOpeningBook}"></CheckBox>
+        <Button x:Name="SaveBtn" Grid.Row="7" Margin="0,10,0,0" Click="SaveBtn_Click">Save</Button>
     </Grid>
 </Window>

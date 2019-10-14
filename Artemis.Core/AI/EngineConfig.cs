@@ -12,6 +12,7 @@ namespace Artemis.Core.AI
         public virtual int TimeLimit { get; set; } = 4500;
         public virtual int NullMoveDepthReduction { get; set; } = 2;
         public virtual bool Multithreading { get; set; } = true;
+        public virtual bool UseOpeningBook { get; set; } = true;
 
         public void Update(IEngineConfig config)
         {
@@ -20,6 +21,7 @@ namespace Artemis.Core.AI
             TimeLimit = config.TimeLimit;
             NullMoveDepthReduction = config.NullMoveDepthReduction;
             Multithreading = config.Multithreading;
+            UseOpeningBook = config.UseOpeningBook;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Artemis.Core;
 using Artemis.Core.AI;
+using Artemis.Core.AI.Opening;
 using Artemis.Core.AI.Transposition;
 using Artemis.Core.FormatConverters;
 using Artemis.Core.Moves;
@@ -23,6 +24,7 @@ namespace Artemis.GUI
     {
         private ZobristHashUtils zobristHashUtils = new ZobristHashUtils();
         private PregeneratedAttacksData pregeneratedAttacks = new PregeneratedAttacksData();
+        OpeningBook openingBook;
         private GameState gameState;
         private ArtemisEngine engine;
         private Canvas boardCanvas;
@@ -89,15 +91,13 @@ namespace Artemis.GUI
             };
             lastMoveHighlight = new LastMoveHighlight(this, boardCanvas);
             gameState = new GameState(pregeneratedAttacks, zobristHashUtils);
-            engine = new ArtemisEngine(gameState, engineConfig);
+            openingBook = new OpeningBook(pregeneratedAttacks, zobristHashUtils);
+            engine = new ArtemisEngine(gameState, engineConfig, openingBook);
         }
 
         public void NewGame(string fen = null)
         {
-            if (!pregeneratedAttacks.IsInitialized)
-            {
-                pregeneratedAttacks.Initialize();
-            }
+            LazyInitialize();
             if (fen == null)
             {
                 gameState.LoadPosition();
@@ -118,6 +118,18 @@ namespace Artemis.GUI
             }
             GameEnded = false;
             StartTurn();
+        }
+
+        private void LazyInitialize()
+        {
+            if (!pregeneratedAttacks.IsInitialized)
+            {
+                pregeneratedAttacks.Initialize();
+            }
+            if (!openingBook.IsLoaded)
+            {
+                openingBook.Load();
+            }
         }
 
         private UIPiece CreatePiece(PieceType pieceType, int pl, int position)

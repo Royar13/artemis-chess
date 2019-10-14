@@ -64,6 +64,16 @@ namespace Artemis.GUI.Settings
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Multithreading"));
             }
         }
+        private bool useOpeningBook = true;
+        public override bool UseOpeningBook
+        {
+            get { return useOpeningBook; }
+            set
+            {
+                useOpeningBook = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("UseOpeningBook"));
+            }
+        }
         public InputSource[] PlayerType { get; set; } = { InputSource.Player, InputSource.Engine };
         public InputSource WhitePlayerType
         {
