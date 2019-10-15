@@ -295,17 +295,8 @@ namespace Artemis.Core.AI.Evaluation
         protected virtual int EvaluateRookOpenFile(int pl, int rookSqInd)
         {
             int score = 0;
-            int rank = BitboardUtils.GetRank(rookSqInd);
             int file = BitboardUtils.GetFile(rookSqInd);
             ulong fileMask = BitboardUtils.GetFileMask(file);
-            if (pl == 0)
-            {
-                fileMask <<= 8 * rank;
-            }
-            else
-            {
-                fileMask >>= 8 * (7 - rank);
-            }
             ulong pawns = gameState.Pieces[pl, (int)PieceType.Pawn] & fileMask;
             if (pawns == 0)
             {

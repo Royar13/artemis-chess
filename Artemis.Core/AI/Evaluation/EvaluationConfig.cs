@@ -8,8 +8,8 @@ namespace Artemis.Core.AI.Evaluation
     {
         private int[] piecesValue = { 500, 290, 320, 100, 900, 0 };
         private Modifier[] mobility = { new Modifier(0, 1, 0), new Modifier(5), new Modifier(3), new Modifier(0), new Modifier(0, 1, 1) };
-        private int pawnCentralControl = 20;
-        private int pieceCentralControl = 5;
+        private int pawnCentralControl = 25;
+        private int pieceCentralControl = 3;
         private int pawnSupport = 2;
         private int[] kingFile = { 15, 20, 15, -15, -10, 5, 25, 15 };
         private int rooksConnected = 20;
@@ -19,9 +19,9 @@ namespace Artemis.Core.AI.Evaluation
         private int kingOpenFilePenalty = -25;
         private double directAttackModifier = 1.3;
         private int[] pieceDefense = { 3, 4, 5, 1, 1 };
-        private int doubledPawnsPenalty = -30;
-        private int isolatedPawnPenalty = -30;
-        private int isolatedPawnOpenFilePenalty = -45;
+        private int doubledPawnsPenalty = -12;
+        private int isolatedPawnPenalty = -12;
+        private int isolatedPawnOpenFilePenalty = -20;
         private int[] passedPawnRank = { 0, 0, 0, 5, 10, 15, 20 };
         private double passedPawnDefenderModifier = 1.7;
         private int[] rookRank = { 0, 0, 0, 0, 0, 10, 20, 10 };
