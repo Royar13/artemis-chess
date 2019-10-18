@@ -18,7 +18,7 @@ namespace Artemis.Core.AI
         GameState gameState;
         CancellationTokenSource internalCts;
         CancellationTokenSource linkedCts;
-        private TranspositionTable transpositionTable = new TranspositionTable();
+        private TranspositionTable transpositionTable;
         private EvaluationConfig evConfig;
         private PositionEvaluator evaluator;
         private OpeningBook openingBook;
@@ -33,6 +33,7 @@ namespace Artemis.Core.AI
         {
             this.gameState = gameState;
             gameState.NewPositionLoaded += GameState_NewPositionLoaded;
+            transpositionTable = new TranspositionTable(config);
             evConfig = new EvaluationConfig();
             evaluator = new PositionEvaluator(gameState, evConfig);
             Config = config;

@@ -76,31 +76,15 @@ namespace Artemis.Core.AI.Search
             }
 
             int originalAlpha = alpha;
-            int originalBeta = beta;
             ulong hash = gameState.GetIrrevState().ZobristHash;
-            TranspositionNode ttNode = null;
-            if (transpositionTable.TryGetValue(hash, out ttNode))
+            TTHit ttHit = transpositionTable.TryGetValue(hash, depth, alpha, beta);
+            if (ttHit.HitType == HitType.Hit)
             {
-                if (ttNode.Depth >= depth)
-                {
-                    switch (ttNode.NodeType)
-                    {
-                        case NodeType.PVNode:
-                            return ttNode.Score;
-                        case NodeType.CutNode:
-                            alpha = Math.Max(alpha, ttNode.Score);
-                            break;
-                        case NodeType.AllNode:
-                            beta = Math.Min(beta, ttNode.Score);
-                            break;
-                    }
-
-                    if (alpha >= beta)
-                    {
-                        return ttNode.Score;
-                    }
-                }
+                if (ttHit.TTNode.PV != null)
+                    pvList.Replace(ttHit.TTNode.PV);
+                return ttHit.Score;
             }
+            TranspositionNode ttNode = ttHit.TTNode;
 
             if (depth == 0 || ply == ArtemisEngine.MAX_DEPTH)
             {
@@ -113,7 +97,8 @@ namespace Artemis.Core.AI.Search
             bool cutoff = false;
             PVList newPV = new PVList();
 
-            if (ply > 0 && depth > config.NullMoveDepthReduction + 1 && !nullMoveReduction && engine.GameStage != GameStage.Endgame && !gameState.IsCheck())
+            if (ttHit.HitType != HitType.AvoidNullMove && ply > 0 && depth > config.NullMoveDepthReduction + 1
+                && !nullMoveReduction && engine.GameStage != GameStage.Endgame && !gameState.IsCheck())
             {
                 //null move pruning
                 gameState.MakeNullMove();
@@ -122,6 +107,8 @@ namespace Artemis.Core.AI.Search
                 gameState.UnmakeNullMove();
                 if (score >= beta)
                 {
+                    TranspositionNode newNode = new TranspositionNode(NodeType.CutNode, score, nextDepth + 1, null, null);
+                    SaveNode(hash, ttNode, newNode);
                     //alpha-beta cutoff
                     return beta;
                 }
@@ -168,14 +155,14 @@ namespace Artemis.Core.AI.Search
                     int score;
                     if (moveCount == 0 || searchDepth == 1)
                     {
-                        score = -Search(nextDepth, ply + 1, -beta, -alpha, newPV, nextLmrReduction, nullMoveReduction);
+                        score = -Search(nextDepth, ply + 1, -beta, -alpha, newPV, nextLmrReduction, false);
                     }
                     else
                     {
                         ulong moveHash = gameState.GetIrrevState().ZobristHash;
                         if (!config.Multithreading || i >= originalLen || searchedNodes.TryAdd(moveHash, true))
                         {
-                            score = -Search(nextDepth, ply + 1, -alpha - 1, -alpha, newPV, nextLmrReduction, nullMoveReduction);
+                            score = -Search(nextDepth, ply + 1, -alpha - 1, -alpha, newPV, nextLmrReduction, false);
                             searchedNodes.TryRemove(moveHash, out _);
 
                             if (score > alpha)
@@ -184,7 +171,7 @@ namespace Artemis.Core.AI.Search
                                 {
                                     nextDepth++;
                                 }
-                                score = -Search(nextDepth, ply + 1, -beta, -alpha, newPV, nextLmrReduction, nullMoveReduction);
+                                score = -Search(nextDepth, ply + 1, -beta, -alpha, newPV, nextLmrReduction, false);
                             }
                         }
                         else
@@ -227,24 +214,31 @@ namespace Artemis.Core.AI.Search
                 }
             }
 
-            NodeType nodeType = GetNodeType(originalAlpha, originalBeta, alpha);
+            NodeType nodeType = GetNodeType(originalAlpha, beta, alpha);
+            PVList nodePV = null;
             if (nodeType == NodeType.PVNode)
             {
                 PVNode node = new PVNode(bestMove);
                 newPV.AddFirst(node);
+                nodePV = newPV;
                 pvList.Replace(newPV);
             }
-            TranspositionNode updatedNode = new TranspositionNode(nodeType, alpha, depth, bestMove);
-            if (ttNode != null)
+            TranspositionNode updatedNode = new TranspositionNode(nodeType, alpha, depth, bestMove, nodePV);
+            SaveNode(hash, ttNode, updatedNode);
+
+            return alpha;
+        }
+
+        private void SaveNode(ulong hash, TranspositionNode existingNode, TranspositionNode newNode)
+        {
+            if (existingNode != null)
             {
-                transpositionTable.Update(hash, ttNode, updatedNode);
+                transpositionTable.Update(hash, existingNode, newNode);
             }
             else
             {
-                transpositionTable.Add(hash, updatedNode);
+                transpositionTable.Add(hash, newNode);
             }
-
-            return alpha;
         }
 
         private NodeType GetNodeType(int alpha, int beta, int score)

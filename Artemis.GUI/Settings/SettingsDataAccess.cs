@@ -18,7 +18,6 @@ namespace Artemis.GUI.Settings
             settings.WhitePlayerType = (InputSource)Properties.Settings.Default.WhitePlayerType;
             settings.BlackPlayerType = (InputSource)Properties.Settings.Default.BlackPlayerType;
             settings.BottomColor = Properties.Settings.Default.BottomColor;
-            settings.NullMoveDepthReduction = Properties.Settings.Default.NullMoveDepthReduction;
         }
 
         public void Save(UISettings settings)
