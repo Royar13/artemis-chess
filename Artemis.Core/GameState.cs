@@ -262,5 +262,11 @@ namespace Artemis.Core
             }
             return pieces;
         }
+
+        public int GetTurnNum()
+        {
+            int turnNum = (irrevStates.Count + 1) / 2;
+            return turnNum;
+        }
     }
 }

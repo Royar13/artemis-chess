@@ -96,6 +96,7 @@ namespace Artemis.Core.FormatConverters
             {
                 irrevState.EnPassantCapture = BitboardUtils.GetBitboard(parts[3].StringToPos());
             }
+            irrevState.HalfmoveClock = int.Parse(parts[4]);
             irrevState.ZobristHash = gameState.ZobristHashUtils.GenerateHash(gameState);
         }
 
@@ -163,7 +164,8 @@ namespace Artemis.Core.FormatConverters
                 enPassant = irrevState.EnPassantCapture.PosToString();
             }
             builder.Append(enPassant + " ");
-            builder.Append("0 1");
+            builder.Append(irrevState.HalfmoveClock + " ");
+            builder.Append(gameState.GetTurnNum());
             return builder.ToString();
         }
 

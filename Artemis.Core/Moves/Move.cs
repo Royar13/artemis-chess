@@ -31,6 +31,7 @@ namespace Artemis.Core.Moves
             UpdateCastlingRights();
             UpdateEnPassant();
             CalculateCapture();
+            UpdateHalfmoveClock();
         }
 
         public virtual void Unmake()
@@ -138,6 +139,18 @@ namespace Artemis.Core.Moves
                         }
                     }
                 }
+            }
+        }
+
+        protected void UpdateHalfmoveClock()
+        {
+            if (capturedPieceType != null || MovedPieceType == PieceType.Pawn)
+            {
+                irrevState.HalfmoveClock = 0;
+            }
+            else
+            {
+                irrevState.HalfmoveClock++;
             }
         }
 

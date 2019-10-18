@@ -21,17 +21,23 @@ namespace Artemis.Core
         public ulong EnPassantCapture;
         public ulong ZobristHash;
         public bool? IsCheck;
+        /// <summary>
+        /// Number of moves since the last capture or pawn move.
+        /// Used to determine a draw by the 50-move rule.
+        /// </summary>
+        public int HalfmoveClock;
 
         public IrrevState(GameState gameState)
         {
             this.gameState = gameState;
         }
 
-        public IrrevState(GameState gameState, bool[,] castlingAllowed, ulong zobristHash)
+        public IrrevState(GameState gameState, bool[,] castlingAllowed, ulong zobristHash, int halfmoveClock)
         {
             this.gameState = gameState;
             CastlingAllowed = castlingAllowed;
             ZobristHash = zobristHash;
+            HalfmoveClock = halfmoveClock;
         }
 
         /// <summary>
@@ -42,7 +48,7 @@ namespace Artemis.Core
         {
             ulong hash = ZobristHash;
             gameState.ZobristHashUtils.ResetHashBeforeMove(ref hash, this);
-            return new IrrevState(gameState, (bool[,])CastlingAllowed.Clone(), hash);
+            return new IrrevState(gameState, (bool[,])CastlingAllowed.Clone(), hash, HalfmoveClock);
         }
     }
 }
