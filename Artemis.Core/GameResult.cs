@@ -7,7 +7,7 @@ namespace Artemis.Core
     public enum GameResult
     {
         Ongoing,
-        Checkmate,
-        Stalemate
+        Win,
+        Draw
     }
 }

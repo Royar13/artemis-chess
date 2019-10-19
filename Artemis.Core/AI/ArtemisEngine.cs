@@ -27,23 +27,18 @@ namespace Artemis.Core.AI
         public const int INITIAL_ALPHA = -PositionEvaluator.CHECKMATE_SCORE * 2;
         public const int INITIAL_BETA = -INITIAL_ALPHA;
         public const int MAX_DEPTH = 50;
-        public GameStage GameStage = GameStage.Opening;
+        public GameStage GameStage { get; private set; } = GameStage.Opening;
+        public int EngineColor { get; private set; }
 
         public ArtemisEngine(GameState gameState, IEngineConfig config, OpeningBook openingBook)
         {
             this.gameState = gameState;
-            gameState.NewPositionLoaded += GameState_NewPositionLoaded;
             transpositionTable = new TranspositionTable(config);
             evConfig = new EvaluationConfig();
             evaluator = new PositionEvaluator(gameState, evConfig);
             Config = config;
             this.openingBook = openingBook;
             threadMaster = new ThreadMaster(this, gameState, transpositionTable, config);
-        }
-
-        private void GameState_NewPositionLoaded(object sender, EventArgs e)
-        {
-            GameStage = GameStage.Opening;
         }
 
         public async Task<Move> Calculate(CancellationToken ct)
@@ -53,7 +48,8 @@ namespace Artemis.Core.AI
             {
                 return openingMove;
             }
-            UpdateGameStage();
+            EngineColor = gameState.Turn;
+            GameStage = GetGameStage();
             PVList pv;
             using (internalCts = new CancellationTokenSource())
             using (linkedCts = CancellationTokenSource.CreateLinkedTokenSource(internalCts.Token, ct))
@@ -91,8 +87,9 @@ namespace Artemis.Core.AI
             }
         }
 
-        private void UpdateGameStage()
+        private GameStage GetGameStage()
         {
+            GameStage gameStage;
             int materialCount = 0;
             for (int pl = 0; pl <= 1; pl++)
             {
@@ -106,9 +103,9 @@ namespace Artemis.Core.AI
             }
             if (materialCount < 1800)
             {
-                GameStage = GameStage.Endgame;
+                gameStage = GameStage.Endgame;
             }
-            else if (GameStage != GameStage.Middlegame)
+            else
             {
                 int developedPieces = 0;
                 for (int pl = 0; pl <= 1; pl++)
@@ -122,11 +119,17 @@ namespace Artemis.Core.AI
                         developedPieces += 2;
                     }
                 }
-                if (developedPieces >= 7)
+                if (developedPieces < 7)
                 {
-                    GameStage = GameStage.Middlegame;
+                    gameStage = GameStage.Opening;
+                }
+                else
+                {
+                    gameStage = GameStage.Middlegame;
                 }
             }
+
+            return gameStage;
         }
     }
 }

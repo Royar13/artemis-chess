@@ -32,9 +32,9 @@ namespace Artemis.Core.AI.Search
             this.config = config;
         }
 
-        public void LoadPosition(string fen)
+        public void LoadState(GameState state)
         {
-            gameState.LoadPosition(fen);
+            gameState.Apply(state);
         }
 
         public PVList Search(int startDepth, CancellationToken ct)

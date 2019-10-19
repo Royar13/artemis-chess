@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Artemis.Core.AI.Search;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
@@ -28,7 +29,7 @@ namespace Artemis.Core.AI.Transposition
             }
         }
 
-        public TTHit TryGetValue(ulong key, int depth, int alpha, int beta)
+        public TTHit TryGetValue(ulong key, int depth, int alpha, int beta, PVList currentPV)
         {
             TTHit hit = new TTHit();
             hit.HitType = HitType.Miss;
@@ -57,6 +58,7 @@ namespace Artemis.Core.AI.Transposition
                         case NodeType.PVNode:
                             hit.HitType = HitType.Hit;
                             hit.Score = hit.TTNode.Score;
+                            currentPV.Replace(hit.TTNode.PV);
                             break;
                     }
                 }

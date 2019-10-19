@@ -15,7 +15,6 @@ namespace Artemis.Core.AI.Search
         private GameState gameState;
         private TranspositionTable transpositionTable;
         private IEngineConfig config;
-        private FENConverter fenConverter = new FENConverter();
         private int threadsNum;
         private SearchThread[] searchThreads;
         private ConcurrentDictionary<ulong, bool> searchedNodes = new ConcurrentDictionary<ulong, bool>();
@@ -37,12 +36,11 @@ namespace Artemis.Core.AI.Search
         public async Task<PVList> Search(CancellationToken ct)
         {
             List<Task<PVList>> tasks = new List<Task<PVList>>();
-            string fen = fenConverter.Convert(gameState);
             int currentThreadsNum = config.Multithreading ? threadsNum : 1;
             for (int t = 0; t < currentThreadsNum; t++)
             {
                 SearchThread thread = searchThreads[t];
-                thread.LoadPosition(fen);
+                thread.LoadState(gameState);
                 Task<PVList> engineTask = Task.Run(() => thread.Search(1, ct));
                 tasks.Add(engineTask);
             }

@@ -49,8 +49,6 @@ namespace Artemis.Core
         /// </summary>
         public IMoveGenerator[] MoveGenerators = new IMoveGenerator[6];
 
-        public event EventHandler NewPositionLoaded;
-
         public GameState(PregeneratedAttacksData pregeneratedAttacks, ZobristHashUtils zobristHashUtils) : this(DEFAULT_FEN, pregeneratedAttacks, zobristHashUtils)
         {
         }
@@ -70,14 +68,13 @@ namespace Artemis.Core
         public void LoadPosition(string fen = DEFAULT_FEN)
         {
             fenConverter.Load(fen, this);
-            NewPositionLoaded?.Invoke(this, EventArgs.Empty);
         }
 
         public void Reset()
         {
             Pieces = new ulong[2, 6];
             Occupancy = new ulong[2];
-            IrrevState irrevState = new IrrevState(this);
+            IrrevState irrevState = new IrrevState(ZobristHashUtils);
             irrevStates = new List<IrrevState>() { irrevState };
         }
 
@@ -189,11 +186,12 @@ namespace Artemis.Core
 
         public void MakeMove(Move move)
         {
-            IrrevState irrevState = GetIrrevState().Copy();
+            IrrevState irrevState = GetIrrevState().CopyBeforeMove();
             irrevStates.Add(irrevState);
             move.Make();
             ChangeTurn();
             ZobristHashUtils.UpdateTurn(ref GetIrrevState().ZobristHash);
+            irrevState.PliesFromNull++;
         }
 
         public void UnmakeMove(Move move)
@@ -205,10 +203,11 @@ namespace Artemis.Core
 
         public void MakeNullMove()
         {
-            IrrevState irrevState = GetIrrevState().Copy();
+            IrrevState irrevState = GetIrrevState().CopyBeforeMove();
             irrevStates.Add(irrevState);
             ChangeTurn();
             ZobristHashUtils.UpdateTurn(ref GetIrrevState().ZobristHash);
+            irrevState.PliesFromNull = 0;
         }
 
         public void UnmakeNullMove()
@@ -222,20 +221,64 @@ namespace Artemis.Core
         /// For use by the GUI.
         /// </summary>
         /// <returns></returns>
-        public GameResult GetResult()
+        public GameResultData GetResult()
         {
+            GameResult result = GameResult.Draw;
+            GameResultReason reason;
+            int winner = 1 - Turn;
+
             if (HasLegalMove())
             {
-                return GameResult.Ongoing;
+                if (GetIrrevState().HalfmoveClock >= 50)
+                {
+                    reason = GameResultReason.FiftyMoveRule;
+                }
+                else if (IsThreefoldRepetition())
+                {
+                    reason = GameResultReason.ThreefoldRepetition;
+                }
+                else
+                {
+                    //game is still ongoing
+                    return new GameResultData();
+                }
             }
             else if (IsCheck())
             {
-                return GameResult.Checkmate;
+                result = GameResult.Win;
+                reason = GameResultReason.Checkmate;
             }
             else
             {
-                return GameResult.Stalemate;
+                reason = GameResultReason.Stalemate;
             }
+            return new GameResultData(result, reason, winner);
+        }
+
+        /// <summary>
+        /// Checks if draw by threefold repetition or 50-move rule
+        /// </summary>
+        /// <returns></returns>
+        public bool IsDraw()
+        {
+            return GetIrrevState().HalfmoveClock >= 50 || IsThreefoldRepetition();
+        }
+
+        public bool IsThreefoldRepetition()
+        {
+            int repetitions = 0;
+            IrrevState irrevState = GetIrrevState();
+            int maxMovesBack = Math.Min(irrevState.HalfmoveClock, irrevState.PliesFromNull);
+            int lastMove = Math.Max(irrevStates.Count - 1 - maxMovesBack, 0);
+            ulong hash = GetIrrevState().ZobristHash;
+            for (int i = irrevStates.Count - 5; i >= lastMove && repetitions < 2; i -= 2)
+            {
+                if (irrevStates[i].ZobristHash == hash)
+                {
+                    repetitions++;
+                }
+            }
+            return repetitions == 2;
         }
 
         /// <summary>
@@ -267,6 +310,14 @@ namespace Artemis.Core
         {
             int turnNum = (irrevStates.Count + 1) / 2;
             return turnNum;
+        }
+
+        public void Apply(GameState gameState)
+        {
+            irrevStates = gameState.irrevStates.Select(s => s.Copy()).ToList();
+            Pieces = (ulong[,])gameState.Pieces.Clone();
+            Occupancy = (ulong[])gameState.Occupancy.Clone();
+            Turn = gameState.Turn;
         }
     }
 }

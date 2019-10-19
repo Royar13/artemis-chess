@@ -27,18 +27,18 @@ namespace Artemis.Core.AI.Evaluation
             return sign * score;
         }
 
-        public int Evaluate(int depth, GameStage gameStage)
+        public int Evaluate(int depth, GameStage gameStage, int engineColor)
         {
-            GameResult result = gameState.GetResult();
-            if (result != GameResult.Ongoing)
+            GameResultData resultData = gameState.GetResult();
+            if (resultData.Result != GameResult.Ongoing)
             {
-                if (result == GameResult.Checkmate)
+                if (resultData.Result == GameResult.Win)
                 {
                     return -CHECKMATE_SCORE - depth;
                 }
                 else
                 {
-                    return 0;
+                    return GetDrawScore(engineColor);
                 }
             }
 
@@ -157,6 +157,13 @@ namespace Artemis.Core.AI.Evaluation
                     score += EvaluateEndgameKPK(pl, material);
                 }
             }
+            return score;
+        }
+
+        public int GetDrawScore(int engineColor)
+        {
+            int sign = gameState.Turn == engineColor ? -1 : 1;
+            int score = sign * config.GetContemptFactor();
             return score;
         }
 

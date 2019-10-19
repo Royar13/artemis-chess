@@ -6,6 +6,7 @@ namespace Artemis.Core.AI.Evaluation
 {
     public class EvaluationConfig
     {
+        private int contemptFactor = 50;
         private int[] piecesValue = { 500, 290, 320, 100, 900, 0 };
         private Modifier[] mobility = { new Modifier(0, 1, 0), new Modifier(5), new Modifier(3), new Modifier(0), new Modifier(0, 1, 1) };
         private int pawnCentralControl = 25;
@@ -36,6 +37,11 @@ namespace Artemis.Core.AI.Evaluation
                                             20, 26, 32, 38, 38, 32, 26, 20 };
         private int endgameEnemyKingCenterDistance = 10;
         private int endgameKingsDistance = 5;
+
+        public int GetContemptFactor()
+        {
+            return contemptFactor;
+        }
 
         public int GetPieceValue(PieceType pieceType)
         {

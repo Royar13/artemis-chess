@@ -12,10 +12,10 @@ namespace Artemis.Core.AI.Evaluation
         {
         }
 
-        public int Evaluate(int depth, GameStage gameStage, out EvaluationStats evaluationStats)
+        public int Evaluate(int depth, GameStage gameStage, int engineColor, out EvaluationStats evaluationStats)
         {
             stats = new EvaluationStats();
-            int score = Evaluate(depth, gameStage);
+            int score = Evaluate(depth, gameStage, engineColor);
             int sign = gameState.Turn == 0 ? 1 : -1;
             stats.Score = sign * score;
             evaluationStats = stats;

@@ -69,6 +69,16 @@ namespace Artemis.Core.AI.Search
                 return 0;
             }
 
+            if (gameState.IsDraw())
+            {
+                int score = evaluator.GetDrawScore(engine.EngineColor);
+                if (score > alpha)
+                {
+                    pvList.Replace(new PVList());
+                }
+                return score;
+            }
+
             if (gameState.IsCheck() && depth < ArtemisEngine.MAX_DEPTH)
             {
                 //check extension
@@ -77,18 +87,21 @@ namespace Artemis.Core.AI.Search
 
             int originalAlpha = alpha;
             ulong hash = gameState.GetIrrevState().ZobristHash;
-            TTHit ttHit = transpositionTable.TryGetValue(hash, depth, alpha, beta);
+            TTHit ttHit = transpositionTable.TryGetValue(hash, depth, alpha, beta, pvList);
             if (ttHit.HitType == HitType.Hit)
             {
-                if (ttHit.TTNode.PV != null)
-                    pvList.Replace(ttHit.TTNode.PV);
                 return ttHit.Score;
             }
             TranspositionNode ttNode = ttHit.TTNode;
 
             if (depth == 0 || ply == ArtemisEngine.MAX_DEPTH)
             {
-                return quietSearch.Search(alpha, beta);
+                int score = quietSearch.Search(alpha, beta);
+                if (score > alpha)
+                {
+                    pvList.Replace(new PVList());
+                }
+                return score;
             }
 
             bool lmrCandidatePosition = depth >= 3 && !searchingPV && !gameState.IsCheck();

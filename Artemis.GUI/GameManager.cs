@@ -37,6 +37,7 @@ namespace Artemis.GUI
         private Task<Move> engineTask;
         private IEngineConfig engineConfig;
         private ISettings settings;
+        private bool ignoreDraw = false;
         public bool GameEnded { get; private set; }
         public List<GameAction> LegalActions;
         private string fen;
@@ -117,6 +118,7 @@ namespace Artemis.GUI
                 CreatePiece(piece.Item3, piece.Item2, piece.Item1);
             }
             GameEnded = false;
+            ignoreDraw = false;
             StartTurn();
         }
 
@@ -178,23 +180,50 @@ namespace Artemis.GUI
             lastMoveHighlight.Show(movesHistory.Actions.Last());
             DisplayEngineTurn = false;
             UpdateFEN();
-            GameResult result = gameState.GetResult();
-            if (result == GameResult.Ongoing)
+            GameResultData resultData = gameState.GetResult();
+            if (resultData.Result == GameResult.Ongoing)
             {
                 StartTurn();
             }
+            else if (resultData.Result == GameResult.Win)
+            {
+                string color = resultData.Winner == 0 ? "White" : "Black";
+                MessageBox.Show($"{color} won by checkmate!");
+                GameEnded = true;
+            }
             else
             {
-                if (result == GameResult.Checkmate)
+                if (resultData.Reason == GameResultReason.Stalemate)
                 {
-                    string color = (1 - gameState.Turn) == 0 ? "White" : "Black";
-                    MessageBox.Show($"{color} won by checkmate!");
+                    MessageBox.Show($"Draw by stalemate");
+                    GameEnded = true;
+                }
+                else if (!ignoreDraw)
+                {
+                    string drawMessage;
+                    if (resultData.Reason == GameResultReason.ThreefoldRepetition)
+                    {
+                        drawMessage = "Draw by threefold repetition";
+                    }
+                    else
+                    {
+                        drawMessage = "Draw by 50-move rule";
+                    }
+                    MessageBoxResult result = MessageBox.Show($"{drawMessage}.\nDo you wish to continue?", "Draw", MessageBoxButton.YesNo);
+                    if (result == MessageBoxResult.No)
+                    {
+                        GameEnded = true;
+                    }
+                    else
+                    {
+                        ignoreDraw = true;
+                        StartTurn();
+                    }
                 }
                 else
                 {
-                    MessageBox.Show($"Draw by stalemate");
+                    StartTurn();
                 }
-                GameEnded = true;
             }
         }
 

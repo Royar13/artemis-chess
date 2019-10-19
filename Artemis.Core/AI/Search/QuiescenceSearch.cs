@@ -26,7 +26,7 @@ namespace Artemis.Core.AI.Search
 
         public int Search(int alpha, int beta)
         {
-            int standPat = evaluator.Evaluate(0, engine.GameStage);
+            int standPat = evaluator.Evaluate(0, engine.GameStage, engine.EngineColor);
             int originalAlpha = alpha;
             if (standPat >= beta)
             {
