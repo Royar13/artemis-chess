@@ -52,6 +52,7 @@
     <Compile Include="AI\Evaluation\PositionEvaluatorTest.cs" />
     <Compile Include="AI\Evaluation\PassedPawnTest.cs" />
     <Compile Include="AI\Evaluation\PositionEvaluatorTestBase.cs" />
+    <Compile Include="AI\Evaluation\SpaceTest.cs" />
     <Compile Include="FormatConverters\FENConverterTest.cs" />
     <Compile Include="GameStateBuilder.cs" />
     <Compile Include="Moves\SlidingPieceUtilsTest.cs" />

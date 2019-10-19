@@ -13,7 +13,7 @@ namespace Artemis.Test.AI.Evaluation
         public void EvaluationTest()
         {
             EvaluationStats stats1 = new EvaluationStats();
-            gameState.LoadPosition("r1bqk2r/ppp2ppp/2n1p1n1/8/2PP4/2P1BN1P/P3BPP1/R2Q1RK1 b kq - 0 12");
+            gameState.LoadPosition("2kr1b1r/pp2p1p1/2p2p2/3n3p/P2P4/2P1B2q/1PB1QP1N/R3R1K1 w - h6 0 21");
             int eval1 = evaluator.Evaluate(0, GameStage.Middlegame, 0, out stats1);
             Console.WriteLine(stats1);
         }

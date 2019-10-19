@@ -10,11 +10,12 @@ namespace Artemis.Core.AI.Evaluation
         private int[] piecesValue = { 500, 290, 320, 100, 900, 0 };
         private Modifier[] mobility = { new Modifier(0, 1, 0), new Modifier(5), new Modifier(3), new Modifier(0), new Modifier(0, 1, 1) };
         private int pawnCentralControl = 25;
+        private int space = 2;
         private int pieceCentralControl = 3;
         private int pawnSupport = 2;
         private int[] kingFile = { 15, 20, 15, -15, -10, 5, 25, 15 };
         private int rooksConnected = 20;
-        private int[] pieceAttack = { 10, 6, 6, 0, 12 };
+        private int[] pieceAttack = { 10, 6, 6, 0, 9 };
         private int[] pawnStormRank = { 0, 0, 2, 4, 7, 12, 16 };
         private int kingPawnMovedPenalty = -6;
         private int kingOpenFilePenalty = -25;
@@ -56,6 +57,11 @@ namespace Artemis.Core.AI.Evaluation
         public int GetPawnCentralControlScore()
         {
             return pawnCentralControl;
+        }
+
+        public int GetSpaceScore()
+        {
+            return space;
         }
 
         public int GetPawnSupportScore()

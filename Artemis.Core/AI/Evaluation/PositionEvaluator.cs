@@ -324,16 +324,16 @@ namespace Artemis.Core.AI.Evaluation
             //pawn support
             score += BitboardUtils.SparsePopcount(pawnAttacks & pawns) * config.GetPawnSupportScore();
 
-            ulong abovePawns;
+            ulong belowPawns;
             if (pl == 0)
             {
-                abovePawns = (pawns << 8) | (pawns << 16);
+                belowPawns = (pawns >> 8) | (pawns >> 16);
             }
             else
             {
-                abovePawns = (pawns >> 8) | (pawns >> 16);
+                belowPawns = (pawns << 8) | (pawns << 16);
             }
-            ulong doubledPawns = abovePawns & pawns;
+            ulong doubledPawns = belowPawns & pawns;
             score += BitboardUtils.SparsePopcount(doubledPawns) * config.GetDoubledPawnsPenalty();
             pawns ^= doubledPawns;
             ulong pawnsCopy = pawns;
@@ -345,6 +345,9 @@ namespace Artemis.Core.AI.Evaluation
                 int pawn = BitboardUtils.PopLSB(ref pawnsCopy);
                 int file = BitboardUtils.GetFile(pawn);
                 int rank = BitboardUtils.GetRank(pawn);
+                //space
+                score += EvaluateSpace(pl, rank);
+
                 ulong leftFileMask = file > 0 ? BitboardUtils.GetFileMask(file - 1) : 0;
                 ulong rightFileMask = file < 7 ? BitboardUtils.GetFileMask(file + 1) : 0;
                 ulong fileMask = leftFileMask | rightFileMask;
@@ -449,6 +452,13 @@ namespace Artemis.Core.AI.Evaluation
                 score = config.GetPassedPawnScore(pl, pawnRank, pawnDefenders);
             }
             return score;
+        }
+
+        protected virtual int EvaluateSpace(int pl, int pawnRank)
+        {
+            int advances = pl == 0 ? pawnRank - 1 : 6 - pawnRank;
+            int score = advances * config.GetSpaceScore();
+            return ApplySign(pl, score);
         }
 
         protected virtual int EvaluateEndgameKingSquare(int pl)

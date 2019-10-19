@@ -149,6 +149,13 @@ namespace Artemis.Core.AI.Evaluation
             return score;
         }
 
+        protected override int EvaluateSpace(int pl, int pawnRank)
+        {
+            int score = base.EvaluateSpace(pl, pawnRank);
+            stats.SpaceScore[pl] += ApplySign(pl, score);
+            return score;
+        }
+
         protected override int CalculatePassedPawnScore(int pl, int pawnSq, int pawnRank, ulong threeFilesMask)
         {
             int score = base.CalculatePassedPawnScore(pl, pawnSq, pawnRank, threeFilesMask);
