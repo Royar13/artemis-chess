@@ -119,6 +119,13 @@ namespace Artemis.Core.AI.Evaluation
             return score;
         }
 
+        protected override int EvaluateKnightSquare(int pl, int sq)
+        {
+            int score = base.EvaluateKnightSquare(pl, sq);
+            stats.KnightSquareScore[pl] += ApplySign(pl, score);
+            return score;
+        }
+
         protected override int EvaluateOpenKingFile(int pl, ulong enemyPawnsOnFile)
         {
             int score = base.EvaluateOpenKingFile(pl, enemyPawnsOnFile);

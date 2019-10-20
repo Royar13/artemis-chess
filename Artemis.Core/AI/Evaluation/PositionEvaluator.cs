@@ -108,11 +108,16 @@ namespace Artemis.Core.AI.Evaluation
                             //center control
                             score += EvaluatePieceCenterControl(pl, pieceType, attacks);
 
-                            //rook on open file & 7th rank
                             if (pieceType == PieceType.Rook)
                             {
+                                //rook on open file & 7th rank
                                 score += EvaluateRookOpenFile(pl, pieceSq);
                                 score += EvaluateRookRank(pl, pieceSq, gameStage);
+                            }
+                            else if (pieceType == PieceType.Knight)
+                            {
+                                //knight outpost
+                                score += EvaluateKnightSquare(pl, pieceSq);
                             }
 
                             if (gameStage != GameStage.Endgame)
@@ -458,6 +463,32 @@ namespace Artemis.Core.AI.Evaluation
         {
             int advances = pl == 0 ? pawnRank - 1 : 6 - pawnRank;
             int score = advances * config.GetSpaceScore();
+            return ApplySign(pl, score);
+        }
+
+        protected virtual int EvaluateKnightSquare(int pl, int sq)
+        {
+            int file = BitboardUtils.GetFile(sq);
+            int rank = BitboardUtils.GetRank(sq);
+            ulong leftFileMask = file > 0 ? BitboardUtils.GetFileMask(file - 1) : 0;
+            ulong rightFileMask = file < 7 ? BitboardUtils.GetFileMask(file + 1) : 0;
+            ulong fileMask = leftFileMask | rightFileMask;
+            if (pl == 0)
+            {
+                fileMask <<= (rank + 1) * 8;
+            }
+            else
+            {
+                fileMask >>= (8 - rank) * 8;
+            }
+            bool outpost = false;
+            if ((gameState.Pieces[1 - pl, (int)PieceType.Pawn] & fileMask) == 0)
+            {
+                outpost = true;
+            }
+            ulong pawnDefenders = gameState.MoveGenerators[(int)PieceType.Pawn].GenerateAttacksFromSquare(sq, 1 - pl) & gameState.Pieces[pl, (int)PieceType.Pawn];
+            int pawnDefendersAmount = BitboardUtils.SparsePopcount(pawnDefenders);
+            int score = config.GetKnightSquareScore(pl, sq, pawnDefendersAmount, outpost);
             return ApplySign(pl, score);
         }
 
