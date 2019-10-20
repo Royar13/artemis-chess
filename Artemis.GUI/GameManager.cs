@@ -96,8 +96,9 @@ namespace Artemis.GUI
             engine = new ArtemisEngine(gameState, engineConfig, openingBook);
         }
 
-        public void NewGame(string fen = null)
+        public async Task NewGame(string fen = null)
         {
+            await CancelEngineCalc();
             LazyInitialize();
             if (fen == null)
             {
@@ -232,7 +233,7 @@ namespace Artemis.GUI
             FEN = fenConverter.Convert(gameState);
         }
 
-        public bool LoadFen(string fenTxt)
+        public async Task<bool> LoadFen(string fenTxt)
         {
             if (!fenConverter.IsValid(fenTxt))
             {
@@ -242,7 +243,7 @@ namespace Artemis.GUI
             MessageBoxResult messageBoxResult = MessageBox.Show("Are you sure you want to load a new position?", "Load FEN", MessageBoxButton.YesNo);
             if (messageBoxResult == MessageBoxResult.Yes)
             {
-                NewGame(fenTxt);
+                await NewGame(fenTxt);
                 return true;
             }
             else

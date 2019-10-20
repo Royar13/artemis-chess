@@ -33,14 +33,14 @@ namespace Artemis.GUI
             UISettings gmSettings = new UISettings();
             settingsData.Load(gmSettings);
             gm = new GameManager(Board, movesHistory, gmSettings);
-            gm.NewGame();
             DataContext = gm;
             MovesListTB.DataContext = movesHistory;
+            gm.NewGame();
         }
 
-        private void NewGame_Click(object sender, RoutedEventArgs e)
+        private async void NewGame_Click(object sender, RoutedEventArgs e)
         {
-            gm.NewGame();
+            await gm.NewGame();
         }
 
         private void MovesListTB_TextChanged(object sender, TextChangedEventArgs e)
@@ -51,12 +51,12 @@ namespace Artemis.GUI
             tb.ScrollToEnd();
         }
 
-        private void FenTB_KeyDown(object sender, KeyEventArgs e)
+        private async void FenTB_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Return)
             {
                 TextBox tb = (TextBox)sender;
-                bool updated = gm.LoadFen(tb.Text);
+                bool updated = await gm.LoadFen(tb.Text);
                 if (!updated)
                 {
                     tb.Text = gm.FEN;
