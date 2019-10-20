@@ -14,7 +14,6 @@ Its main features are:
 
 ## Future Goals
 This is still a work in progress, and there are many features I still want to add, such as:
-* Threefold repetition and 50-move rule
 * UCI/XBoard support
 * Integration with a Chess server (FICS)
 * Advanced pruning techniques
