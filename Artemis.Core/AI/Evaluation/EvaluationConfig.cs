@@ -24,7 +24,7 @@ namespace Artemis.Core.AI.Evaluation
         private int doubledPawnsPenalty = -12;
         private int isolatedPawnPenalty = -12;
         private int isolatedPawnOpenFilePenalty = -20;
-        private int[] passedPawnRank = { 0, 0, 0, 5, 10, 15, 20 };
+        private int[] passedPawnRank = { 0, 5, 10, 25, 30, 35, 40 };
         private double passedPawnDefenderModifier = 1.7;
         private int[] rookRank = { 0, 0, 0, 0, 0, 10, 20, 10 };
         private int rookOpenFile = 15;
