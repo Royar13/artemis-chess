@@ -7,7 +7,7 @@ namespace Artemis.Core.AI.Evaluation
     public class EvaluationStats
     {
         public int Score;
-        public double KingAttackModifier;
+        public double[] KingAttackModifier;
         public int[] RooksConnectedScore = new int[2];
         public int[] KingSafetyScore = new int[2];
         public int[] KingFileScore = new int[2];
@@ -46,11 +46,10 @@ namespace Artemis.Core.AI.Evaluation
             string scoreStr = Score > 0 ? "+" + Score : Score.ToString();
             builder.AppendLine($"Score\t\t\t| {scoreStr}");
             builder.AppendLine(lineSep);
-            builder.AppendLine($"King Attack Modifier\t| {KingAttackModifier}");
-            builder.AppendLine(lineSep);
             builder.AppendLine($"\t\t\t| White{secondSep}| Black");
             builder.AppendLine(lineSep);
             AppendStat(builder, "Rooks Connected\t\t", RooksConnectedScore);
+            AppendStat(builder, "King Attack Modifier\t", KingAttackModifier);
             AppendStat(builder, "King Safety\t\t", KingSafetyScore);
             AppendStat(builder, "King File\t\t\t", KingFileScore);
             AppendStat(builder, "King Pawn Moves Amount\t", KingPawnMoves);
@@ -84,6 +83,12 @@ namespace Artemis.Core.AI.Evaluation
         }
 
         private void AppendStat(StringBuilder builder, string title, int[] scores)
+        {
+            builder.AppendLine($"{title}| {scores[0]}{secondSep}| {scores[1]}");
+            builder.AppendLine(lineSep);
+        }
+
+        private void AppendStat(StringBuilder builder, string title, double[] scores)
         {
             builder.AppendLine($"{title}| {scores[0]}{secondSep}| {scores[1]}");
             builder.AppendLine(lineSep);

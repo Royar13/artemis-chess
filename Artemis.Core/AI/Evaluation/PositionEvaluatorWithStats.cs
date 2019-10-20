@@ -43,9 +43,9 @@ namespace Artemis.Core.AI.Evaluation
             return score;
         }
 
-        protected override double CalculateKingAttackModifier(int[] kingFile)
+        protected override double[] CalculateKingAttackModifier(int[] kingFile)
         {
-            double modifier = base.CalculateKingAttackModifier(kingFile);
+            double[] modifier = base.CalculateKingAttackModifier(kingFile);
             stats.KingAttackModifier = modifier;
             return modifier;
         }
@@ -95,9 +95,9 @@ namespace Artemis.Core.AI.Evaluation
             return score;
         }
 
-        protected override int EvaluateKingPawnMoves(int pl, int moves)
+        protected override int EvaluateKingPawnMoves(int pl, int moves, double opKingAttackModifier)
         {
-            int score = base.EvaluateKingPawnMoves(pl, moves);
+            int score = base.EvaluateKingPawnMoves(pl, moves, opKingAttackModifier);
             stats.KingPawnMoves[pl] += moves;
             stats.KingPawnMovesScore[pl] += ApplySign(pl, score);
             stats.KingSafetyScore[pl] += ApplySign(pl, score);
@@ -126,9 +126,9 @@ namespace Artemis.Core.AI.Evaluation
             return score;
         }
 
-        protected override int EvaluateOpenKingFile(int pl, ulong enemyPawnsOnFile)
+        protected override int EvaluateOpenKingFile(int pl, ulong enemyPawnsOnFile, double opKingAttackModifier)
         {
-            int score = base.EvaluateOpenKingFile(pl, enemyPawnsOnFile);
+            int score = base.EvaluateOpenKingFile(pl, enemyPawnsOnFile, opKingAttackModifier);
             stats.OpenKingFilesScore[pl] += ApplySign(pl, score);
             stats.KingSafetyScore[pl] += ApplySign(pl, score);
             return score;

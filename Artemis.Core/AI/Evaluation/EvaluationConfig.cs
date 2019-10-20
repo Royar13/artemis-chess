@@ -17,7 +17,7 @@ namespace Artemis.Core.AI.Evaluation
         private int rooksConnected = 20;
         private int[] pieceAttack = { 10, 6, 6, 0, 9 };
         private int[] pawnStormRank = { 0, 0, 2, 4, 7, 12, 16 };
-        private int kingPawnMovedPenalty = -6;
+        private int kingPawnMovedPenalty = -3;
         private int kingOpenFilePenalty = -25;
         private double directAttackModifier = 1.3;
         private int[] pieceDefense = { 3, 4, 5, 1, 1 };
@@ -165,14 +165,14 @@ namespace Artemis.Core.AI.Evaluation
             return rookOpenFile;
         }
 
-        public int GetKingPawnMovedPenalty(int moves)
+        public int GetKingPawnMovedPenalty(int moves, double opKingAttackModifier)
         {
-            return moves == 0 ? 0 : (int)(kingPawnMovedPenalty * Math.Pow(1.5, moves));
+            return moves == 0 ? 0 : (int)(kingPawnMovedPenalty * Math.Pow(1.7, moves) * Math.Pow(opKingAttackModifier, 3));
         }
 
-        public int GetKingOpenFilePenalty()
+        public int GetKingOpenFilePenalty(double opKingAttackModifier)
         {
-            return kingOpenFilePenalty;
+            return (int)(kingOpenFilePenalty * opKingAttackModifier);
         }
 
         public int GetKnightSquareScore(int pl, int sq, int pawnProtectors, bool outpost)

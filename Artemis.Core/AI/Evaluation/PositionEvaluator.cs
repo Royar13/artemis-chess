@@ -49,7 +49,7 @@ namespace Artemis.Core.AI.Evaluation
             ulong[] kingSurrounding = new ulong[2];
             int[] kingFile = {  BitboardUtils.GetFile(BitboardUtils.BitScanForward(gameState.Pieces[0, (int)PieceType.King])),
                                 BitboardUtils.GetFile(BitboardUtils.BitScanForward(gameState.Pieces[1, (int)PieceType.King])) };
-            double kingAttackModifier = CalculateKingAttackModifier(kingFile);
+            double[] kingAttackModifier = CalculateKingAttackModifier(kingFile);
             int[] material = new int[2];
             for (int pl = 0; pl <= 1; pl++)
             {
@@ -72,12 +72,12 @@ namespace Artemis.Core.AI.Evaluation
 
                         //pawn storm
                         ulong enemyPawnsOnFile = fileMask & gameState.Pieces[1 - pl, (int)PieceType.Pawn];
-                        score += EvaluatePawnStorm(1 - pl, enemyPawnsOnFile, kingAttackModifier);
+                        score += EvaluatePawnStorm(1 - pl, enemyPawnsOnFile, kingAttackModifier[1 - pl]);
 
                         //king open files penalty
-                        score += EvaluateOpenKingFile(pl, enemyPawnsOnFile);
+                        score += EvaluateOpenKingFile(pl, enemyPawnsOnFile, kingAttackModifier[1 - pl]);
                     }
-                    score += EvaluateKingPawnMoves(pl, pawnProtectorsMoves);
+                    score += EvaluateKingPawnMoves(pl, pawnProtectorsMoves, kingAttackModifier[1 - pl]);
                 }
 
                 //pawn structure
@@ -126,7 +126,7 @@ namespace Artemis.Core.AI.Evaluation
                                 ulong directKingAttacks = kingSurrounding[1 - pl] & attacks;
                                 ulong quarterKingAttacks = opKingQuarter & (attacks ^ directKingAttacks);
                                 kingAttacks[pl] |= directKingAttacks | quarterKingAttacks;
-                                CalculatePieceKingAttackScore(pl, pieceType, directKingAttacks, quarterKingAttacks, kingAttackModifier, kingAttacksScore);
+                                CalculatePieceKingAttackScore(pl, pieceType, directKingAttacks, quarterKingAttacks, kingAttackModifier[pl], kingAttacksScore);
                                 pieceAttacks[pl, i] |= attacks;
                             }
                         }
@@ -172,12 +172,21 @@ namespace Artemis.Core.AI.Evaluation
             return score;
         }
 
-        protected virtual double CalculateKingAttackModifier(int[] kingFile)
+        protected virtual double[] CalculateKingAttackModifier(int[] kingFile)
         {
-            double modifier = 1 + Math.Min(1 + Math.Abs(kingFile[1] - kingFile[0]), 5) / (double)5 * 0.6;
-            if (gameState.Pieces[0, (int)PieceType.Queen] == 0 && gameState.Pieces[1, (int)PieceType.Queen] == 0)
+            double[] modifier = new double[2];
+            double modifierBase = 1 + Math.Min(1 + Math.Abs(kingFile[1] - kingFile[0]), 5) / (double)5 * 0.6;
+            for (int pl = 0; pl <= 1; pl++)
             {
-                modifier -= 0.5;
+                modifier[pl] = modifierBase;
+                if (gameState.Pieces[pl, (int)PieceType.Queen] == 0)
+                {
+                    modifier[pl] *= 0.4;
+                }
+                if (gameState.Pieces[pl, (int)PieceType.Rook] == 0)
+                {
+                    modifier[pl] *= 0.5;
+                }
             }
             return modifier;
         }
@@ -215,9 +224,9 @@ namespace Artemis.Core.AI.Evaluation
             return pawnMoves;
         }
 
-        protected virtual int EvaluateKingPawnMoves(int pl, int moves)
+        protected virtual int EvaluateKingPawnMoves(int pl, int moves, double opKingAttackModifier)
         {
-            int score = config.GetKingPawnMovedPenalty(moves);
+            int score = config.GetKingPawnMovedPenalty(moves, opKingAttackModifier);
             return ApplySign(pl, score);
         }
 
@@ -232,12 +241,12 @@ namespace Artemis.Core.AI.Evaluation
             return ApplySign(pl, score);
         }
 
-        protected virtual int EvaluateOpenKingFile(int pl, ulong enemyPawnsOnFile)
+        protected virtual int EvaluateOpenKingFile(int pl, ulong enemyPawnsOnFile, double opKingAttackModifier)
         {
             int score = 0;
             if (enemyPawnsOnFile == 0)
             {
-                score = config.GetKingOpenFilePenalty();
+                score = config.GetKingOpenFilePenalty(opKingAttackModifier);
             }
             return ApplySign(pl, score);
         }
