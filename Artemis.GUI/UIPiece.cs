@@ -96,12 +96,12 @@ namespace Artemis.GUI
             }
         }
 
-        private void SuggestedAction_MouseUp(object sender, MouseButtonEventArgs e)
+        private async void SuggestedAction_MouseUp(object sender, MouseButtonEventArgs e)
         {
             GameAction action = suggestedActions[(Rectangle)sender];
             if (action.ChangeType == null)
             {
-                gm.PerformAction(action);
+                await gm.PerformAction(action);
             }
             else
             {
@@ -151,17 +151,17 @@ namespace Artemis.GUI
             HideSuggestedActions();
         }
 
-        private void PromotionAction_MouseUp(object sender, MouseButtonEventArgs e)
+        private async void PromotionAction_MouseUp(object sender, MouseButtonEventArgs e)
         {
             GameAction action = suggestedPromotionActions[(Rectangle)sender];
-            PerformPromotionAction(action);
+            await PerformPromotionAction(action);
         }
 
-        private void PerformPromotionAction(GameAction action)
+        private async Task PerformPromotionAction(GameAction action)
         {
             boardCanvas.Children.Remove(promotionPanel);
             promotionPanel = null;
-            gm.PerformAction(action);
+            await gm.PerformAction(action);
         }
 
         public void Deselect()

@@ -73,5 +73,13 @@ namespace Artemis.Core.Moves
                 return base.Equals(obj);
             }
         }
+
+        public override int GetHashCode()
+        {
+            var hashCode = -1255755712;
+            hashCode = hashCode * -1521134295 + base.GetHashCode();
+            hashCode = hashCode * -1521134295 + promotionType.GetHashCode();
+            return hashCode;
+        }
     }
 }

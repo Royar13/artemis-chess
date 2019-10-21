@@ -250,6 +250,14 @@ namespace Artemis.Core.Moves
             return From == otherMove.From && To == otherMove.To;
         }
 
+        public override int GetHashCode()
+        {
+            var hashCode = -1781160927;
+            hashCode = hashCode * -1521134295 + From.GetHashCode();
+            hashCode = hashCode * -1521134295 + To.GetHashCode();
+            return hashCode;
+        }
+
         public void SetGameState(GameState gameState)
         {
             this.gameState = gameState;

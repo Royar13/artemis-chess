@@ -88,9 +88,9 @@ namespace Artemis.GUI
             gm.FEN = gm.FEN;
         }
 
-        private void UndoMove_Click(object sender, RoutedEventArgs e)
+        private async void UndoMove_Click(object sender, RoutedEventArgs e)
         {
-            gm.Undo();
+            await gm.Undo();
         }
 
         private void Settings_Click(object sender, RoutedEventArgs e)

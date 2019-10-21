@@ -120,7 +120,7 @@ namespace Artemis.GUI
             }
             GameEnded = false;
             ignoreDraw = false;
-            StartTurn();
+            await StartTurn();
         }
 
         private void LazyInitialize()
@@ -170,13 +170,13 @@ namespace Artemis.GUI
                     engineTask = null;
                     if (!cts.IsCancellationRequested)
                     {
-                        PerformAction(move.GetAction());
+                        await PerformAction(move.GetAction());
                     }
                 }
             }
         }
 
-        public void EndTurn()
+        public async Task EndTurn()
         {
             lastMoveHighlight.Show(movesHistory.Actions.Last());
             DisplayEngineTurn = false;
@@ -184,7 +184,7 @@ namespace Artemis.GUI
             GameResultData resultData = gameState.GetResult();
             if (resultData.Result == GameResult.Ongoing)
             {
-                StartTurn();
+                await StartTurn();
             }
             else if (resultData.Result == GameResult.Win)
             {
@@ -218,12 +218,12 @@ namespace Artemis.GUI
                     else
                     {
                         ignoreDraw = true;
-                        StartTurn();
+                        await StartTurn();
                     }
                 }
                 else
                 {
-                    StartTurn();
+                    await StartTurn();
                 }
             }
         }
@@ -290,7 +290,7 @@ namespace Artemis.GUI
             {
                 UpdateBottomColor();
             }
-            StartTurn();
+            await StartTurn();
         }
 
         private void UiPiece_PieceSelected(object sender, EventArgs e)
@@ -314,7 +314,7 @@ namespace Artemis.GUI
             piece.Remove();
         }
 
-        public void PerformAction(GameAction action)
+        public async Task PerformAction(GameAction action)
         {
             action.Perform();
             movesHistory.AddAction(action);
@@ -323,7 +323,7 @@ namespace Artemis.GUI
                 selectedPiece.Deselect();
             }
             UpdatePiecesAfterAction(action);
-            EndTurn();
+            await EndTurn();
         }
 
         public void UpdatePiecesAfterAction(GameAction action)
@@ -369,7 +369,7 @@ namespace Artemis.GUI
             UndoAction();
             UpdateFEN();
             GameEnded = false;
-            StartTurn();
+            await StartTurn();
         }
 
         protected void UndoAction()
