@@ -26,6 +26,10 @@ namespace Artemis.Core.AI.Evaluation
             {
                 return new ScoredMove(move, 2000);
             }
+            else if (move is PromotionMove && ((PromotionMove)move).PromotionType == PieceType.Queen)
+            {
+                return new ScoredMove(move, 1800);
+            }
             else if (move.IsCapture())
             {
                 int captureScore = GetMaterialGain(move);

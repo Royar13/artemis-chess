@@ -6,11 +6,11 @@ namespace Artemis.Core.Moves
 {
     public class PromotionMove : Move
     {
-        PieceType promotionType;
+        public PieceType PromotionType { get; }
 
         public PromotionMove(GameState gameState, ulong from, ulong to, PieceType promotionType) : base(gameState, from, to, PieceType.Pawn)
         {
-            this.promotionType = promotionType;
+            this.PromotionType = promotionType;
         }
 
         public override void Make()
@@ -23,7 +23,7 @@ namespace Artemis.Core.Moves
         public override void Unmake()
         {
             gameState.Pieces[1 - gameState.Turn, (int)MovedPieceType] ^= From;
-            gameState.Pieces[1 - gameState.Turn, (int)promotionType] ^= To;
+            gameState.Pieces[1 - gameState.Turn, (int)PromotionType] ^= To;
             gameState.Occupancy[1 - gameState.Turn] ^= From | To;
 
             CalculateUncapture();
@@ -32,10 +32,10 @@ namespace Artemis.Core.Moves
         protected override void MakePieceMovement()
         {
             gameState.Pieces[gameState.Turn, (int)MovedPieceType] ^= From;
-            gameState.Pieces[gameState.Turn, (int)promotionType] ^= To;
+            gameState.Pieces[gameState.Turn, (int)PromotionType] ^= To;
             gameState.Occupancy[gameState.Turn] ^= From | To;
             gameState.ZobristHashUtils.UpdatePiece(ref irrevState.ZobristHash, gameState.Turn, MovedPieceType, From);
-            gameState.ZobristHashUtils.UpdatePiece(ref irrevState.ZobristHash, gameState.Turn, promotionType, To);
+            gameState.ZobristHashUtils.UpdatePiece(ref irrevState.ZobristHash, gameState.Turn, PromotionType, To);
         }
 
         public override bool IsQuiet()
@@ -50,14 +50,14 @@ namespace Artemis.Core.Moves
             {
                 capture = BitboardUtils.BitScanForward(To);
             }
-            GameAction action = new GameAction(gameState, this, BitboardUtils.BitScanForward(From), BitboardUtils.BitScanForward(To), capture, promotionType);
+            GameAction action = new GameAction(gameState, this, BitboardUtils.BitScanForward(From), BitboardUtils.BitScanForward(To), capture, PromotionType);
             return action;
         }
 
         public override string GetPgnNotation()
         {
             string str = base.GetPgnNotation();
-            str += "=" + promotionType.ToNotation();
+            str += "=" + PromotionType.ToNotation();
             return str;
         }
 
@@ -66,7 +66,7 @@ namespace Artemis.Core.Moves
             if (obj is PromotionMove)
             {
                 PromotionMove otherMove = (PromotionMove)obj;
-                return From == otherMove.From && To == otherMove.To && promotionType == otherMove.promotionType;
+                return From == otherMove.From && To == otherMove.To && PromotionType == otherMove.PromotionType;
             }
             else
             {
@@ -78,7 +78,7 @@ namespace Artemis.Core.Moves
         {
             var hashCode = -1255755712;
             hashCode = hashCode * -1521134295 + base.GetHashCode();
-            hashCode = hashCode * -1521134295 + promotionType.GetHashCode();
+            hashCode = hashCode * -1521134295 + PromotionType.GetHashCode();
             return hashCode;
         }
     }
