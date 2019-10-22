@@ -11,7 +11,7 @@ namespace Artemis.Core
 {
     public class GameState
     {
-        private List<IrrevState> irrevStates = new List<IrrevState>();
+        public List<IrrevState> IrrevStates = new List<IrrevState>();
         private MoveGeneratorBuilder moveGeneratorBuilder;
         private IFormatConverter fenConverter = new FENConverter();
         const string DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -75,7 +75,7 @@ namespace Artemis.Core
             Pieces = new ulong[2, 6];
             Occupancy = new ulong[2];
             IrrevState irrevState = new IrrevState(ZobristHashUtils);
-            irrevStates = new List<IrrevState>() { irrevState };
+            IrrevStates = new List<IrrevState>() { irrevState };
         }
 
         public PieceType? GetPieceBySquare(int pl, ulong sq)
@@ -176,7 +176,7 @@ namespace Artemis.Core
 
         public IrrevState GetIrrevState()
         {
-            return irrevStates.Last();
+            return IrrevStates.Last();
         }
 
         public void ChangeTurn()
@@ -187,7 +187,7 @@ namespace Artemis.Core
         public void MakeMove(Move move)
         {
             IrrevState irrevState = GetIrrevState().CopyBeforeMove();
-            irrevStates.Add(irrevState);
+            IrrevStates.Add(irrevState);
             move.Make();
             ChangeTurn();
             ZobristHashUtils.UpdateTurn(ref GetIrrevState().ZobristHash);
@@ -197,14 +197,14 @@ namespace Artemis.Core
         public void UnmakeMove(Move move)
         {
             move.Unmake();
-            irrevStates.RemoveAt(irrevStates.Count - 1);
+            IrrevStates.RemoveAt(IrrevStates.Count - 1);
             ChangeTurn();
         }
 
         public void MakeNullMove()
         {
             IrrevState irrevState = GetIrrevState().CopyBeforeMove();
-            irrevStates.Add(irrevState);
+            IrrevStates.Add(irrevState);
             ChangeTurn();
             ZobristHashUtils.UpdateTurn(ref GetIrrevState().ZobristHash);
             irrevState.PliesFromNull = 0;
@@ -212,7 +212,7 @@ namespace Artemis.Core
 
         public void UnmakeNullMove()
         {
-            irrevStates.RemoveAt(irrevStates.Count - 1);
+            IrrevStates.RemoveAt(IrrevStates.Count - 1);
             ChangeTurn();
         }
 
@@ -269,11 +269,11 @@ namespace Artemis.Core
             int repetitions = 0;
             IrrevState irrevState = GetIrrevState();
             int maxMovesBack = Math.Min(irrevState.HalfmoveClock, irrevState.PliesFromNull);
-            int lastMove = Math.Max(irrevStates.Count - 1 - maxMovesBack, 0);
+            int lastMove = Math.Max(IrrevStates.Count - 1 - maxMovesBack, 0);
             ulong hash = GetIrrevState().ZobristHash;
-            for (int i = irrevStates.Count - 5; i >= lastMove && repetitions < 2; i -= 2)
+            for (int i = IrrevStates.Count - 5; i >= lastMove && repetitions < 2; i -= 2)
             {
-                if (irrevStates[i].ZobristHash == hash)
+                if (IrrevStates[i].ZobristHash == hash)
                 {
                     repetitions++;
                 }
@@ -308,13 +308,13 @@ namespace Artemis.Core
 
         public int GetTurnNum()
         {
-            int turnNum = (irrevStates.Count + 1) / 2;
+            int turnNum = (IrrevStates.Count + 1) / 2;
             return turnNum;
         }
 
         public void Apply(GameState gameState)
         {
-            irrevStates = gameState.irrevStates.Select(s => s.Copy()).ToList();
+            IrrevStates = gameState.IrrevStates.Select(s => s.Copy()).ToList();
             Pieces = (ulong[,])gameState.Pieces.Clone();
             Occupancy = (ulong[])gameState.Occupancy.Clone();
             Turn = gameState.Turn;

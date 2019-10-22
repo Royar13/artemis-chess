@@ -42,6 +42,7 @@ namespace Artemis.Core.AI.Search
         public PVList Search(int startDepth, CancellationToken ct)
         {
             SearchStats = new SearchStats();
+            killerMoves.Prepare(gameState.IrrevStates);
             PVList pv = null;
             bool con;
             int depth = startDepth;
@@ -56,7 +57,6 @@ namespace Artemis.Core.AI.Search
                 con = !ct.IsCancellationRequested && (!config.ConstantDepth || depth <= config.Depth);
             } while (con);
 
-            killerMoves.Clear();
             return pv;
         }
     }

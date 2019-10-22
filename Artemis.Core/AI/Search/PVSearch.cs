@@ -26,7 +26,6 @@ namespace Artemis.Core.AI.Search
         QuiescenceSearch quietSearch;
         int searchDepth;
         PVNode currentPVNode;
-        bool searchingPV;
         CancellationToken ct;
         ConcurrentDictionary<ulong, bool> searchedNodes;
         IEngineConfig config;
@@ -49,12 +48,10 @@ namespace Artemis.Core.AI.Search
         public PVList Calculate(int depth, PVList prevPV, CancellationToken ct, SearchStats searchStats)
         {
             searchDepth = depth;
-            searchingPV = false;
             this.searchStats = searchStats;
             this.ct = ct;
             if (searchDepth > 1 && prevPV != null)
             {
-                searchingPV = true;
                 currentPVNode = prevPV.First;
             }
             PVList pvList = new PVList();
@@ -109,13 +106,12 @@ namespace Artemis.Core.AI.Search
                 return score;
             }
 
-            bool lmrCandidatePosition = depth >= 3 && !searchingPV && !gameState.IsCheck();
 
             Move bestMove = null;
             bool cutoff = false;
             PVList newPV = new PVList();
-
-            if (ttHit.HitType != HitType.AvoidNullMove && ply > 0 && depth > config.NullMoveDepthReduction + 1
+            bool PVNode = alpha != beta - 1;
+            if (!PVNode && ttHit.HitType != HitType.AvoidNullMove && depth > config.NullMoveDepthReduction + 1
                 && !nullMoveReduction && engine.GameStage != GameStage.Endgame && !gameState.IsCheck())
             {
                 //null move pruning
@@ -136,7 +132,7 @@ namespace Artemis.Core.AI.Search
 
             List<Move> moves = gameState.GetMoves();
             Move pvMove = null;
-            if (searchingPV)
+            if (PVNode)
             {
                 if (currentPVNode != null)
                 {
@@ -145,7 +141,7 @@ namespace Artemis.Core.AI.Search
                 }
                 else
                 {
-                    searchingPV = false;
+                    PVNode = false;
                 }
             }
             Move hashMove = null;
@@ -158,6 +154,7 @@ namespace Artemis.Core.AI.Search
 
             int originalLen = moves.Count;
             int moveCount = 0;
+            bool lmrCandidatePosition = depth >= 3 && !PVNode && !gameState.IsCheck();
             for (int i = 0; i < moves.Count && !cutoff; i++)
             {
                 Move move = moves[i];
@@ -169,7 +166,8 @@ namespace Artemis.Core.AI.Search
                     if (lmrCandidatePosition && moveCount >= 4 && move.IsQuiet() && !gameState.IsCheck())
                     {
                         lmrReduction = true;
-                        nextDepth -= 1;
+                        nextDepth--;
+                        searchStats.LMRReductions++;
                     }
 
                     int score;

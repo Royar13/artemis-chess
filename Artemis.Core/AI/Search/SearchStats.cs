@@ -20,5 +20,6 @@ namespace Artemis.Core.AI.Search
         public int AlphaBetaCutoffs = 0;
         public int NullMoveCutoffs = 0;
         public int TTHits = 0;
+        public int LMRReductions = 0;
     }
 }
