@@ -55,8 +55,6 @@ namespace Artemis.Core.AI
             using (linkedCts = CancellationTokenSource.CreateLinkedTokenSource(internalCts.Token, ct))
             {
                 Task<PVList> searchTask = threadMaster.Search(linkedCts.Token);
-                Stopwatch watch = new Stopwatch();
-                watch.Start();
                 if (!Config.ConstantDepth)
                 {
                     Task timeoutTask = Task.Delay(Config.TimeLimit, linkedCts.Token);
@@ -71,8 +69,6 @@ namespace Artemis.Core.AI
                 }
 
                 pv = await searchTask;
-                watch.Stop();
-                Console.WriteLine($"Time: {watch.ElapsedMilliseconds}");
             }
 
             transpositionTable.Clear();

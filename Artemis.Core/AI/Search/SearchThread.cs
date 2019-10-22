@@ -1,6 +1,7 @@
 ﻿using Artemis.Core.AI.Evaluation;
 using Artemis.Core.AI.Search.Heuristics;
 using Artemis.Core.AI.Transposition;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -19,6 +20,7 @@ namespace Artemis.Core.AI.Search
         PositionEvaluator evaluator;
         MoveEvaluator moveEvaluator;
         IEngineConfig config;
+        public SearchStats SearchStats { get; private set; }
 
         public SearchThread(ArtemisEngine engine, ThreadMaster master, GameState gameState, TranspositionTable transpositionTable, ConcurrentDictionary<ulong, bool> searchedNodes, IEngineConfig config)
         {
@@ -39,12 +41,13 @@ namespace Artemis.Core.AI.Search
 
         public PVList Search(int startDepth, CancellationToken ct)
         {
+            SearchStats = new SearchStats();
             PVList pv = null;
             bool con;
             int depth = startDepth;
             do
             {
-                PVList newPV = pvSearch.Calculate(depth, pv, ct);
+                PVList newPV = pvSearch.Calculate(depth, pv, ct, SearchStats);
                 if (!ct.IsCancellationRequested)
                 {
                     pv = newPV;

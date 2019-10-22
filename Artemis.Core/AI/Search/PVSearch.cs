@@ -30,6 +30,7 @@ namespace Artemis.Core.AI.Search
         CancellationToken ct;
         ConcurrentDictionary<ulong, bool> searchedNodes;
         IEngineConfig config;
+        SearchStats searchStats;
 
         public PVSearch(ArtemisEngine engine, GameState gameState, TranspositionTable transpositionTable, KillerMoves killerMoves, PositionEvaluator evaluator, MoveEvaluator moveEvaluator,
             QuiescenceSearch quietSearch, ConcurrentDictionary<ulong, bool> searchedNodes, IEngineConfig config)
@@ -45,10 +46,11 @@ namespace Artemis.Core.AI.Search
             this.config = config;
         }
 
-        public PVList Calculate(int depth, PVList prevPV, CancellationToken ct)
+        public PVList Calculate(int depth, PVList prevPV, CancellationToken ct, SearchStats searchStats)
         {
             searchDepth = depth;
             searchingPV = false;
+            this.searchStats = searchStats;
             this.ct = ct;
             if (searchDepth > 1 && prevPV != null)
             {
@@ -68,6 +70,8 @@ namespace Artemis.Core.AI.Search
             {
                 return 0;
             }
+
+            searchStats.Nodes++;
 
             if (gameState.IsDraw())
             {
@@ -90,6 +94,7 @@ namespace Artemis.Core.AI.Search
             TTHit ttHit = transpositionTable.TryGetValue(hash, depth, alpha, beta, pvList);
             if (ttHit.HitType == HitType.Hit)
             {
+                searchStats.TTHits++;
                 return ttHit.Score;
             }
             TranspositionNode ttNode = ttHit.TTNode;
@@ -120,6 +125,8 @@ namespace Artemis.Core.AI.Search
                 gameState.UnmakeNullMove();
                 if (score >= beta)
                 {
+                    searchStats.NullMoveCutoffs++;
+                    searchStats.AlphaBetaCutoffs++;
                     TranspositionNode newNode = new TranspositionNode(NodeType.CutNode, score, nextDepth + 1, null, null);
                     SaveNode(hash, ttNode, newNode);
                     //alpha-beta cutoff
@@ -198,6 +205,7 @@ namespace Artemis.Core.AI.Search
                     if (score >= beta)
                     {
                         //alpha-beta cutoff
+                        searchStats.AlphaBetaCutoffs++;
                         alpha = beta;
                         bestMove = move;
                         cutoff = true;
@@ -231,6 +239,7 @@ namespace Artemis.Core.AI.Search
             PVList nodePV = null;
             if (nodeType == NodeType.PVNode)
             {
+                searchStats.PVNodes++;
                 PVNode node = new PVNode(bestMove);
                 newPV.AddFirst(node);
                 nodePV = newPV;

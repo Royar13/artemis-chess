@@ -1,8 +1,10 @@
 ﻿using Artemis.Core.AI.Transposition;
 using Artemis.Core.FormatConverters;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -35,6 +37,8 @@ namespace Artemis.Core.AI.Search
 
         public async Task<PVList> Search(CancellationToken ct)
         {
+            Stopwatch watch = new Stopwatch();
+            watch.Start();
             List<Task<PVList>> tasks = new List<Task<PVList>>();
             int currentThreadsNum = config.Multithreading ? threadsNum : 1;
             for (int t = 0; t < currentThreadsNum; t++)
@@ -46,19 +50,24 @@ namespace Artemis.Core.AI.Search
             }
 
             PVList[] foundPV = await Task.WhenAll(tasks);
-            foundPV = foundPV.Where(p => p != null && p.First != null).ToArray();
-
-            PVList bestPV = foundPV[0];
-            for (int i = 1; i < foundPV.Length; i++)
+            PVList bestPV = new PVList();
+            SearchThread bestThread = null;
+            for (int i = 0; i < foundPV.Length; i++)
             {
-                if (foundPV[i] > bestPV)
+                if (foundPV[i] != null && foundPV[i].First != null && foundPV[i] > bestPV)
                 {
                     bestPV = foundPV[i];
+                    bestThread = searchThreads[i];
                 }
             }
+            watch.Stop();
+
+            bestThread.SearchStats.Time = watch.ElapsedMilliseconds;
+            string statsJson = JsonConvert.SerializeObject(bestThread.SearchStats);
+            Console.WriteLine(statsJson);
+            Console.WriteLine(bestPV);
 
             searchedNodes.Clear();
-            Console.WriteLine(bestPV);
             return bestPV;
         }
     }
