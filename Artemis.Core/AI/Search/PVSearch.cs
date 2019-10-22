@@ -96,7 +96,7 @@ namespace Artemis.Core.AI.Search
             }
             TranspositionNode ttNode = ttHit.TTNode;
 
-            if (depth == 0 || ply == ArtemisEngine.MAX_DEPTH)
+            if (depth <= 0 || ply == ArtemisEngine.MAX_DEPTH)
             {
                 int score = quietSearch.Search(alpha, beta);
                 if (score > alpha)
@@ -111,7 +111,7 @@ namespace Artemis.Core.AI.Search
             bool cutoff = false;
             PVList newPV = new PVList();
             bool PVNode = alpha != beta - 1;
-            if (!PVNode && ttHit.HitType != HitType.AvoidNullMove && depth > config.NullMoveDepthReduction + 1
+            if (!PVNode && ttHit.HitType != HitType.AvoidNullMove
                 && !nullMoveReduction && engine.GameStage != GameStage.Endgame && !gameState.IsCheck())
             {
                 //null move pruning
