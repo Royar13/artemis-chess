@@ -21,9 +21,9 @@ namespace Artemis.Core.AI.Evaluation
         private int kingOpenFilePenalty = -25;
         private double directAttackModifier = 1.3;
         private int[] pieceDefense = { 3, 4, 5, 1, 1 };
-        private int doubledPawnsPenalty = -12;
-        private int isolatedPawnPenalty = -12;
-        private int isolatedPawnOpenFilePenalty = -20;
+        private int doubledPawnsPenalty = -17;
+        private int isolatedPawnPenalty = -17;
+        private int isolatedPawnOpenFilePenalty = -25;
         private int[] passedPawnRank = { 0, 5, 10, 25, 30, 35, 40 };
         private double passedPawnDefenderModifier = 1.7;
         private int[] rookRank = { 0, 0, 0, 0, 0, 10, 20, 10 };
@@ -167,7 +167,7 @@ namespace Artemis.Core.AI.Evaluation
 
         public int GetKingPawnMovedPenalty(int moves, double opKingAttackModifier)
         {
-            return moves == 0 ? 0 : (int)(kingPawnMovedPenalty * Math.Pow(1.7, moves) * Math.Pow(opKingAttackModifier, 3));
+            return moves == 0 ? 0 : (int)(kingPawnMovedPenalty * Math.Pow(1.7, moves) * opKingAttackModifier);
         }
 
         public int GetKingOpenFilePenalty(double opKingAttackModifier)

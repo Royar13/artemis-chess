@@ -181,7 +181,7 @@ namespace Artemis.Core.AI.Evaluation
                 modifier[pl] = modifierBase;
                 if (gameState.Pieces[pl, (int)PieceType.Queen] == 0)
                 {
-                    modifier[pl] *= 0.4;
+                    modifier[pl] *= 0.1;
                 }
                 if (gameState.Pieces[pl, (int)PieceType.Rook] == 0)
                 {
@@ -338,21 +338,12 @@ namespace Artemis.Core.AI.Evaluation
             //pawn support
             score += BitboardUtils.SparsePopcount(pawnAttacks & pawns) * config.GetPawnSupportScore();
 
-            ulong belowPawns;
-            if (pl == 0)
-            {
-                belowPawns = (pawns >> 8) | (pawns >> 16);
-            }
-            else
-            {
-                belowPawns = (pawns << 8) | (pawns << 16);
-            }
-            ulong doubledPawns = belowPawns & pawns;
-            score += BitboardUtils.SparsePopcount(doubledPawns) * config.GetDoubledPawnsPenalty();
+            //doubled pawns
+            ulong doubledPawns;
+            score += CalculateDoubledPawnsPenalty(pl, pawns, out doubledPawns);
             pawns ^= doubledPawns;
+
             ulong pawnsCopy = pawns;
-            int isolatedPawns = 0;
-            int isolatedPawnsOnOpenFile = 0;
             ulong opPawns = gameState.Pieces[1 - pl, (int)PieceType.Pawn];
             while (pawnsCopy > 0)
             {
@@ -368,30 +359,53 @@ namespace Artemis.Core.AI.Evaluation
                 ulong threeFilesMask = fileMask | BitboardUtils.GetFileMask(file);
                 //passed pawn
                 score += CalculatePassedPawnScore(pl, pawn, rank, threeFilesMask);
-                if ((pawns & fileMask) == 0)
+
+                //isolated pawn
+                score += CalculateIsolatedPawnPenalty(pl, rank, file, fileMask, pawns, opPawns);
+            }
+            return ApplySign(pl, score);
+        }
+
+        protected virtual int CalculateDoubledPawnsPenalty(int pl, ulong pawns, out ulong doubledPawns)
+        {
+            ulong belowPawns;
+            if (pl == 0)
+            {
+                belowPawns = (pawns >> 8) | (pawns >> 16);
+            }
+            else
+            {
+                belowPawns = (pawns << 8) | (pawns << 16);
+            }
+            doubledPawns = belowPawns & pawns;
+            int score = BitboardUtils.SparsePopcount(doubledPawns) * config.GetDoubledPawnsPenalty();
+            return score;
+        }
+
+        protected virtual int CalculateIsolatedPawnPenalty(int pl, int pawnRank, int pawnFile, ulong leftRightFilesMask, ulong pawns, ulong opPawns)
+        {
+            int score = 0;
+            if ((pawns & leftRightFilesMask) == 0)
+            {
+                ulong aboveMask = BitboardUtils.GetFileMask(pawnFile);
+                if (pl == 0)
                 {
-                    ulong aboveMask = BitboardUtils.GetFileMask(file);
-                    if (pl == 0)
-                    {
-                        aboveMask <<= (rank + 1) * 8;
-                    }
-                    else
-                    {
-                        aboveMask >>= (8 - rank) * 8;
-                    }
-                    if ((opPawns & aboveMask) == 0)
-                    {
-                        isolatedPawnsOnOpenFile++;
-                    }
-                    else
-                    {
-                        isolatedPawns++;
-                    }
+                    aboveMask <<= (pawnRank + 1) * 8;
+                }
+                else
+                {
+                    aboveMask >>= (8 - pawnRank) * 8;
+                }
+                if ((opPawns & aboveMask) == 0)
+                {
+                    score = config.GetIsolatedPawnOpenFilePenalty();
+                }
+                else
+                {
+                    score = config.GetIsolatedPawnPenalty();
                 }
             }
-            score += isolatedPawns * config.GetIsolatedPawnPenalty();
-            score += isolatedPawnsOnOpenFile * config.GetIsolatedPawnOpenFilePenalty();
-            return ApplySign(pl, score);
+            return score;
         }
 
         public virtual int EvaluateRooksConnected(int pl)

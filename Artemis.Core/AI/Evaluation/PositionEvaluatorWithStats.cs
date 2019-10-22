@@ -156,6 +156,20 @@ namespace Artemis.Core.AI.Evaluation
             return score;
         }
 
+        protected override int CalculateDoubledPawnsPenalty(int pl, ulong pawns, out ulong doubledPawns)
+        {
+            int penalty = base.CalculateDoubledPawnsPenalty(pl, pawns, out doubledPawns);
+            stats.DoubledPawnsPenalty[pl] = penalty;
+            return penalty;
+        }
+
+        protected override int CalculateIsolatedPawnPenalty(int pl, int pawnRank, int pawnFile, ulong leftRightFilesMask, ulong pawns, ulong opPawns)
+        {
+            int penalty = base.CalculateIsolatedPawnPenalty(pl, pawnRank, pawnFile, leftRightFilesMask, pawns, opPawns);
+            stats.IsolatedPawnsPenalty[pl] += penalty;
+            return penalty;
+        }
+
         protected override int EvaluateSpace(int pl, int pawnRank)
         {
             int score = base.EvaluateSpace(pl, pawnRank);
